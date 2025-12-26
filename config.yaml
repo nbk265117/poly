@@ -1,0 +1,94 @@
+# Configuration du Robot de Trading Polymarket
+# STRATÉGIE : MEAN REVERSION (Win Rate 55%+, 30+ trades/jour)
+
+# Paires à trader (BTC uniquement pour concentration)
+symbols:
+  - BTC/USDT
+
+# Timeframes
+timeframes:
+  primary: 15m      # Timeframe principal pour Polymarket
+
+# Stratégie Mean Reversion
+# RÈGLES :
+# 1. Signal UP  : 3+ bougies DOWN consécutives OU RSI < 30
+# 2. Signal DOWN: 3+ bougies UP consécutives OU RSI > 70
+
+strategy:
+  # Type de stratégie
+  type: mean_reversion  # 'mean_reversion' ou 'legacy' (ancienne stratégie)
+
+  # Indicateurs Mean Reversion
+  mean_reversion:
+    # Indicateur 1 : Bougies consécutives
+    consecutive_threshold: 3     # Nombre de bougies consécutives pour signal
+
+    # Indicateur 2 : RSI
+    rsi_period: 14               # Période RSI standard
+    rsi_oversold: 30             # Seuil survente (signal UP)
+    rsi_overbought: 70           # Seuil surachat (signal DOWN)
+
+    # Indicateur 3 : Momentum (optionnel)
+    use_momentum_filter: true    # Utiliser le filtre momentum
+    momentum_period: 3           # Nombre de bougies pour calcul momentum
+
+  # Anciens indicateurs (désactivés par défaut)
+  indicators:
+    price_action:
+      enabled: false
+    ftfc:
+      enabled: false
+    volume:
+      enabled: false
+
+  # Exécution
+  execution:
+    entry_offset_seconds: 8    # Entrée 8 secondes avant clôture bougie
+    min_trades_per_day: 20     # Objectif minimum
+    max_trades_per_day: 100    # Pas de limite stricte
+    enable_buy_signals: true   # Signaux UP activés (55.2% win rate)
+    enable_sell_signals: true  # Signaux DOWN activés (55.1% win rate)
+
+  # Gestion du risque (mode Polymarket - pas de TP/SL)
+  risk:
+    max_positions: 1           # 1 position à la fois (Polymarket)
+    position_size_usd: 100     # Mise fixe par trade
+
+    # TP/SL non utilisés en mode Polymarket UP/DOWN
+    stop_loss_percent: 0       # N/A pour Polymarket
+    take_profit_percent: 0     # N/A pour Polymarket
+
+# Backtesting
+backtest:
+  start_date: "2023-01-01"
+  end_date: "2024-12-31"
+  initial_capital: 10000
+  commission: 0.001            # 0.1% de frais (Polymarket)
+  slippage: 0.0005            # 0.05% de slippage
+  
+  # Mode Polymarket UP/DOWN (prédiction binaire 15min)
+  polymarket_mode: true        # true = UP/DOWN, false = TP/SL classique
+  polymarket_payout: 1.9       # Payout multiplier (1.9x = 90% gain si win)
+
+# Telegram
+telegram:
+  enabled: true
+  notifications:
+    - trade_entry
+    - trade_exit
+    - daily_summary
+    - errors
+
+# Data
+data:
+  source: binance
+  cache_dir: data/cache
+  historical_dir: data/historical
+  
+# Logging
+logging:
+  level: INFO                  # DEBUG, INFO, WARNING, ERROR
+  file: logs/trading_bot.log
+  max_size_mb: 100
+  backup_count: 5
+

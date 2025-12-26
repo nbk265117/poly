@@ -1,0 +1,36 @@
+# Core dependencies
+ccxt>=4.2.0
+pandas>=2.2.0
+numpy>=1.26.0
+
+# Technical indicators
+# ta-lib==0.4.28  # Optionnel, nécessite compilation C
+pandas-ta>=0.3.14b0
+
+# Polymarket API
+py-clob-client>=0.20.0
+
+# Telegram bot
+python-telegram-bot>=20.0
+
+# Configuration
+python-dotenv>=1.0.0
+pyyaml>=6.0.0
+
+# Scheduling & Async
+schedule>=1.2.0
+
+# Utilities
+requests>=2.31.0
+pytz>=2024.0
+
+# Logging (optionnel)
+# colorlog>=6.8.0
+
+# Testing (optionnel)
+# pytest>=7.4.0
+# pytest-asyncio>=0.21.0
+
+# Plotting pour backtest
+matplotlib>=3.8.0
+
