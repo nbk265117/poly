@@ -243,7 +243,7 @@ class LiveTrader:
 🪙 <b>Symbole:</b> {base_symbol}
 📊 <b>Direction:</b> {signal}
 💰 <b>Mise:</b> ${self.bet_size:.2f}
-💵 <b>Prix BTC:</b> ${price:,.2f}
+💵 <b>Prix:</b> ${price:,.2f}
 
 ⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 """)
