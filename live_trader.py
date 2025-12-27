@@ -217,7 +217,7 @@ class LiveTrader:
         logger.info(f"🎯 EXÉCUTION TRADE | {base_symbol} | {signal} | Prix: ${price:,.2f}")
 
         # Vérifier cooldown (pas de trade sur le même symbole en moins de 15 min)
-        last_trade = self.last_trade_time.get(symbol, datetime.min)
+        last_trade = self.last_trade_time.get(symbol, datetime.min.replace(tzinfo=timezone.utc))
         if (datetime.now(timezone.utc) - last_trade).seconds < 900:
             logger.warning(f"⏳ Cooldown actif pour {symbol}")
             return
