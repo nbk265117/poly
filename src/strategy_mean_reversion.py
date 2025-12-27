@@ -12,14 +12,27 @@ Indicateurs :
 - Direction des bougies (consécutives)
 - RSI(14)
 - [Optionnel] Momentum pour confirmation
+
+BLACKLIST HEURES (optimisées par backtest 2024-2025) :
+- BTC: 04, 05, 07, 15, 16, 17, 18, 19h UTC
+- ETH: 00, 07, 15, 16, 17, 19h UTC
+- XRP: 00, 04, 07, 08, 16, 18, 19h UTC
 """
 
 import pandas as pd
 import numpy as np
-from typing import Optional
+from typing import Optional, List, Set
 import logging
 
 logger = logging.getLogger(__name__)
+
+# Blacklists d'heures optimisées par actif (heures UTC avec WR < 54%)
+HOUR_BLACKLIST = {
+    'BTC': {4, 5, 7, 15, 16, 17, 18, 19},
+    'ETH': {0, 7, 15, 16, 17, 19},
+    'XRP': {0, 4, 7, 8, 16, 18, 19},
+    'DEFAULT': {7, 16, 19},  # Heures communes problématiques
+}
 
 
 class MeanReversionStrategy:
@@ -33,7 +46,10 @@ class MeanReversionStrategy:
         rsi_oversold: int = 30,
         rsi_overbought: int = 70,
         consec_threshold: int = 3,
-        use_momentum_filter: bool = True
+        use_momentum_filter: bool = True,
+        symbol: str = None,
+        blacklist_hours: Set[int] = None,
+        use_hour_filter: bool = True
     ):
         """
         Args:
@@ -42,12 +58,24 @@ class MeanReversionStrategy:
             rsi_overbought: Seuil RSI surachat (défaut 70)
             consec_threshold: Nombre de bougies consécutives (défaut 3)
             use_momentum_filter: Utiliser le filtre momentum (défaut True)
+            symbol: Symbole de l'actif (BTC, ETH, XRP) pour blacklist automatique
+            blacklist_hours: Set d'heures à éviter (0-23 UTC), prioritaire sur symbol
+            use_hour_filter: Activer le filtre d'heures (défaut True)
         """
         self.rsi_period = rsi_period
         self.rsi_oversold = rsi_oversold
         self.rsi_overbought = rsi_overbought
         self.consec_threshold = consec_threshold
         self.use_momentum_filter = use_momentum_filter
+        self.use_hour_filter = use_hour_filter
+
+        # Déterminer la blacklist d'heures
+        if blacklist_hours is not None:
+            self.blacklist_hours = set(blacklist_hours)
+        elif symbol and symbol.upper() in HOUR_BLACKLIST:
+            self.blacklist_hours = HOUR_BLACKLIST[symbol.upper()]
+        else:
+            self.blacklist_hours = HOUR_BLACKLIST['DEFAULT']
 
     def calculate_indicators(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -101,13 +129,14 @@ class MeanReversionStrategy:
 
         return df
 
-    def generate_signal(self, df: pd.DataFrame, idx: int = -1) -> Optional[str]:
+    def generate_signal(self, df: pd.DataFrame, idx: int = -1, hour: int = None) -> Optional[str]:
         """
         Génère un signal pour une bougie donnée
 
         Args:
             df: DataFrame avec indicateurs calculés
             idx: Index de la bougie (-1 = dernière)
+            hour: Heure de la bougie (0-23 UTC) pour filtre blacklist
 
         Returns:
             'UP', 'DOWN', ou None
@@ -116,6 +145,11 @@ class MeanReversionStrategy:
             return None
 
         row = df.iloc[idx]
+
+        # Vérifier le filtre d'heures
+        if self.use_hour_filter and hour is not None:
+            if hour in self.blacklist_hours:
+                return None
 
         # Vérifier que les indicateurs sont calculés
         if pd.isna(row.get('RSI', np.nan)):
@@ -169,13 +203,20 @@ class MeanReversionStrategy:
         """
         df = self.calculate_indicators(df)
 
+        # Extraire l'heure si timestamp disponible
+        if 'timestamp' in df.columns:
+            df['hour'] = pd.to_datetime(df['timestamp']).dt.hour
+        else:
+            df['hour'] = None
+
         # Générer signaux pour chaque ligne
         signals = []
         for i in range(len(df)):
             if i < self.rsi_period + 5:
                 signals.append(None)
             else:
-                signals.append(self.generate_signal(df, i))
+                hour = df.iloc[i]['hour'] if df.iloc[i]['hour'] is not None else None
+                signals.append(self.generate_signal(df, i, hour=hour))
 
         df['signal'] = signals
 
