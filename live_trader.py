@@ -346,6 +346,7 @@ class LiveTrader:
 def main():
     parser = argparse.ArgumentParser(description='Live Trader Polymarket')
     parser.add_argument('--live', action='store_true', help='Mode production (argent réel)')
+    parser.add_argument('--yes', '-y', action='store_true', help='Skip confirmation (pour systemd)')
     parser.add_argument('--symbols', type=str, default='BTC/USDT,ETH/USDT',
                         help='Symboles à trader (séparés par des virgules)')
     parser.add_argument('--bet', type=float, default=2.0, help='Mise par trade en USD')
@@ -354,7 +355,7 @@ def main():
 
     symbols = args.symbols.split(',')
 
-    if args.live:
+    if args.live and not args.yes:
         print("\n" + "=" * 60)
         print("⚠️  ATTENTION: MODE PRODUCTION ACTIVÉ")
         print("    Vous allez trader avec de l'argent réel!")
