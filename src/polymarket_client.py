@@ -134,16 +134,20 @@ class PolymarketClient:
             account = Account.from_key(private_key)
             eoa_address = account.address
 
-            logger.info(f"EOA Address: {eoa_address}")
+            # Adresse du proxy wallet Polymarket (visible sur polymarket.com)
+            proxy_wallet = "0x09894262713eae7d99631ee0ca79559470925247"
 
-            # Signature type 0 = EOA (Externally Owned Account)
-            # Les fonds USDC.e sont directement sur l'EOA
-            # Necessite d'avoir approuve les contrats Polymarket au prealable
+            logger.info(f"EOA Address: {eoa_address}")
+            logger.info(f"Proxy Wallet (funder): {proxy_wallet}")
+
+            # Signature type 2 = Gnosis Safe / Polymarket Proxy
+            # Le funder est le proxy wallet qui contient les USDC.e
             self.client = ClobClient(
                 host=POLYMARKET_HOST,
                 key=private_key,
                 chain_id=POLYGON_CHAIN_ID,
-                signature_type=0  # EOA direct
+                signature_type=2,  # Polymarket Proxy
+                funder=proxy_wallet
             )
 
             self.api_creds = self.client.create_or_derive_api_creds()
