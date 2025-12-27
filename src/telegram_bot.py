@@ -8,16 +8,7 @@ Bot de notification pour le suivi en temps réel
 import logging
 from datetime import datetime
 from typing import Dict, Optional
-import asyncio
-
-try:
-    from telegram import Bot
-    from telegram.error import TelegramError
-    TELEGRAM_AVAILABLE = True
-except ImportError:
-    TELEGRAM_AVAILABLE = False
-    logger = logging.getLogger(__name__)
-    logger.warning("python-telegram-bot not installed. Install with: pip install python-telegram-bot")
+import requests
 
 try:
     from src.config import get_config
@@ -29,70 +20,53 @@ logger = logging.getLogger(__name__)
 
 class TelegramNotifier:
     """
-    Bot Telegram pour notifications
+    Bot Telegram pour notifications (version simple avec requests)
     """
-    
+
     def __init__(self, config=None):
         self.config = config or get_config()
-        self.bot = None
+        self.token = self.config.telegram_bot_token
         self.chat_id = self.config.telegram_chat_id
-        self.enabled = self.config.telegram_enabled
-        
-        if TELEGRAM_AVAILABLE and self.enabled:
-            self._initialize_bot()
+        self.enabled = self.config.telegram_enabled and self.token and self.chat_id
+        self.api_url = f"https://api.telegram.org/bot{self.token}/sendMessage"
+
+        if self.enabled:
+            logger.info("✅ Telegram bot initialized")
         else:
             logger.warning("Telegram notifications disabled")
-    
-    def _initialize_bot(self):
-        """Initialise le bot Telegram"""
-        try:
-            token = self.config.telegram_bot_token
-            if not token:
-                logger.warning("Telegram bot token not configured")
-                self.enabled = False
-                return
-            
-            self.bot = Bot(token=token)
-            logger.info("✅ Telegram bot initialized")
-            
-        except Exception as e:
-            logger.error(f"Failed to initialize Telegram bot: {e}")
-            self.enabled = False
-    
-    async def _send_message_async(self, message: str):
-        """Envoie un message de manière asynchrone"""
-        if not self.enabled or not self.bot:
-            logger.info(f"[SIMULATION] Telegram: {message}")
-            return
-        
-        try:
-            await self.bot.send_message(
-                chat_id=self.chat_id,
-                text=message,
-                parse_mode='HTML'
-            )
-            logger.debug("Telegram message sent")
-            
-        except TelegramError as e:
-            logger.error(f"Telegram error: {e}")
-        except Exception as e:
-            logger.error(f"Error sending Telegram message: {e}")
-    
-    def send_message(self, message: str):
+
+    def send_message(self, message: str) -> bool:
         """
-        Envoie un message Telegram (version synchrone)
-        
+        Envoie un message Telegram
+
         Args:
-            message: Texte du message
+            message: Texte du message (HTML supporté)
+
+        Returns:
+            True si envoyé, False sinon
         """
+        if not self.enabled:
+            logger.debug(f"[TELEGRAM OFF] {message[:50]}...")
+            return False
+
         try:
-            # Créer une nouvelle boucle d'événements si nécessaire
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            loop.run_until_complete(self._send_message_async(message))
-            loop.close()
+            data = {
+                'chat_id': self.chat_id,
+                'text': message,
+                'parse_mode': 'HTML'
+            }
+            resp = requests.post(self.api_url, data=data, timeout=10)
+
+            if resp.status_code == 200:
+                logger.debug("Telegram message sent")
+                return True
+            else:
+                logger.error(f"Telegram error: {resp.status_code} - {resp.text}")
+                return False
+
         except Exception as e:
-            logger.error(f"Error in send_message: {e}")
+            logger.error(f"Error sending Telegram: {e}")
+            return False
     
     def notify_trade_entry(
         self,
