@@ -8,12 +8,13 @@ Documentation: https://docs.polymarket.com/developers/CLOB/authentication
 
 import json
 import logging
-from eth_account import Account
 import os
 import requests
 import time
 from typing import Dict, Optional, List
 from datetime import datetime, timezone
+from eth_account import Account
+from Crypto.Hash import keccak
 
 # Note: Installation requise: pip install py-clob-client
 try:
@@ -38,6 +39,65 @@ logger = logging.getLogger(__name__)
 POLYMARKET_HOST = "https://clob.polymarket.com"
 GAMMA_API_HOST = "https://gamma-api.polymarket.com"
 POLYGON_CHAIN_ID = 137
+
+# Polymarket proxy factory contracts on Polygon
+PROXY_FACTORY = '0xaB45c5A4B0c941a2F231C04C3f49182e1A254052'
+PROXY_IMPLEMENTATION = '0x44e999d5c2F66Ef0861317f9A4805AC2e90aEB4f'
+
+
+def _keccak256(data: bytes) -> bytes:
+    """Calcule le hash keccak256"""
+    k = keccak.new(digest_bits=256)
+    k.update(data)
+    return k.digest()
+
+
+def derive_proxy_address(eoa_address: str) -> str:
+    """
+    Dérive l'adresse proxy Polymarket à partir de l'adresse EOA
+    Utilise CREATE2 avec le proxy factory de Polymarket
+
+    Args:
+        eoa_address: Adresse EOA (ex: 0xd6d6bda...)
+
+    Returns:
+        Adresse proxy checksumée
+    """
+    # Salt = keccak256(eoa_address padded to 32 bytes)
+    eoa_bytes = bytes.fromhex(eoa_address[2:])
+    salt = _keccak256(eoa_bytes.rjust(32, b'\x00'))
+
+    # Init code = EIP-1167 minimal proxy bytecode
+    init_code = bytes.fromhex(
+        '3d602d80600a3d3981f3363d3d373d3d3d363d73' +
+        PROXY_IMPLEMENTATION[2:].lower() +
+        '5af43d82803e903d91602b57fd5bf3'
+    )
+    init_code_hash = _keccak256(init_code)
+
+    # CREATE2: keccak256(0xff ++ factory ++ salt ++ initCodeHash)
+    create2_input = (
+        bytes.fromhex('ff') +
+        bytes.fromhex(PROXY_FACTORY[2:]) +
+        salt +
+        init_code_hash
+    )
+    proxy_hash = _keccak256(create2_input)
+    proxy_address = '0x' + proxy_hash.hex()[-40:]
+
+    # Checksum EIP-55
+    addr_lower = proxy_address.lower()[2:]
+    hash_of_addr = _keccak256(addr_lower.encode()).hex()
+    checksummed = '0x'
+    for i, c in enumerate(addr_lower):
+        if c in '0123456789':
+            checksummed += c
+        elif int(hash_of_addr[i], 16) >= 8:
+            checksummed += c.upper()
+        else:
+            checksummed += c.lower()
+
+    return checksummed
 
 
 class PolymarketClient:
@@ -70,16 +130,20 @@ class PolymarketClient:
             return
 
         try:
-            # Get EOA address for funder
+            # Obtenir l'adresse EOA pour logging
             account = Account.from_key(private_key)
-            funder_address = account.address
-            
+            eoa_address = account.address
+
+            logger.info(f"EOA Address: {eoa_address}")
+
+            # Signature type 0 = EOA (Externally Owned Account)
+            # Les fonds USDC.e sont directement sur l'EOA
+            # Necessite d'avoir approuve les contrats Polymarket au prealable
             self.client = ClobClient(
                 host=POLYMARKET_HOST,
                 key=private_key,
                 chain_id=POLYGON_CHAIN_ID,
-                signature_type=2,  # Gnosis Safe
-                funder=funder_address
+                signature_type=0  # EOA direct
             )
 
             self.api_creds = self.client.create_or_derive_api_creds()
