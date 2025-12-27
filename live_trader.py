@@ -13,7 +13,7 @@ import sys
 import time
 import logging
 import argparse
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 # Ajouter le path
@@ -191,7 +191,7 @@ class LiveTrader:
 
     def get_time_to_next_candle(self) -> int:
         """Calcule le temps restant avant la prochaine bougie 15m"""
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         minutes = now.minute
         seconds = now.second
 
@@ -218,7 +218,7 @@ class LiveTrader:
 
         # Vérifier cooldown (pas de trade sur le même symbole en moins de 15 min)
         last_trade = self.last_trade_time.get(symbol, datetime.min)
-        if (datetime.utcnow() - last_trade).seconds < 900:
+        if (datetime.now(timezone.utc) - last_trade).seconds < 900:
             logger.warning(f"⏳ Cooldown actif pour {symbol}")
             return
 
@@ -245,7 +245,7 @@ class LiveTrader:
 💰 <b>Mise:</b> ${self.bet_size:.2f}
 💵 <b>Prix BTC:</b> ${price:,.2f}
 
-⏰ {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC
+⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 """)
 
             except Exception as e:
@@ -264,17 +264,17 @@ class LiveTrader:
 💰 <b>Mise:</b> ${self.bet_size:.2f}
 💵 <b>Prix:</b> ${price:,.2f}
 
-⏰ {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC
+⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 """)
 
         # Mettre à jour stats
         self.trades_today += 1
-        self.last_trade_time[symbol] = datetime.utcnow()
+        self.last_trade_time[symbol] = datetime.now(timezone.utc)
 
     def run_once(self):
         """Exécute un cycle d'analyse"""
         logger.info("-" * 60)
-        logger.info(f"🔍 ANALYSE | {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC")
+        logger.info(f"🔍 ANALYSE | {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC")
 
         for symbol in self.symbols:
             logger.info(f"\n📊 Analyse {symbol}...")
@@ -314,7 +314,7 @@ class LiveTrader:
 • Mise: ${self.bet_size}/trade
 • Stratégie: Mean Reversion
 
-⏰ {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC
+⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 """)
 
         try:
