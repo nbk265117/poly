@@ -3,9 +3,11 @@
 """
 Polymarket Client
 Interface pour trader sur Polymarket
+Documentation: https://docs.polymarket.com/developers/CLOB/authentication
 """
 
 import logging
+import os
 from typing import Dict, Optional
 from datetime import datetime
 
@@ -13,51 +15,79 @@ from datetime import datetime
 try:
     from py_clob_client.client import ClobClient
     from py_clob_client.clob_types import OrderArgs, OrderType
+    CLOB_AVAILABLE = True
 except ImportError:
     ClobClient = None
-    logger = logging.getLogger(__name__)
-    logger.warning("py-clob-client not installed. Install with: pip install py-clob-client")
+    CLOB_AVAILABLE = False
 
-from src.config import get_config
+try:
+    from src.config import get_config
+except ImportError:
+    from config import get_config
 
 logger = logging.getLogger(__name__)
+
+# Polymarket CLOB API endpoint
+POLYMARKET_HOST = "https://clob.polymarket.com"
+POLYGON_CHAIN_ID = 137
 
 
 class PolymarketClient:
     """
-    Client pour interagir avec Polymarket
+    Client pour interagir avec Polymarket CLOB API
+
+    Pour le trading live, vous avez besoin de:
+    1. Une cle privee de votre wallet Polygon (MetaMask)
+    2. Des USDC sur votre compte Polymarket
+
+    Configuration dans .env:
+    POLYMARKET_PRIVATE_KEY=0x... (votre cle privee)
+    ENVIRONMENT=production (pour trading reel)
     """
-    
+
     def __init__(self, config=None):
         self.config = config or get_config()
         self.client = None
         self.is_live = self.config.environment == 'production'
-        
-        if ClobClient:
+        self.api_creds = None
+
+        if CLOB_AVAILABLE:
             self._initialize_client()
         else:
-            logger.warning("Polymarket client not available - using simulation mode")
-    
+            logger.warning("py-clob-client not installed. Install with: pip install py-clob-client")
+            logger.warning("Running in SIMULATION mode")
+
     def _initialize_client(self):
         """Initialise le client Polymarket"""
+        private_key = self.config.polymarket_private_key
+
+        # Mode simulation si pas de cle privee ou environment != production
+        if not self.is_live or not private_key:
+            logger.info("Polymarket client initialized (SIMULATION mode)")
+            self.client = None
+            return
+
         try:
-            # Configuration du client
-            if self.is_live:
-                # Production
-                self.client = ClobClient(
-                    key=self.config.polymarket_api_key,
-                    chain_id=137,  # Polygon mainnet
-                    signature_type=1,
-                    funder=self.config.polymarket_private_key
-                )
-                logger.info("✅ Polymarket client initialized (PRODUCTION)")
-            else:
-                # Simulation / Test
-                logger.info("✅ Polymarket client initialized (SIMULATION)")
-                self.client = None  # Mode simulation
-                
+            # Initialisation du client avec la cle privee
+            # signature_type=0 pour wallet MetaMask/EOA standard
+            # signature_type=1 pour wallet email/Magic (avec funder)
+            self.client = ClobClient(
+                host=POLYMARKET_HOST,
+                key=private_key,
+                chain_id=POLYGON_CHAIN_ID,
+                signature_type=0  # EOA wallet (MetaMask)
+            )
+
+            # Generer/recuperer les credentials API
+            self.api_creds = self.client.create_or_derive_api_creds()
+            self.client.set_api_creds(self.api_creds)
+
+            logger.info("Polymarket client initialized (PRODUCTION mode)")
+            logger.info(f"API Key: {self.api_creds.api_key[:10]}...")
+
         except Exception as e:
             logger.error(f"Failed to initialize Polymarket client: {e}")
+            logger.warning("Falling back to SIMULATION mode")
             self.client = None
     
     def get_market_info(self, symbol: str) -> Optional[Dict]:

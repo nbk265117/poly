@@ -19,7 +19,10 @@ except ImportError:
     logger = logging.getLogger(__name__)
     logger.warning("python-telegram-bot not installed. Install with: pip install python-telegram-bot")
 
-from src.config import get_config
+try:
+    from src.config import get_config
+except ImportError:
+    from config import get_config
 
 logger = logging.getLogger(__name__)
 
