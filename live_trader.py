@@ -236,14 +236,20 @@ class LiveTrader:
                 if order:
                     logger.info(f"✅ ORDRE EXÉCUTÉ | ID: {order.get('order_id')}")
 
+                    # Calcul du coût et gain potentiel
+                    bet_cost = self.bet_size * 0.50  # 5 shares × $0.50
+                    to_win = self.bet_size * 1.00    # 5 shares × $1.00
+
                     # Notification Telegram
                     self.telegram.send_message(f"""
 🎯 <b>TRADE EXÉCUTÉ</b>
 
 🪙 <b>Symbole:</b> {base_symbol}
 📊 <b>Direction:</b> {signal}
-💰 <b>Mise:</b> ${self.bet_size:.2f}
-💵 <b>Prix:</b> ${price:,.2f}
+💵 <b>Prix {base_symbol}:</b> ${price:,.2f}
+
+💰 <b>BET:</b> ${bet_cost:.2f} ({self.bet_size:.0f} shares)
+🎯 <b>TO WIN:</b> ${to_win:.2f}
 
 ⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 """)
