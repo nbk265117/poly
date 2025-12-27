@@ -8,6 +8,7 @@ Documentation: https://docs.polymarket.com/developers/CLOB/authentication
 
 import json
 import logging
+from eth_account import Account
 import os
 import requests
 import time
@@ -69,11 +70,16 @@ class PolymarketClient:
             return
 
         try:
+            # Get EOA address for funder
+            account = Account.from_key(private_key)
+            funder_address = account.address
+            
             self.client = ClobClient(
                 host=POLYMARKET_HOST,
                 key=private_key,
                 chain_id=POLYGON_CHAIN_ID,
-                signature_type=0  # EOA wallet (MetaMask)
+                signature_type=2,  # Gnosis Safe
+                funder=funder_address
             )
 
             self.api_creds = self.client.create_or_derive_api_creds()
@@ -308,9 +314,8 @@ class PolymarketClient:
             # Prix par défaut: 0.50 (50 cents)
             order_price = price if price else 0.50
 
-            # Calculer la taille basée sur le montant et le prix
-            # size = amount / price
-            size = amount / order_price
+            # Utiliser amount directement comme nombre de shares
+            size = amount  # amount = nombre de shares
 
             # Créer l'ordre limite
             order_args = OrderArgs(
