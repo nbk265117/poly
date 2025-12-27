@@ -312,12 +312,15 @@ class LiveTrader:
         logger.info("=" * 60)
 
         # Notification démarrage
+        bet_cost = self.bet_size * 0.50
+        to_win = self.bet_size * 1.00
         self.telegram.send_message(f"""
 🤖 <b>BOT DÉMARRÉ</b> - {mode}
 
 📊 <b>Configuration:</b>
 • Symboles: {', '.join([s.split('/')[0] for s in self.symbols])}
-• Mise: ${self.bet_size}/trade
+• BET: ${bet_cost:.2f} ({self.bet_size:.0f} shares)
+• TO WIN: ${to_win:.2f}
 • Stratégie: Mean Reversion
 
 ⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
