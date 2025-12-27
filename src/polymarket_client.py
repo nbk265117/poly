@@ -6,19 +6,25 @@ Interface pour trader sur Polymarket
 Documentation: https://docs.polymarket.com/developers/CLOB/authentication
 """
 
+import json
 import logging
 import os
-from typing import Dict, Optional
-from datetime import datetime
+import requests
+import time
+from typing import Dict, Optional, List
+from datetime import datetime, timezone
 
 # Note: Installation requise: pip install py-clob-client
 try:
     from py_clob_client.client import ClobClient
-    from py_clob_client.clob_types import OrderArgs, OrderType
+    from py_clob_client.clob_types import OrderArgs, OrderType, MarketOrderArgs
+    from py_clob_client.order_builder.constants import BUY, SELL
     CLOB_AVAILABLE = True
 except ImportError:
     ClobClient = None
     CLOB_AVAILABLE = False
+    BUY = "BUY"
+    SELL = "SELL"
 
 try:
     from src.config import get_config
@@ -27,8 +33,9 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-# Polymarket CLOB API endpoint
+# Polymarket API endpoints
 POLYMARKET_HOST = "https://clob.polymarket.com"
+GAMMA_API_HOST = "https://gamma-api.polymarket.com"
 POLYGON_CHAIN_ID = 137
 
 
@@ -36,13 +43,7 @@ class PolymarketClient:
     """
     Client pour interagir avec Polymarket CLOB API
 
-    Pour le trading live, vous avez besoin de:
-    1. Une cle privee de votre wallet Polygon (MetaMask)
-    2. Des USDC sur votre compte Polymarket
-
-    Configuration dans .env:
-    POLYMARKET_PRIVATE_KEY=0x... (votre cle privee)
-    ENVIRONMENT=production (pour trading reel)
+    Supporte les marchés BTC/ETH Up/Down 15 minutes
     """
 
     def __init__(self, config=None):
@@ -50,6 +51,7 @@ class PolymarketClient:
         self.client = None
         self.is_live = self.config.environment == 'production'
         self.api_creds = None
+        self.market_cache = {}  # Cache pour les marchés
 
         if CLOB_AVAILABLE:
             self._initialize_client()
@@ -61,16 +63,12 @@ class PolymarketClient:
         """Initialise le client Polymarket"""
         private_key = self.config.polymarket_private_key
 
-        # Mode simulation si pas de cle privee ou environment != production
         if not self.is_live or not private_key:
             logger.info("Polymarket client initialized (SIMULATION mode)")
             self.client = None
             return
 
         try:
-            # Initialisation du client avec la cle privee
-            # signature_type=0 pour wallet MetaMask/EOA standard
-            # signature_type=1 pour wallet email/Magic (avec funder)
             self.client = ClobClient(
                 host=POLYMARKET_HOST,
                 key=private_key,
@@ -78,7 +76,6 @@ class PolymarketClient:
                 signature_type=0  # EOA wallet (MetaMask)
             )
 
-            # Generer/recuperer les credentials API
             self.api_creds = self.client.create_or_derive_api_creds()
             self.client.set_api_creds(self.api_creds)
 
@@ -89,14 +86,126 @@ class PolymarketClient:
             logger.error(f"Failed to initialize Polymarket client: {e}")
             logger.warning("Falling back to SIMULATION mode")
             self.client = None
-    
+
+    def _get_current_15m_timestamp(self) -> int:
+        """Retourne le timestamp du début de la fenêtre 15 minutes actuelle"""
+        now = int(time.time())
+        return (now // 900) * 900  # Arrondi aux 15 minutes
+
+    def _search_active_market(self, symbol: str) -> Optional[Dict]:
+        """
+        Recherche le marché Up/Down actif pour un symbole via l'API Gamma
+
+        Args:
+            symbol: BTC ou ETH
+
+        Returns:
+            Dict avec condition_id, token_id_yes, token_id_no
+        """
+        try:
+            # Construire le slug du marché basé sur le timestamp actuel
+            current_ts = self._get_current_15m_timestamp()
+            next_ts = current_ts + 900  # Prochaine fenêtre
+
+            # Essayer plusieurs timestamps (actuel, prochain, suivant)
+            for ts in [current_ts, next_ts, current_ts + 1800, current_ts - 900]:
+                slug = f"{symbol.lower()}-updown-15m-{ts}"
+                logger.debug(f"Searching for event: {slug}")
+
+                # Chercher via Gamma API - endpoint /events (pas /markets)
+                url = f"{GAMMA_API_HOST}/events?slug={slug}"
+                resp = requests.get(url, timeout=10)
+
+                if resp.status_code == 200:
+                    data = resp.json()
+
+                    # La réponse peut être une liste ou un objet
+                    event = None
+                    if isinstance(data, list) and len(data) > 0:
+                        event = data[0]
+                    elif isinstance(data, dict) and data.get('id'):
+                        event = data
+
+                    if event:
+                        # Les marchés sont dans l'array 'markets'
+                        markets = event.get('markets', [])
+                        if markets and len(markets) > 0:
+                            market = markets[0]
+
+                            # Extraire les token IDs (peut être string JSON ou list)
+                            tokens_raw = market.get('clobTokenIds', [])
+                            if isinstance(tokens_raw, str):
+                                try:
+                                    tokens = json.loads(tokens_raw)
+                                except json.JSONDecodeError:
+                                    tokens = []
+                            else:
+                                tokens = tokens_raw
+
+                            if len(tokens) >= 2:
+                                logger.info(f"Found event: {slug}")
+                                logger.info(f"Token UP: {tokens[0][:20]}...")
+                                logger.info(f"Token DOWN: {tokens[1][:20]}...")
+                                return {
+                                    'condition_id': market.get('conditionId'),
+                                    'token_id_yes': tokens[0],  # UP
+                                    'token_id_no': tokens[1],   # DOWN
+                                    'slug': slug,
+                                    'question': event.get('title', ''),
+                                    'end_date': event.get('endDate', ''),
+                                    'outcomes': market.get('outcomes', ['Up', 'Down']),
+                                    'prices': market.get('outcomePrices', [])
+                                }
+
+            # Méthode alternative: chercher les events actifs avec ticker
+            for asset in [symbol.lower(), symbol.upper()]:
+                url = f"{GAMMA_API_HOST}/events?ticker_contains={asset}-updown-15m&active=true&limit=10"
+                resp = requests.get(url, timeout=10)
+
+                if resp.status_code == 200:
+                    events = resp.json()
+                    if isinstance(events, list):
+                        for event in events:
+                            ticker = event.get('ticker', '').lower()
+                            if 'updown-15m' in ticker and asset.lower() in ticker:
+                                markets = event.get('markets', [])
+                                if markets:
+                                    market = markets[0]
+                                    tokens_raw = market.get('clobTokenIds', [])
+                                    if isinstance(tokens_raw, str):
+                                        try:
+                                            tokens = json.loads(tokens_raw)
+                                        except json.JSONDecodeError:
+                                            tokens = []
+                                    else:
+                                        tokens = tokens_raw
+                                    if len(tokens) >= 2:
+                                        logger.info(f"Found event via search: {event.get('ticker')}")
+                                        return {
+                                            'condition_id': market.get('conditionId'),
+                                            'token_id_yes': tokens[0],
+                                            'token_id_no': tokens[1],
+                                            'slug': event.get('ticker'),
+                                            'question': event.get('title', ''),
+                                            'end_date': event.get('endDate', ''),
+                                            'outcomes': market.get('outcomes', ['Up', 'Down']),
+                                            'prices': market.get('outcomePrices', [])
+                                        }
+
+            logger.warning(f"No active Up/Down market found for {symbol}")
+            return None
+
+        except Exception as e:
+            logger.error(f"Error searching market for {symbol}: {e}", exc_info=True)
+            return None
+
     def get_market_info(self, symbol: str) -> Optional[Dict]:
         """
-        Récupère les informations d'un marché
-        
+        Récupère les informations du marché Up/Down actif
+
         Args:
-            symbol: BTC, ETH, XRP
-            
+            symbol: BTC, ETH
+
         Returns:
             Dict avec infos du marché ou None
         """
@@ -104,29 +213,32 @@ class PolymarketClient:
             # Mode simulation
             return {
                 'symbol': symbol,
-                'market_id': f'sim_{symbol}',
+                'condition_id': f'sim_{symbol}',
+                'token_id_yes': f'sim_yes_{symbol}',
+                'token_id_no': f'sim_no_{symbol}',
                 'yes_price': 0.50,
-                'no_price': 0.50,
-                'volume': 1000000,
-                'liquidity': 500000
+                'no_price': 0.50
             }
-        
-        try:
-            # Rechercher le marché correspondant au symbole
-            # Note: Adapter selon l'API Polymarket réelle
-            markets = self.client.get_markets()
-            
-            # Filtrer pour trouver le marché crypto correspondant
-            for market in markets:
-                if symbol.upper() in market.get('question', '').upper():
-                    return market
-            
-            logger.warning(f"Market not found for {symbol}")
-            return None
-            
-        except Exception as e:
-            logger.error(f"Error fetching market info for {symbol}: {e}")
-            return None
+
+        # Vérifier le cache (valide 5 minutes)
+        cache_key = f"{symbol}_market"
+        if cache_key in self.market_cache:
+            cached = self.market_cache[cache_key]
+            if time.time() - cached['timestamp'] < 300:
+                return cached['data']
+
+        # Rechercher le marché actif
+        market = self._search_active_market(symbol)
+
+        if market:
+            # Mettre en cache
+            self.market_cache[cache_key] = {
+                'data': market,
+                'timestamp': time.time()
+            }
+            return market
+
+        return None
     
     def place_order(
         self,
@@ -138,14 +250,14 @@ class PolymarketClient:
     ) -> Optional[Dict]:
         """
         Place un ordre sur Polymarket
-        
+
         Args:
-            symbol: BTC, ETH, XRP
+            symbol: BTC, ETH
             direction: BUY (prendre position) ou SELL (fermer position)
             outcome: UP (Yes) ou DOWN (No)
             amount: Montant en USD
-            price: Prix limite (optionnel, sinon market order)
-            
+            price: Prix limite (optionnel, 0.50 par défaut)
+
         Returns:
             Dict avec détails de l'ordre ou None
         """
@@ -153,71 +265,82 @@ class PolymarketClient:
             f"📤 POLYMARKET ORDER | {symbol} | {direction} {outcome} | "
             f"Amount: ${amount:.2f} | Price: {price or 'MARKET'}"
         )
-        
+
         if not self.client or not self.is_live:
             # Mode simulation
             simulated_order = {
-                'order_id': f'sim_{datetime.now().timestamp()}',
+                'order_id': f'sim_{datetime.now(timezone.utc).timestamp()}',
                 'symbol': symbol,
                 'direction': direction,
                 'outcome': outcome,
                 'amount': amount,
                 'price': price or 0.50,
                 'status': 'filled',
-                'timestamp': datetime.now(),
+                'timestamp': datetime.now(timezone.utc),
                 'simulation': True
             }
             logger.info(f"✅ SIMULATED ORDER: {simulated_order['order_id']}")
             return simulated_order
-        
+
         try:
             # Récupérer les infos du marché
             market = self.get_market_info(symbol)
             if not market:
                 logger.error(f"Cannot place order: market not found for {symbol}")
                 return None
-            
-            market_id = market['market_id']
-            
+
+            # Obtenir le bon token_id selon l'outcome
+            if outcome == 'UP':
+                token_id = market.get('token_id_yes')
+            else:  # DOWN
+                token_id = market.get('token_id_no')
+
+            if not token_id:
+                logger.error(f"No token_id found for {symbol} {outcome}")
+                return None
+
+            logger.info(f"Market found: {market.get('slug', 'unknown')}")
+            logger.info(f"Token ID: {token_id[:20]}...")
+
             # Déterminer le côté de l'ordre
-            # BUY UP = acheter YES
-            # BUY DOWN = acheter NO
-            # SELL UP = vendre YES
-            # SELL DOWN = vendre NO
-            
-            if direction == 'BUY':
-                side = 'BUY'
-                token_id = 'YES' if outcome == 'UP' else 'NO'
-            else:  # SELL
-                side = 'SELL'
-                token_id = 'YES' if outcome == 'UP' else 'NO'
-            
-            # Créer l'ordre
+            side = BUY if direction == 'BUY' else SELL
+
+            # Prix par défaut: 0.50 (50 cents)
+            order_price = price if price else 0.50
+
+            # Calculer la taille basée sur le montant et le prix
+            # size = amount / price
+            size = amount / order_price
+
+            # Créer l'ordre limite
             order_args = OrderArgs(
-                market=market_id,
-                price=price or market.get('yes_price' if outcome == 'UP' else 'no_price', 0.50),
-                size=amount,
-                side=side,
-                token_id=token_id
+                token_id=token_id,
+                price=order_price,
+                size=size,
+                side=side
             )
-            
-            # Placer l'ordre
-            order = self.client.create_order(order_args)
-            
-            logger.info(f"✅ ORDER PLACED: {order.get('order_id')}")
-            
+
+            # Créer et poster l'ordre
+            signed_order = self.client.create_order(order_args)
+            resp = self.client.post_order(signed_order, OrderType.GTC)
+
+            logger.info(f"✅ ORDER PLACED: {resp}")
+
             return {
-                'order_id': order.get('order_id'),
+                'order_id': resp.get('orderID', resp.get('id', 'unknown')),
                 'symbol': symbol,
                 'direction': direction,
                 'outcome': outcome,
                 'amount': amount,
-                'price': order.get('price'),
-                'status': order.get('status'),
-                'timestamp': datetime.now(),
-                'simulation': False
+                'price': order_price,
+                'size': size,
+                'token_id': token_id[:20] + '...',
+                'status': 'posted',
+                'timestamp': datetime.now(timezone.utc),
+                'simulation': False,
+                'response': resp
             }
-            
+
         except Exception as e:
             logger.error(f"Error placing order: {e}", exc_info=True)
             return None
