@@ -1,0 +1,14 @@
+{
+  "configs": {
+    "BTC": {
+      "rsi_period": 7,
+      "rsi_oversold": 35,
+      "rsi_overbought": 65,
+      "stoch_period": 5,
+      "stoch_oversold": 20,
+      "stoch_overbought": 80,
+      "consec": 1,
+      "min_atr_pct": 0,
+      "min_vol_ratio": 0,
+      "blocked_hours": [
+        
