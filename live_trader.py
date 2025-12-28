@@ -323,7 +323,7 @@ class LiveTrader:
         logger.info(f"🤖 DÉMARRAGE LIVE TRADER - {mode}")
         logger.info("=" * 60)
         logger.info(f"Symboles: {', '.join(self.symbols)}")
-        logger.info(f"Mise par trade: ${self.bet_size}")
+        logger.info(f"Shares par trade: {self.bet_size:.0f} (~${self.bet_size * 0.50:.2f} BET @ 50¢)")
         logger.info(f"Stratégie: Mean Reversion (RSI + Bougies consécutives)")
         logger.info("=" * 60)
 
@@ -374,7 +374,7 @@ def main():
     parser.add_argument('--yes', '-y', action='store_true', help='Skip confirmation (pour systemd)')
     parser.add_argument('--symbols', type=str, default='BTC/USDT,ETH/USDT,XRP/USDT',
                         help='Symboles à trader (séparés par des virgules)')
-    parser.add_argument('--bet', type=float, default=5.0, help='Mise par trade (nombre de shares)')
+    parser.add_argument('--shares', type=float, default=5.0, help='Nombre de shares par trade (5 shares @ 50¢ = $2.50 BET)')
 
     args = parser.parse_args()
 
@@ -392,7 +392,7 @@ def main():
 
     trader = LiveTrader(
         symbols=symbols,
-        bet_size=args.bet,
+        bet_size=args.shares,
         is_live=args.live
     )
 
