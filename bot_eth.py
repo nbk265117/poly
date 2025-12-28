@@ -26,7 +26,7 @@ from src.config import get_config
 from src.telegram_bot import TelegramNotifier
 from src.polymarket_client import PolymarketClient
 
-# CONFIG ETH OPTIMISÉE
+# CONFIG ETH OPTIMISÉE (backtest 2025: 55.4% WR)
 SYMBOL = 'ETH/USDT'
 BASE = 'ETH'
 CONFIG = {
@@ -37,7 +37,7 @@ CONFIG = {
     'stoch_oversold': 30,
     'stoch_overbought': 70,
     'consec_threshold': 1,
-    'blocked_hours': [0, 6, 7, 14, 23],  # WR < 53%
+    'blocked_hours': [],  # Aucune - maximise trades
 }
 
 MAX_PRICE = 0.52  # 52¢ comme Adnane

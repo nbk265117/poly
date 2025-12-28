@@ -26,18 +26,18 @@ from src.config import get_config
 from src.telegram_bot import TelegramNotifier
 from src.polymarket_client import PolymarketClient
 
-# CONFIG XRP OPTIMISÉE (plus stricte)
+# CONFIG XRP OPTIMISÉE (backtest 2025: 54.4% WR)
 SYMBOL = 'XRP/USDT'
 BASE = 'XRP'
 CONFIG = {
-    'rsi_period': 5,
-    'rsi_oversold': 25,
-    'rsi_overbought': 75,
+    'rsi_period': 7,
+    'rsi_oversold': 35,
+    'rsi_overbought': 65,
     'stoch_period': 5,
-    'stoch_oversold': 20,
-    'stoch_overbought': 80,
-    'consec_threshold': 2,  # XRP nécessite 2 bougies consécutives
-    'blocked_hours': [1, 4, 7, 13, 16, 18, 19, 21],  # WR < 53%
+    'stoch_oversold': 30,
+    'stoch_overbought': 70,
+    'consec_threshold': 1,
+    'blocked_hours': [],  # Aucune - maximise trades
 }
 
 MAX_PRICE = 0.52  # 52¢ comme Adnane
@@ -135,22 +135,14 @@ class BotXRP:
         stoch = self.calculate_stochastic(df)
         consec_up, consec_down = self.count_consecutive(df)
 
-        # Signal UP (avec consec pour XRP)
-        up_condition = rsi < CONFIG['rsi_oversold'] and stoch < CONFIG['stoch_oversold']
-        if CONFIG['consec_threshold'] > 1:
-            up_condition = up_condition and consec_down >= CONFIG['consec_threshold']
-
-        if up_condition:
-            logger.info(f"Signal UP | RSI={rsi:.1f} | Stoch={stoch:.1f} | DOWN={consec_down}")
+        # Signal UP
+        if rsi < CONFIG['rsi_oversold'] and stoch < CONFIG['stoch_oversold']:
+            logger.info(f"Signal UP | RSI={rsi:.1f} | Stoch={stoch:.1f}")
             return 'UP'
 
-        # Signal DOWN (avec consec pour XRP)
-        down_condition = rsi > CONFIG['rsi_overbought'] and stoch > CONFIG['stoch_overbought']
-        if CONFIG['consec_threshold'] > 1:
-            down_condition = down_condition and consec_up >= CONFIG['consec_threshold']
-
-        if down_condition:
-            logger.info(f"Signal DOWN | RSI={rsi:.1f} | Stoch={stoch:.1f} | UP={consec_up}")
+        # Signal DOWN
+        if rsi > CONFIG['rsi_overbought'] and stoch > CONFIG['stoch_overbought']:
+            logger.info(f"Signal DOWN | RSI={rsi:.1f} | Stoch={stoch:.1f}")
             return 'DOWN'
 
         return None

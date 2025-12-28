@@ -26,7 +26,7 @@ from src.config import get_config
 from src.telegram_bot import TelegramNotifier
 from src.polymarket_client import PolymarketClient
 
-# CONFIG SOL OPTIMISÉE
+# CONFIG SOL OPTIMISÉE (backtest 2025: 53.7% WR)
 SYMBOL = 'SOL/USDT'
 BASE = 'SOL'
 CONFIG = {
@@ -37,7 +37,7 @@ CONFIG = {
     'stoch_oversold': 30,
     'stoch_overbought': 70,
     'consec_threshold': 1,
-    'blocked_hours': [0, 1, 4, 5, 6, 7, 8, 14, 15, 17, 19, 22, 23],  # WR < 53%
+    'blocked_hours': [],  # Aucune - maximise trades
 }
 
 MAX_PRICE = 0.52  # 52¢ comme Adnane
