@@ -45,10 +45,8 @@ if not logger.handlers:
 
     logger.propagate = False  # Éviter propagation aux loggers parents
 
-# CONFIG HYBRIDE (~61/jour, 54.6% WR global)
-# BTC/ETH: Config standard (55% WR)
-# XRP: Config stricte (55% WR)
-# SOL: Avec blacklist heures faibles (53% -> 55% WR)
+# CONFIG 4 PAIRS avec BLACKLIST (~43/jour, 56% WR)
+# Chaque pair a ses heures faibles bloquées (WR < 53%)
 
 SYMBOL_CONFIG = {
     'BTC': {
@@ -59,9 +57,9 @@ SYMBOL_CONFIG = {
         'stoch_oversold': 30,
         'stoch_overbought': 70,
         'consec_threshold': 1,
-        'blocked_hours': [],
-        'expected_tpd': 17,
-        'expected_wr': 55
+        'blocked_hours': [4, 14, 15],  # WR < 53%
+        'expected_tpd': 15,
+        'expected_wr': 56
     },
     'ETH': {
         'rsi_period': 7,
@@ -71,9 +69,9 @@ SYMBOL_CONFIG = {
         'stoch_oversold': 30,
         'stoch_overbought': 70,
         'consec_threshold': 1,
-        'blocked_hours': [],
-        'expected_tpd': 16,
-        'expected_wr': 55
+        'blocked_hours': [0, 6, 7, 14, 23],  # WR < 53%
+        'expected_tpd': 13,
+        'expected_wr': 56
     },
     'XRP': {
         'rsi_period': 5,
@@ -83,9 +81,9 @@ SYMBOL_CONFIG = {
         'stoch_oversold': 20,
         'stoch_overbought': 80,
         'consec_threshold': 2,
-        'blocked_hours': [],
-        'expected_tpd': 11,
-        'expected_wr': 55
+        'blocked_hours': [1, 4, 7, 13, 16, 18, 19, 21],  # WR < 53%
+        'expected_tpd': 7,
+        'expected_wr': 57
     },
     'SOL': {
         'rsi_period': 7,
@@ -96,8 +94,8 @@ SYMBOL_CONFIG = {
         'stoch_overbought': 70,
         'consec_threshold': 1,
         'blocked_hours': [0, 1, 4, 5, 6, 7, 8, 14, 15, 17, 19, 22, 23],  # WR < 53%
-        'expected_tpd': 10,
-        'expected_wr': 55
+        'expected_tpd': 8,
+        'expected_wr': 56
     }
 }
 
@@ -329,16 +327,16 @@ class SimpleBot:
 
         # Notification démarrage
         self.telegram.send_message(f"""
-🤖 <b>BOT 4 PAIRS</b> - {mode}
+🤖 <b>BOT 4 PAIRS + BLACKLIST</b> - {mode}
 
 📊 Symboles: {', '.join([s.split('/')[0] for s in self.symbols])}
 💰 Mise: {self.shares} shares (~${self.shares * 0.53:.2f})
 
-⚙️ <b>Config (~{total_tpd}/jour, 55% WR):</b>
-• BTC: RSI(7) 35/65 + Stoch 30/70 (~17/j)
-• ETH: RSI(7) 35/65 + Stoch 30/70 (~16/j)
-• XRP: RSI(5) 25/75 + Stoch 20/80 (~11/j)
-• SOL: RSI(7) 35/65 + Stoch 30/70 (~10/j) + Blacklist 13h
+⚙️ <b>Config (~{total_tpd}/jour, 56% WR):</b>
+• BTC: ~15/j | Blacklist 3h
+• ETH: ~13/j | Blacklist 5h
+• XRP: ~7/j | Blacklist 8h
+• SOL: ~8/j | Blacklist 13h
 
 ⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 """)
