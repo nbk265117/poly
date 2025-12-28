@@ -237,8 +237,9 @@ class LiveTrader:
                     logger.info(f"✅ ORDRE EXÉCUTÉ | ID: {order.get('order_id')}")
 
                     # Calcul du coût et gain potentiel
-                    bet_cost = self.bet_size * 0.50  # 5 shares × $0.50
-                    to_win = self.bet_size * 1.00    # 5 shares × $1.00
+                    actual_price = order.get('price', 0.50)
+                    bet_cost = self.bet_size * actual_price
+                    to_win = self.bet_size * 1.00
 
                     # Notification Telegram
                     self.telegram.send_message(f"""
@@ -248,8 +249,23 @@ class LiveTrader:
 📊 <b>Direction:</b> {signal}
 💵 <b>Prix {base_symbol}:</b> ${price:,.2f}
 
-💰 <b>BET:</b> ${bet_cost:.2f} ({self.bet_size:.0f} shares)
+💰 <b>BET:</b> ${bet_cost:.2f} ({self.bet_size:.0f} shares @ {actual_price*100:.0f}¢)
 🎯 <b>TO WIN:</b> ${to_win:.2f}
+
+⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+""")
+                else:
+                    # Ordre non exécuté (probablement prix > 50¢)
+                    logger.warning(f"⚠️ Trade {base_symbol} {signal} SKIPPED (prix > 50¢)")
+                    self.telegram.send_message(f"""
+⚠️ <b>TRADE SKIPPED</b>
+
+🪙 <b>Symbole:</b> {base_symbol}
+📊 <b>Signal:</b> {signal}
+💵 <b>Prix {base_symbol}:</b> ${price:,.2f}
+
+❌ <b>Raison:</b> Prix marché > 50¢
+💡 On attend un meilleur prix
 
 ⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 """)

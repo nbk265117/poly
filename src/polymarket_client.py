@@ -377,11 +377,29 @@ class PolymarketClient:
             logger.info(f"Market found: {market.get('slug', 'unknown')}")
             logger.info(f"Token ID: {token_id[:20]}...")
 
+            # Vérifier le prix actuel du marché
+            MAX_PRICE = 0.50  # Limite de prix: ne pas acheter au-dessus de 50¢
+            try:
+                # Récupérer le prix actuel via l'API
+                book = self.client.get_order_book(token_id)
+                if book and 'asks' in book and len(book['asks']) > 0:
+                    # Le meilleur ask (prix le plus bas pour acheter)
+                    best_ask = float(book['asks'][0].get('price', 0.50))
+                    logger.info(f"💰 Prix marché actuel: {best_ask*100:.1f}¢")
+
+                    if best_ask > MAX_PRICE:
+                        logger.warning(f"⚠️ SKIP: Prix {best_ask*100:.1f}¢ > {MAX_PRICE*100:.0f}¢ limite")
+                        return None
+                else:
+                    logger.info(f"💰 Pas d'asks disponibles, utilisation prix par défaut")
+            except Exception as e:
+                logger.warning(f"Impossible de vérifier le prix: {e}")
+
             # Déterminer le côté de l'ordre
             side = BUY if direction == 'BUY' else SELL
 
-            # Prix par défaut: 0.50 (50 cents)
-            order_price = price if price else 0.50
+            # Prix limite: 0.50 (50 cents) - ne jamais payer plus
+            order_price = price if price else MAX_PRICE
 
             # Utiliser amount directement comme nombre de shares
             size = amount  # amount = nombre de shares
