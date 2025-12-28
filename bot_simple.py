@@ -85,7 +85,7 @@ SYMBOL_CONFIG = {
     }
 }
 
-MAX_PRICE = 0.50       # 50 centimes max
+MAX_PRICE = 0.52       # 52 centimes max (marge 3% vs 55% break-even)
 BLOCKED_HOURS = []     # Aucune heure bloquée
 
 
