@@ -372,9 +372,9 @@ def main():
     parser = argparse.ArgumentParser(description='Live Trader Polymarket')
     parser.add_argument('--live', action='store_true', help='Mode production (argent réel)')
     parser.add_argument('--yes', '-y', action='store_true', help='Skip confirmation (pour systemd)')
-    parser.add_argument('--symbols', type=str, default='BTC/USDT,ETH/USDT',
+    parser.add_argument('--symbols', type=str, default='BTC/USDT,ETH/USDT,XRP/USDT',
                         help='Symboles à trader (séparés par des virgules)')
-    parser.add_argument('--bet', type=float, default=2.0, help='Mise par trade en USD')
+    parser.add_argument('--bet', type=float, default=5.0, help='Mise par trade (nombre de shares)')
 
     args = parser.parse_args()
 
