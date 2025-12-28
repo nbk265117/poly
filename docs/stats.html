@@ -383,6 +383,107 @@
             </table>
         </div>
 
+        <!-- Price Analysis Section -->
+        <div class="chart-card" style="margin-top: 30px;">
+            <h3>💰 Analyse du Prix d'Achat Moyen</h3>
+            <p style="color: #888; margin-bottom: 20px;">Impact du prix d'entrée sur la rentabilité (avec 55% Win Rate)</p>
+
+            <div class="charts-grid" style="margin-bottom: 20px;">
+                <div class="chart-container" style="height: 280px;">
+                    <canvas id="priceImpactChart"></canvas>
+                </div>
+                <div style="padding: 20px;">
+                    <div class="stat-card" style="margin-bottom: 15px; background: rgba(0,255,136,0.1); border-color: #00ff88;">
+                        <div class="stat-value green" style="font-size: 2rem;">55¢</div>
+                        <div class="stat-label">Prix Break-Even</div>
+                    </div>
+                    <div class="stat-card" style="margin-bottom: 15px; background: rgba(0,212,255,0.1); border-color: #00d4ff;">
+                        <div class="stat-value blue" style="font-size: 2rem;">50¢</div>
+                        <div class="stat-label">Prix Max Bot</div>
+                    </div>
+                    <div class="stat-card" style="background: rgba(168,85,247,0.1); border-color: #a855f7;">
+                        <div class="stat-value purple" style="font-size: 2rem;">5%</div>
+                        <div class="stat-label">Marge Sécurité</div>
+                    </div>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Prix Achat</th>
+                        <th>Profit/Win</th>
+                        <th>Perte/Loss</th>
+                        <th>PnL 2025 (5 shares)</th>
+                        <th>PnL/Trade</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>45¢</strong></td>
+                        <td class="positive">+55¢</td>
+                        <td class="negative">-45¢</td>
+                        <td class="positive"><strong>+$18,379</strong></td>
+                        <td class="positive">+$0.50</td>
+                        <td>🟢 Optimal</td>
+                    </tr>
+                    <tr>
+                        <td><strong>48¢</strong></td>
+                        <td class="positive">+52¢</td>
+                        <td class="negative">-48¢</td>
+                        <td class="positive"><strong>+$12,881</strong></td>
+                        <td class="positive">+$0.35</td>
+                        <td>🟢 Très bon</td>
+                    </tr>
+                    <tr style="background: rgba(0,212,255,0.1);">
+                        <td><strong>50¢</strong> ⭐</td>
+                        <td class="positive">+50¢</td>
+                        <td class="negative">-50¢</td>
+                        <td class="positive"><strong>+$9,215</strong></td>
+                        <td class="positive">+$0.25</td>
+                        <td>🟢 Bot Max</td>
+                    </tr>
+                    <tr>
+                        <td><strong>52¢</strong></td>
+                        <td class="positive">+48¢</td>
+                        <td class="negative">-52¢</td>
+                        <td class="positive">+$5,549</td>
+                        <td class="positive">+$0.15</td>
+                        <td>🟡 Risqué</td>
+                    </tr>
+                    <tr style="background: rgba(255,71,87,0.1);">
+                        <td><strong>55¢</strong></td>
+                        <td class="positive">+45¢</td>
+                        <td class="negative">-55¢</td>
+                        <td>~$0</td>
+                        <td>$0.00</td>
+                        <td>🔴 Break-Even</td>
+                    </tr>
+                    <tr>
+                        <td><strong>58¢</strong></td>
+                        <td class="positive">+42¢</td>
+                        <td class="negative">-58¢</td>
+                        <td class="negative">-$5,497</td>
+                        <td class="negative">-$0.15</td>
+                        <td>🔴 Perte</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="margin-top: 25px; padding: 20px; background: rgba(0,212,255,0.1); border-radius: 10px; border-left: 4px solid #00d4ff;">
+                <h4 style="color: #00d4ff; margin-bottom: 10px;">📐 Formule Break-Even</h4>
+                <code style="background: rgba(0,0,0,0.3); padding: 10px 15px; border-radius: 5px; display: block; margin-bottom: 15px;">
+                    Prix Break-Even = Win Rate = 55%
+                </code>
+                <p style="color: #aaa; font-size: 0.9rem;">
+                    <strong>Explication:</strong> Avec un Win Rate de 55%, le prix d'achat maximum pour être rentable est 55¢.
+                    Au-delà, les pertes dépassent les gains. Mon bot utilise <strong>MAX_PRICE = 50¢</strong> pour garantir
+                    une marge de sécurité de 5%.
+                </p>
+            </div>
+        </div>
+
         <footer>
             <p>Bot Polymarket - Stratégie HYBRID v1.0</p>
             <p><a href="STRATEGY_GUIDE.html">📖 Guide Complet</a> | Généré le 28 Décembre 2025</p>
@@ -512,6 +613,63 @@
                         beginAtZero: true,
                         ticks: {
                             callback: value => '$' + value.toLocaleString()
+                        }
+                    }
+                }
+            }
+        });
+
+        // Price Impact Chart
+        const prices = ['45¢', '48¢', '50¢', '52¢', '55¢', '58¢'];
+        const pnlByPrice = [18379, 12881, 9215, 5549, 51, -5497];
+
+        new Chart(document.getElementById('priceImpactChart'), {
+            type: 'bar',
+            data: {
+                labels: prices,
+                datasets: [{
+                    label: 'PnL 2025 ($)',
+                    data: pnlByPrice,
+                    backgroundColor: pnlByPrice.map(v => {
+                        if (v > 10000) return 'rgba(0, 255, 136, 0.8)';
+                        if (v > 5000) return 'rgba(0, 212, 255, 0.8)';
+                        if (v > 0) return 'rgba(255, 215, 0, 0.8)';
+                        return 'rgba(255, 71, 87, 0.8)';
+                    }),
+                    borderColor: pnlByPrice.map(v => {
+                        if (v > 10000) return '#00ff88';
+                        if (v > 5000) return '#00d4ff';
+                        if (v > 0) return '#ffd700';
+                        return '#ff4757';
+                    }),
+                    borderWidth: 2,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'PnL: $' + context.raw.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        ticks: {
+                            callback: value => '$' + value.toLocaleString()
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Prix d\'achat moyen',
+                            color: '#888'
                         }
                     }
                 }
