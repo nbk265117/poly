@@ -1,0 +1,66 @@
+{
+  "years": {
+    "2024": {
+      "pairs": {
+        "BTC": {
+          "trades": 6185,
+          "win_rate": 55.8,
+          "pnl": 879.75,
+          "tpd": 16.5
+        },
+        "ETH": {
+          "trades": 6049,
+          "win_rate": 54.6,
+          "pnl": 495.15,
+          "tpd": 16.2
+        },
+        "XRP": {
+          "trades": 4002,
+          "win_rate": 55.2,
+          "pnl": 449.7,
+          "tpd": 10.7
+        }
+      },
+      "total_trades": 16236,
+      "total_wins": 8970,
+      "total_pnl": 1824.6000000000001,
+      "global_wr": 55.2
+    },
+    "2025": {
+      "pairs": {
+        "BTC": {
+          "trades": 6210,
+          "win_rate": 54.8,
+          "pnl": 543.5,
+          "tpd": 17.2
+        },
+        "ETH": {
+          "trades": 5922,
+          "win_rate": 55.5,
+          "pnl": 736.7,
+          "tpd": 16.4
+        },
+        "XRP": {
+          "trades": 4093,
+          "win_rate": 54.9,
+          "pnl": 393.55,
+          "tpd": 11.3
+        }
+      },
+      "total_trades": 16225,
+      "total_wins": 8934,
+      "total_pnl": 1673.75,
+      "global_wr": 55.1
+    }
+  },
+  "summary": {
+    "total_trades": 32461,
+    "win_rate": 55.2,
+    "total_pnl": 3498.35,
+    "entry_price": 0.53,
+    "shares": 5,
+    "bet_cost": 2.65,
+    "potential_win": 2.35
+  },
+  "entry_price": 0.53
+}
