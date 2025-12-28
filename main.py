@@ -9,7 +9,7 @@ import sys
 import time
 import signal
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import schedule
 
@@ -21,6 +21,8 @@ from src.data_manager import DataManager
 from src.strategy import TradingStrategy
 from src.polymarket_client import PolymarketTradeExecutor
 from src.telegram_bot import TelegramNotifier
+from src.performance_monitor import PerformanceMonitor, SessionFilter
+from src.trade_validator import DynamicPriceValidator
 
 # Configuration du logging
 def setup_logging(config):
@@ -42,102 +44,181 @@ logger = logging.getLogger(__name__)
 class TradingBot:
     """
     Robot de trading principal
+
+    FONCTIONNALITES CRITIQUES:
+    - Validation du prix moyen (doit etre < WR - 2%)
+    - Filtrage des sessions faibles
+    - Monitoring des performances par jour/heure/paire
+    - Gestion des partial fills
     """
-    
-    def __init__(self):
+
+    def __init__(self, win_rate: float = 55.0, price_margin: float = 2.0):
         self.config = get_config()
         self.strategy = TradingStrategy(self.config)
         self.executor = PolymarketTradeExecutor(self.config)
         self.notifier = TelegramNotifier(self.config)
         self.data_manager = DataManager(self.config)
-        
+
         self.running = False
         self.daily_trades = 0
         self.daily_pnl = 0
         self.last_daily_summary = None
-        
+
+        # NOUVEAU: Performance Monitor
+        self.performance_monitor = PerformanceMonitor(
+            config=self.config,
+            min_wr_threshold=win_rate
+        )
+
+        # NOUVEAU: Session Filter (ACTIF par defaut avec heures optimisees)
+        self.session_filter = SessionFilter(
+            monitor=self.performance_monitor,
+            min_wr=50.0,
+            min_trades=20
+        )
+
+        # Bloquer les heures faibles identifiees par backtest 2024
+        # Ces heures ont un WR < 50% sur 1 an de donnees
+        weak_hours = [3, 7, 15, 18, 19, 20]  # Heures UTC a eviter
+        for hour in weak_hours:
+            self.session_filter.block_hour(hour)
+
+        self.enable_session_filter = True  # ACTIF par defaut
+
+        # Parametres de validation
+        self.win_rate = win_rate
+        self.price_margin = price_margin
+        self.max_price = (win_rate - price_margin) / 100  # 53% si WR=55%
+
         # Statistiques
         self.stats = {
             'trades_today': 0,
             'wins_today': 0,
             'losses_today': 0,
-            'pnl_today': 0
+            'pnl_today': 0,
+            'trades_blocked_price': 0,
+            'trades_blocked_session': 0
         }
+
+        logger.info("=" * 70)
+        logger.info("TRADING BOT INITIALISE")
+        logger.info("=" * 70)
+        logger.info(f"  Win Rate attendu: {win_rate}%")
+        logger.info(f"  Prix max autorise: {self.max_price*100:.1f}%")
+        logger.info(f"  Filtrage sessions: {'ACTIF' if self.enable_session_filter else 'INACTIF'}")
+        logger.info(f"  Heures bloquees: {weak_hours}")
+        logger.info("=" * 70)
     
     def analyze_and_trade(self):
         """
         Analyse tous les symboles et exécute les trades si nécessaire
+
+        VALIDATIONS:
+        1. Limite journaliere
+        2. Session horaire (si active)
+        3. Prix moyen (via executor)
         """
         try:
             logger.info("=" * 80)
-            logger.info("🔍 ANALYSE DES MARCHÉS")
+            logger.info("ANALYSE DES MARCHES")
             logger.info("=" * 80)
-            
+
             # Vérifier limite journalière
             if self.daily_trades >= self.config.max_trades_per_day:
-                logger.warning(f"Limite journalière atteinte ({self.config.max_trades_per_day} trades)")
+                logger.warning(f"Limite journaliere atteinte ({self.config.max_trades_per_day} trades)")
                 return
-            
+
+            # NOUVEAU: Verifier la session horaire
+            if self.enable_session_filter:
+                current_hour = datetime.now(timezone.utc).hour
+                can_trade, reason = self.session_filter.is_tradeable(current_hour)
+
+                if not can_trade:
+                    logger.warning(f"Session bloquee: {reason}")
+                    self.stats['trades_blocked_session'] += 1
+                    return
+
             # Analyser chaque symbole
             for symbol in self.config.symbols:
-                logger.info(f"\n📊 Analyse de {symbol}...")
-                
+                logger.info(f"\nAnalyse de {symbol}...")
+
                 # Obtenir le signal
                 signal = self.strategy.analyze_market(symbol)
-                
+
                 if signal:
-                    logger.info(f"✅ Signal détecté: {symbol} -> {signal}")
-                    
+                    logger.info(f"Signal detecte: {symbol} -> {signal}")
+
                     # Récupérer le prix actuel
                     df = self.data_manager.get_live_data(symbol, self.config.primary_timeframe, limit=5)
-                    
+
                     if df.empty:
-                        logger.error(f"Impossible de récupérer les données pour {symbol}")
+                        logger.error(f"Impossible de recuperer les donnees pour {symbol}")
                         continue
-                    
+
                     current_price = df.iloc[-1]['close']
-                    
-                    # Exécuter le trade
+
+                    # Exécuter le trade (validation prix dans executor)
                     self._execute_trade(symbol, signal, current_price)
                 else:
-                    logger.info(f"ℹ️  Aucun signal pour {symbol}")
-            
+                    logger.info(f"Aucun signal pour {symbol}")
+
+            # Afficher stats
             logger.info("=" * 80)
             logger.info(f"Trades aujourd'hui: {self.daily_trades}/{self.config.max_trades_per_day}")
+            logger.info(f"Bloques (prix): {self.stats['trades_blocked_price']}")
+            logger.info(f"Bloques (session): {self.stats['trades_blocked_session']}")
+
+            # Afficher WR actuel
+            global_wr = self.performance_monitor.get_global_win_rate()
+            logger.info(f"Win Rate actuel: {global_wr:.1f}%")
             logger.info("=" * 80)
-            
+
         except Exception as e:
             logger.error(f"Erreur lors de l'analyse: {e}", exc_info=True)
             self.notifier.notify_error(f"Erreur analyse: {str(e)}")
     
     def _execute_trade(self, symbol: str, signal: str, current_price: float):
-        """Exécute un trade"""
+        """
+        Execute un trade avec validation du prix
+
+        La validation du prix moyen est faite dans l'executor.
+        Si le prix >= WR - 2%, l'ordre sera bloque.
+        """
         try:
             # Vérifier positions ouvertes
             if len(self.strategy.open_trades) >= self.config.max_positions:
                 logger.warning("Nombre maximum de positions atteint")
                 return
-            
+
             # Déterminer l'outcome
             outcome = 'UP' if signal == 'BUY' else 'DOWN'
-            
-            # Exécuter sur Polymarket
+
+            # Exécuter sur Polymarket (validation prix integree)
             order = self.executor.execute_signal(symbol, signal, current_price)
-            
+
             if not order:
-                logger.error(f"Échec de l'exécution de l'ordre pour {symbol}")
+                # Ordre bloque (probablement par le prix)
+                self.stats['trades_blocked_price'] += 1
+                logger.warning(f"Ordre bloque pour {symbol} (prix trop eleve)")
                 return
-            
+
             # Ouvrir le trade dans la stratégie
             trade = self.strategy.open_trade(
                 symbol=symbol,
                 direction=signal,
                 entry_price=order.get('price', current_price),
-                entry_time=datetime.now(),
+                entry_time=datetime.now(timezone.utc),
                 capital=self.executor.client.get_balance()
             )
-            
+
             if trade:
+                # Stocker l'order_id pour le tracking
+                trade.order_id = order.get('order_id', '')
+
+                # Stocker les infos de fill
+                fill_info = order.get('fill', {})
+                trade.fill_ratio = fill_info.get('fill_ratio', 1.0)
+
                 # Notifier
                 self.notifier.notify_trade_entry(
                     symbol=symbol,
@@ -148,39 +229,55 @@ class TradingBot:
                     stop_loss=trade.stop_loss,
                     take_profit=trade.take_profit
                 )
-                
+
                 # Mettre à jour les statistiques
                 self.daily_trades += 1
                 self.stats['trades_today'] += 1
-                
-                logger.info(f"✅ Trade exécuté avec succès: {symbol} {signal}")
-            
+
+                # Log validation info
+                validation = order.get('validation', {})
+                logger.info(
+                    f"Trade execute: {symbol} {signal} | "
+                    f"Prix: {trade.entry_price*100:.1f}% | "
+                    f"Fill: {trade.fill_ratio*100:.0f}% | "
+                    f"Marge: {validation.get('price_margin', 0)*100:.1f}%"
+                )
+
         except Exception as e:
-            logger.error(f"Erreur lors de l'exécution du trade: {e}", exc_info=True)
+            logger.error(f"Erreur lors de l'execution du trade: {e}", exc_info=True)
             self.notifier.notify_error(f"Erreur trade {symbol}: {str(e)}")
     
     def check_open_positions(self):
-        """Vérifie les positions ouvertes (SL/TP)"""
+        """
+        Verifie les positions ouvertes (SL/TP)
+
+        Enregistre les resultats dans:
+        - PerformanceMonitor (pour stats par heure/jour/paire)
+        - Executor (pour mise a jour du WR dynamique)
+        """
         if not self.strategy.open_trades:
             return
-        
-        logger.info(f"Vérification de {len(self.strategy.open_trades)} positions ouvertes...")
-        
-        for trade in self.strategy.open_trades[:]:  # Copie pour éviter modification pendant itération
+
+        logger.info(f"Verification de {len(self.strategy.open_trades)} positions ouvertes...")
+
+        for trade in self.strategy.open_trades[:]:  # Copie pour éviter modification
             try:
                 # Récupérer le prix actuel
                 df = self.data_manager.get_live_data(trade.symbol, self.config.primary_timeframe, limit=2)
-                
+
                 if df.empty:
                     continue
-                
+
                 current_price = df.iloc[-1]['close']
                 current_time = df.iloc[-1]['timestamp']
-                
+
                 # Vérifier SL/TP
                 closed = self.strategy.check_stop_loss_take_profit(trade, current_price, current_time)
-                
+
                 if closed:
+                    # Determiner WIN/LOSS
+                    is_win = trade.pnl > 0
+
                     # Fermer sur Polymarket
                     outcome = 'UP' if trade.direction == 'BUY' else 'DOWN'
                     self.executor.close_position(
@@ -188,7 +285,24 @@ class TradingBot:
                         outcome=outcome,
                         amount=trade.position_size * current_price
                     )
-                    
+
+                    # NOUVEAU: Enregistrer dans le PerformanceMonitor
+                    self.performance_monitor.record_trade(
+                        order_id=getattr(trade, 'order_id', ''),
+                        symbol=trade.symbol,
+                        direction=trade.direction,
+                        entry_price=trade.entry_price,
+                        exit_price=trade.exit_price,
+                        pnl=trade.pnl,
+                        is_win=is_win,
+                        entry_time=trade.entry_time,
+                        exit_time=trade.exit_time,
+                        fill_ratio=getattr(trade, 'fill_ratio', 1.0)
+                    )
+
+                    # NOUVEAU: Mettre a jour le WR dynamique dans l'executor
+                    self.executor.client.record_trade_result(is_win)
+
                     # Notifier
                     self.notifier.notify_trade_exit(
                         symbol=trade.symbol,
@@ -200,24 +314,46 @@ class TradingBot:
                         pnl_percent=trade.pnl_percent,
                         exit_reason=trade.exit_reason
                     )
-                    
+
                     # Mettre à jour statistiques
                     self.stats['pnl_today'] += trade.pnl
-                    if trade.pnl > 0:
+                    if is_win:
                         self.stats['wins_today'] += 1
                     else:
                         self.stats['losses_today'] += 1
-                    
+
+                    # Log avec details
+                    logger.info(
+                        f"Trade ferme: {trade.symbol} | "
+                        f"{'WIN' if is_win else 'LOSS'} | "
+                        f"PnL: ${trade.pnl:.2f} | "
+                        f"WR actuel: {self.performance_monitor.get_global_win_rate():.1f}%"
+                    )
+
+                    # NOUVEAU: Activer le filtre de session apres 100 trades
+                    total_trades = len(self.performance_monitor.trades)
+                    if total_trades >= 100 and not self.enable_session_filter:
+                        self.enable_session_filter = True
+                        logger.info(f"Session filter ACTIVE apres {total_trades} trades")
+
             except Exception as e:
-                logger.error(f"Erreur vérification position {trade.symbol}: {e}")
+                logger.error(f"Erreur verification position {trade.symbol}: {e}")
     
     def send_daily_summary(self):
-        """Envoie le résumé journalier"""
+        """
+        Envoie le résumé journalier avec stats avancees
+
+        Inclut:
+        - Stats de base (trades, WR, PnL)
+        - Trades bloques par prix/session
+        - Meilleures/pires heures
+        - Performance par paire
+        """
         today = datetime.now().strftime('%Y-%m-%d')
-        
+
         if self.last_daily_summary == today:
             return  # Déjà envoyé aujourd'hui
-        
+
         # Calculer les statistiques
         total_trades = self.stats['trades_today']
         wins = self.stats['wins_today']
@@ -225,7 +361,14 @@ class TradingBot:
         pnl = self.stats['pnl_today']
         win_rate = (wins / total_trades * 100) if total_trades > 0 else 0
         capital = self.executor.client.get_balance()
-        
+
+        # Stats avancees
+        blocked_price = self.stats['trades_blocked_price']
+        blocked_session = self.stats['trades_blocked_session']
+
+        # Stats globales du moniteur
+        summary = self.performance_monitor.get_summary()
+
         # Envoyer la notification
         self.notifier.notify_daily_summary(
             date=today,
@@ -236,18 +379,37 @@ class TradingBot:
             win_rate=win_rate,
             capital=capital
         )
-        
-        # Réinitialiser les compteurs
+
+        # Log les stats avancees
+        logger.info("=" * 70)
+        logger.info("RESUME JOURNALIER")
+        logger.info("=" * 70)
+        logger.info(f"  Trades: {total_trades} ({wins}W / {losses}L)")
+        logger.info(f"  Win Rate: {win_rate:.1f}%")
+        logger.info(f"  PnL: ${pnl:.2f}")
+        logger.info(f"  Bloques (prix): {blocked_price}")
+        logger.info(f"  Bloques (session): {blocked_session}")
+        logger.info(f"  WR global: {summary['global']['win_rate']:.1f}%")
+        logger.info(f"  Heures faibles: {summary['sessions']['weak_hours']}")
+        logger.info("=" * 70)
+
+        # Sauvegarder le rapport de performance
+        self.performance_monitor.save_report()
+        self.executor.client.log_trading_stats()
+
+        # Réinitialiser les compteurs journaliers
         self.stats = {
             'trades_today': 0,
             'wins_today': 0,
             'losses_today': 0,
-            'pnl_today': 0
+            'pnl_today': 0,
+            'trades_blocked_price': 0,
+            'trades_blocked_session': 0
         }
         self.daily_trades = 0
         self.last_daily_summary = today
-        
-        logger.info("📊 Résumé journalier envoyé et compteurs réinitialisés")
+
+        logger.info("Resume journalier envoye et compteurs reinitialises")
     
     def run(self):
         """Lance le robot"""

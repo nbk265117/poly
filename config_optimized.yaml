@@ -1,0 +1,60 @@
+# Configuration Optimisee - Backtest 1 an (2024)
+# Win Rate: 61.45% | Retour: +4.80%
+
+# Validation du prix
+price_validation:
+  enabled: true
+  win_rate_target: 55.0
+  price_margin: 2.0  # Prix max = WR - 2% = 53%
+
+# Session filter
+session_filter:
+  enabled: true
+  blocked_hours:
+    - 3   # Faible global
+    - 7   # Faible ETH
+    - 15  # Faible ETH
+    - 18  # Faible global + ETH
+    - 19  # Faible global
+    - 20  # Faible ETH
+
+# Paires recommandees (par ordre de performance)
+pairs:
+  - symbol: XRP/USDT
+    priority: 1
+    expected_wr: 83.3
+    status: FORT
+
+  - symbol: BTC/USDT
+    priority: 2
+    expected_wr: 58.8
+    status: FORT
+
+  - symbol: ETH/USDT
+    priority: 3
+    expected_wr: 51.6
+    status: OK
+    # Note: Performance marginale, surveiller
+
+# Heures recommandees (UTC)
+best_hours:
+  - 0   # Minuit
+  - 1   # 01h
+  - 4   # 04h
+  - 5   # 05h
+  - 6   # 06h
+  - 8   # 08h
+  - 14  # 14h
+  - 21  # 21h
+
+# Resultats backtest 2024
+backtest_results:
+  period: "2024-01-01 to 2024-12-31"
+  initial_capital: 10000
+  final_capital: 10480.29
+  total_return: 4.80
+  win_rate: 61.45
+  total_trades: 83
+  drawdown_max: -11.79
+  profit_factor: 1.43
+  avg_entry_price: 50.84

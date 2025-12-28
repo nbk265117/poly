@@ -11,7 +11,7 @@ import logging
 import os
 import requests
 import time
-from typing import Dict, Optional, List
+from typing import Dict, Optional, List, Tuple
 from datetime import datetime, timezone
 from eth_account import Account
 from Crypto.Hash import keccak
@@ -30,8 +30,10 @@ except ImportError:
 
 try:
     from src.config import get_config
+    from src.trade_validator import TradeValidator, PartialFillManager, DynamicPriceValidator
 except ImportError:
     from config import get_config
+    from trade_validator import TradeValidator, PartialFillManager, DynamicPriceValidator
 
 logger = logging.getLogger(__name__)
 
@@ -105,14 +107,39 @@ class PolymarketClient:
     Client pour interagir avec Polymarket CLOB API
 
     Supporte les marchés BTC/ETH Up/Down 15 minutes
+
+    FONCTIONNALITES CRITIQUES:
+    - Validation du prix moyen (doit etre < WR - 2%)
+    - Gestion des partial fills
+    - Calcul PnL base sur montant reellement execute
     """
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, win_rate: float = 55.0, price_margin: float = 2.0):
         self.config = config or get_config()
         self.client = None
         self.is_live = self.config.environment == 'production'
         self.api_creds = None
         self.market_cache = {}  # Cache pour les marchés
+
+        # CRITIQUE: Validation du prix moyen
+        self.price_validator = DynamicPriceValidator(
+            initial_win_rate=win_rate,
+            margin=price_margin,
+            min_trades_for_update=20
+        )
+
+        # Gestion des partial fills
+        self.fill_manager = PartialFillManager(config)
+
+        # Statistiques de trading
+        self.trading_stats = {
+            'orders_placed': 0,
+            'orders_validated': 0,
+            'orders_blocked_by_price': 0,
+            'total_invested': 0.0,
+            'total_filled': 0.0,
+            'fills': []
+        }
 
         if CLOB_AVAILABLE:
             self._initialize_client()
@@ -326,6 +353,10 @@ class PolymarketClient:
         """
         Place un ordre sur Polymarket
 
+        VALIDATION CRITIQUE:
+        - Le prix moyen doit etre < WR - 2% (ex: < 53% si WR = 55%)
+        - Sinon le trade est BLOQUE
+
         Args:
             symbol: BTC, ETH
             direction: BUY (prendre position) ou SELL (fermer position)
@@ -341,20 +372,56 @@ class PolymarketClient:
             f"Amount: ${amount:.2f} | Price: {price or 'MARKET'}"
         )
 
+        self.trading_stats['orders_placed'] += 1
+
         if not self.client or not self.is_live:
-            # Mode simulation
+            # Mode simulation avec validation du prix
+            sim_price = price or 0.50
+
+            # VALIDATION CRITIQUE: Verifier le prix moyen
+            validation = self.price_validator.validate_trade(sim_price, symbol, outcome)
+
+            if not validation.is_valid:
+                self.trading_stats['orders_blocked_by_price'] += 1
+                logger.warning(f"🚫 ORDRE BLOQUE | {validation.reason}")
+                return None
+
+            self.trading_stats['orders_validated'] += 1
+
+            order_id = f'sim_{datetime.now(timezone.utc).timestamp()}'
+
+            # Enregistrer le fill (simule un fill complet)
+            fill_info = self.fill_manager.record_fill(
+                order_id=order_id,
+                expected_size=amount,
+                filled_size=amount,  # Simulation: fill complet
+                avg_fill_price=sim_price
+            )
+
             simulated_order = {
-                'order_id': f'sim_{datetime.now(timezone.utc).timestamp()}',
+                'order_id': order_id,
                 'symbol': symbol,
                 'direction': direction,
                 'outcome': outcome,
                 'amount': amount,
-                'price': price or 0.50,
+                'price': sim_price,
                 'status': 'filled',
                 'timestamp': datetime.now(timezone.utc),
-                'simulation': True
+                'simulation': True,
+                'validation': {
+                    'is_valid': validation.is_valid,
+                    'market_price': validation.market_price,
+                    'max_allowed_price': validation.max_allowed_price,
+                    'price_margin': validation.price_margin
+                },
+                'fill': {
+                    'expected_size': amount,
+                    'filled_size': amount,
+                    'fill_ratio': 1.0,
+                    'avg_fill_price': sim_price
+                }
             }
-            logger.info(f"✅ SIMULATED ORDER: {simulated_order['order_id']}")
+            logger.info(f"✅ SIMULATED ORDER: {order_id}")
             return simulated_order
 
         try:
@@ -377,32 +444,45 @@ class PolymarketClient:
             logger.info(f"Market found: {market.get('slug', 'unknown')}")
             logger.info(f"Token ID: {token_id[:20]}...")
 
-            # Vérifier le prix actuel du marché
-            MAX_PRICE = 0.50  # Limite de prix: ne pas acheter au-dessus de 50¢
+            # Récupérer le prix actuel du marché
+            market_price = 0.50
             try:
-                # Récupérer le prix actuel via l'API
                 book = self.client.get_order_book(token_id)
                 if book and 'asks' in book and len(book['asks']) > 0:
-                    # Le meilleur ask (prix le plus bas pour acheter)
-                    best_ask = float(book['asks'][0].get('price', 0.50))
-                    logger.info(f"💰 Prix marché actuel: {best_ask*100:.1f}¢")
-
-                    if best_ask > MAX_PRICE:
-                        logger.warning(f"⚠️ SKIP: Prix {best_ask*100:.1f}¢ > {MAX_PRICE*100:.0f}¢ limite")
-                        return None
-                else:
-                    logger.info(f"💰 Pas d'asks disponibles, utilisation prix par défaut")
+                    market_price = float(book['asks'][0].get('price', 0.50))
+                    logger.info(f"💰 Prix marché actuel: {market_price*100:.1f}¢")
             except Exception as e:
                 logger.warning(f"Impossible de vérifier le prix: {e}")
+
+            # VALIDATION CRITIQUE: Prix moyen < WR - 2%
+            validation = self.price_validator.validate_trade(market_price, symbol, outcome)
+
+            if not validation.is_valid:
+                self.trading_stats['orders_blocked_by_price'] += 1
+                logger.warning(
+                    f"🚫 ORDRE BLOQUE | Prix {market_price*100:.1f}% >= "
+                    f"Limite {validation.max_allowed_price*100:.1f}%"
+                )
+                return None
+
+            self.trading_stats['orders_validated'] += 1
+
+            # Prix max autorise (le plus petit entre 50% et le prix max du validateur)
+            MAX_PRICE = min(0.50, self.price_validator.get_max_price())
+            logger.info(f"💰 Prix max autorise: {MAX_PRICE*100:.1f}¢")
+
+            if market_price > MAX_PRICE:
+                logger.warning(f"⚠️ SKIP: Prix {market_price*100:.1f}¢ > {MAX_PRICE*100:.0f}¢ limite")
+                return None
 
             # Déterminer le côté de l'ordre
             side = BUY if direction == 'BUY' else SELL
 
-            # Prix limite: 0.50 (50 cents) - ne jamais payer plus
+            # Prix limite: utiliser le prix max autorise
             order_price = price if price else MAX_PRICE
 
             # Utiliser amount directement comme nombre de shares
-            size = amount  # amount = nombre de shares
+            size = amount
 
             # Créer l'ordre limite
             order_args = OrderArgs(
@@ -416,10 +496,14 @@ class PolymarketClient:
             signed_order = self.client.create_order(order_args)
             resp = self.client.post_order(signed_order, OrderType.GTC)
 
-            logger.info(f"✅ ORDER PLACED: {resp}")
+            order_id = resp.get('orderID', resp.get('id', 'unknown'))
+            logger.info(f"✅ ORDER PLACED: {order_id}")
+
+            # Attendre et verifier le fill
+            fill_info = self._check_order_fill(order_id, size, token_id)
 
             return {
-                'order_id': resp.get('orderID', resp.get('id', 'unknown')),
+                'order_id': order_id,
                 'symbol': symbol,
                 'direction': direction,
                 'outcome': outcome,
@@ -430,12 +514,129 @@ class PolymarketClient:
                 'status': 'posted',
                 'timestamp': datetime.now(timezone.utc),
                 'simulation': False,
-                'response': resp
+                'response': resp,
+                'validation': {
+                    'is_valid': validation.is_valid,
+                    'market_price': validation.market_price,
+                    'max_allowed_price': validation.max_allowed_price,
+                    'price_margin': validation.price_margin
+                },
+                'fill': fill_info
             }
 
         except Exception as e:
             logger.error(f"Error placing order: {e}", exc_info=True)
             return None
+
+    def _check_order_fill(
+        self,
+        order_id: str,
+        expected_size: float,
+        token_id: str,
+        max_wait: int = 5
+    ) -> Dict:
+        """
+        Verifie le fill d'un ordre et enregistre les partial fills
+
+        Args:
+            order_id: ID de l'ordre
+            expected_size: Taille attendue
+            token_id: Token ID pour le marche
+            max_wait: Temps max d'attente en secondes
+
+        Returns:
+            Dict avec infos du fill
+        """
+        filled_size = 0.0
+        avg_fill_price = 0.0
+
+        try:
+            # Attendre un peu pour le fill
+            for i in range(max_wait):
+                time.sleep(1)
+
+                # Recuperer le statut de l'ordre
+                order = self.client.get_order(order_id)
+
+                if order:
+                    filled_size = float(order.get('sizeFilled', 0))
+                    avg_fill_price = float(order.get('price', 0))
+
+                    if filled_size >= expected_size * 0.99:  # 99% = full fill
+                        break
+
+        except Exception as e:
+            logger.warning(f"Erreur verification fill: {e}")
+
+        # Enregistrer le fill
+        fill_info = self.fill_manager.record_fill(
+            order_id=order_id,
+            expected_size=expected_size,
+            filled_size=filled_size,
+            avg_fill_price=avg_fill_price
+        )
+
+        self.trading_stats['total_invested'] += expected_size * avg_fill_price
+        self.trading_stats['total_filled'] += filled_size * avg_fill_price
+
+        return {
+            'expected_size': expected_size,
+            'filled_size': filled_size,
+            'fill_ratio': fill_info.fill_ratio,
+            'avg_fill_price': avg_fill_price
+        }
+
+    def record_trade_result(self, is_win: bool):
+        """
+        Enregistre le resultat d'un trade pour mise a jour du WR dynamique
+
+        Args:
+            is_win: True si le trade a gagne
+        """
+        self.price_validator.record_trade_result(is_win)
+
+    def calculate_real_pnl(self, order_id: str, is_win: bool) -> Tuple[float, Dict]:
+        """
+        Calcule le PnL reel base sur le fill effectif
+
+        Args:
+            order_id: ID de l'ordre
+            is_win: True si le trade a gagne
+
+        Returns:
+            Tuple (pnl, details)
+        """
+        outcome_price = 1.0 if is_win else 0.0
+        return self.fill_manager.calculate_real_pnl(order_id, outcome_price, is_win)
+
+    def get_trading_stats(self) -> Dict:
+        """Retourne les statistiques de trading"""
+        validator_stats = self.price_validator.get_stats()
+        fill_stats = self.fill_manager.get_stats()
+
+        return {
+            **self.trading_stats,
+            'validator': validator_stats,
+            'fills': fill_stats,
+            'current_max_price': self.price_validator.get_max_price() * 100,
+            'current_win_rate': self.price_validator.get_current_win_rate()
+        }
+
+    def log_trading_stats(self):
+        """Affiche les statistiques de trading"""
+        stats = self.get_trading_stats()
+
+        logger.info("=" * 70)
+        logger.info("STATISTIQUES DE TRADING POLYMARKET")
+        logger.info("=" * 70)
+        logger.info(f"  Ordres places: {stats['orders_placed']}")
+        logger.info(f"  Ordres valides: {stats['orders_validated']}")
+        logger.info(f"  Ordres bloques (prix): {stats['orders_blocked_by_price']}")
+        logger.info(f"  Total investi: ${stats['total_invested']:.2f}")
+        logger.info(f"  Total execute: ${stats['total_filled']:.2f}")
+        logger.info(f"  Prix max autorise: {stats['current_max_price']:.1f}%")
+        logger.info(f"  Win Rate actuel: {stats['current_win_rate']:.1f}%")
+        logger.info("=" * 70)
     
     def cancel_order(self, order_id: str) -> bool:
         """Annule un ordre"""
