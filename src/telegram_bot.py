@@ -75,36 +75,38 @@ class TelegramNotifier:
         outcome: str,
         entry_price: float,
         position_size: float,
-        stop_loss: float,
-        take_profit: float
+        stop_loss: float = 0,
+        take_profit: float = 0
     ):
         """
-        Notifie l'ouverture d'un trade
-        
+        Notifie l'ouverture d'un trade Polymarket
+
         Args:
             symbol: Paire tradée
             direction: BUY/SELL
             outcome: UP/DOWN
-            entry_price: Prix d'entrée
-            position_size: Taille de position
-            stop_loss: Niveau SL
-            take_profit: Niveau TP
+            entry_price: Prix d'entrée (0-1, ex: 0.50 = 50¢)
+            position_size: Nombre de shares
+            stop_loss: Non utilisé sur Polymarket
+            take_profit: Non utilisé sur Polymarket
         """
         emoji = "📈" if outcome == "UP" else "📉"
-        
+
+        # Calcul Polymarket
+        bet_cost = position_size * entry_price  # Coût de la mise
+        potential_win = position_size - bet_cost  # Gain potentiel si WIN
+
         message = f"""
 {emoji} <b>TRADE OUVERT</b> {emoji}
 
-🪙 <b>Paire:</b> {symbol}
-📊 <b>Direction:</b> {direction} {outcome}
-💰 <b>Prix d'entrée:</b> ${entry_price:,.2f}
-📦 <b>Taille:</b> {position_size:.4f}
-🛑 <b>Stop Loss:</b> ${stop_loss:,.2f}
-🎯 <b>Take Profit:</b> ${take_profit:,.2f}
+🪙 <b>Marché:</b> {symbol.split('/')[0]} {outcome}
+💵 <b>Prix:</b> {entry_price*100:.1f}¢
+💰 <b>BET:</b> ${bet_cost:.2f}
+🎯 <b>TO WIN:</b> ${potential_win:.2f}
 
 ⏰ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 """
-        
+
         self.send_message(message.strip())
         logger.info(f"Notification sent: Trade entry {symbol}")
     
@@ -239,11 +241,11 @@ class TelegramNotifier:
 Le robot de trading est maintenant actif!
 
 ⚙️ <b>Configuration:</b>
-• Paires: {', '.join([s.split('/')[0] for s in self.config.symbols])}
+• Marchés: {', '.join([s.split('/')[0] for s in self.config.symbols])}
 • Timeframe: {self.config.primary_timeframe}
-• Position size: ${self.config.position_size_usd}
-• Stop Loss: {self.config.stop_loss_percent}%
-• Take Profit: {self.config.take_profit_percent}%
+• Mise par trade: ${self.config.position_size_usd}
+• Prix max: 50¢ (validation active)
+• Heures bloquées: 3h, 7h, 15h, 18h, 19h, 20h UTC
 
 ⏰ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 """
