@@ -204,3 +204,4 @@ La stratégie est **techniquement rentable** mais :
 *Rapport généré par Claude - 26 Décembre 2024*
 
 
+

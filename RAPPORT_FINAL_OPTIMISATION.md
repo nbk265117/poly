@@ -322,3 +322,4 @@ Les objectifs **20 trades/jour + 50% win rate** sont **extrêmement difficiles**
 *Généré le 26/12/2024 - Robot Trading Polymarket v2.0*
 
 
+

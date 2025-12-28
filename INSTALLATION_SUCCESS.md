@@ -268,3 +268,4 @@ Solution : Obtenir clés API Binance (gratuit, lecture seule).
 Pour toute question, consultez la documentation ou les fichiers de log.
 
 
+

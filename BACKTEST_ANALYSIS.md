@@ -147,3 +147,4 @@ Une stratégie simple ne peut pas s'adapter à tous les contextes.
 *Analyse générée par Claude - 26/12/2024*
 
 
+
