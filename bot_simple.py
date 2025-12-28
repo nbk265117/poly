@@ -85,7 +85,7 @@ SYMBOL_CONFIG = {
     }
 }
 
-MAX_PRICE = 0.52       # 52 centimes max (marge 3% vs 55% break-even)
+MAX_PRICE = 0.53       # 53 centimes max (marge 2% vs 55% break-even)
 BLOCKED_HOURS = []     # Aucune heure bloquée
 
 
@@ -287,8 +287,8 @@ class SimpleBot:
         else:
             wait = (next_min - minutes - 1) * 60 + (60 - seconds)
 
-        # Entrer 8 secondes avant
-        return max(0, wait - 8)
+        # Entrer 20 secondes avant (conseil Adnane)
+        return max(0, wait - 20)
 
     def run(self):
         """Boucle principale"""
