@@ -356,12 +356,13 @@ class SimpleBot:
 def main():
     parser = argparse.ArgumentParser(description='Bot Simple Polymarket')
     parser.add_argument('--live', action='store_true', help='Mode live (argent réel)')
+    parser.add_argument('--yes', action='store_true', help='Skip confirmation (pour VPS)')
     parser.add_argument('--shares', type=int, default=5, help='Nombre de shares par trade')
     parser.add_argument('--symbols', type=str, default='BTC/USDT,ETH/USDT,XRP/USDT')
 
     args = parser.parse_args()
 
-    if args.live:
+    if args.live and not args.yes:
         print("\n⚠️  MODE LIVE - Argent réel!")
         confirm = input("Tapez 'OUI' pour confirmer: ")
         if confirm != 'OUI':
