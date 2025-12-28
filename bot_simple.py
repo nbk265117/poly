@@ -45,9 +45,10 @@ if not logger.handlers:
 
     logger.propagate = False  # Éviter propagation aux loggers parents
 
-# CONFIG HYBRIDE (~72/jour, 55%+ WR par pair)
-# BTC/ETH: Config agressive (plus de trades)
-# XRP: Config stricte (meilleur WR)
+# CONFIG HYBRIDE (~61/jour, 54.6% WR global)
+# BTC/ETH: Config standard (55% WR)
+# XRP: Config stricte (55% WR)
+# SOL: Avec blacklist heures faibles (53% -> 55% WR)
 
 SYMBOL_CONFIG = {
     'BTC': {
@@ -58,8 +59,9 @@ SYMBOL_CONFIG = {
         'stoch_oversold': 30,
         'stoch_overbought': 70,
         'consec_threshold': 1,
-        'expected_tpd': 30,
-        'expected_wr': 56
+        'blocked_hours': [],
+        'expected_tpd': 17,
+        'expected_wr': 55
     },
     'ETH': {
         'rsi_period': 7,
@@ -69,8 +71,9 @@ SYMBOL_CONFIG = {
         'stoch_oversold': 30,
         'stoch_overbought': 70,
         'consec_threshold': 1,
-        'expected_tpd': 30,
-        'expected_wr': 56
+        'blocked_hours': [],
+        'expected_tpd': 16,
+        'expected_wr': 55
     },
     'XRP': {
         'rsi_period': 5,
@@ -80,13 +83,25 @@ SYMBOL_CONFIG = {
         'stoch_oversold': 20,
         'stoch_overbought': 80,
         'consec_threshold': 2,
-        'expected_tpd': 12,
+        'blocked_hours': [],
+        'expected_tpd': 11,
+        'expected_wr': 55
+    },
+    'SOL': {
+        'rsi_period': 7,
+        'rsi_oversold': 35,
+        'rsi_overbought': 65,
+        'stoch_period': 5,
+        'stoch_oversold': 30,
+        'stoch_overbought': 70,
+        'consec_threshold': 1,
+        'blocked_hours': [0, 1, 4, 5, 6, 7, 8, 14, 15, 17, 19, 22, 23],  # WR < 53%
+        'expected_tpd': 10,
         'expected_wr': 55
     }
 }
 
 MAX_PRICE = 0.53       # 53 centimes max (marge 2% vs 55% break-even)
-BLOCKED_HOURS = []     # Aucune heure bloquée
 
 
 class SimpleBot:
@@ -169,15 +184,16 @@ class SimpleBot:
         if df is None or len(df) < 20:
             return None
 
-        # Filtre des heures faibles
-        current_hour = datetime.now(timezone.utc).hour
-        if current_hour in BLOCKED_HOURS:
-            logger.info(f"⏰ Heure {current_hour}h bloquée - pas de trading")
-            return None
-
         # Récupérer la config pour ce symbole
         base = symbol.split('/')[0]
         cfg = SYMBOL_CONFIG.get(base, SYMBOL_CONFIG['BTC'])
+
+        # Filtre des heures faibles (par symbole)
+        current_hour = datetime.now(timezone.utc).hour
+        blocked_hours = cfg.get('blocked_hours', [])
+        if current_hour in blocked_hours:
+            logger.info(f"⏰ {base} bloqué à {current_hour}h UTC - pas de trading")
+            return None
 
         # Calcul des indicateurs
         closes = df['close']
@@ -298,26 +314,31 @@ class SimpleBot:
         logger.info(f"🤖 BOT HYBRIDE DÉMARRÉ - {mode}")
         logger.info("=" * 60)
         logger.info(f"Symboles: {', '.join(self.symbols)}")
-        logger.info(f"Shares: {self.shares} (~${self.shares * 0.50:.2f} @ 50¢)")
-        logger.info("CONFIG HYBRIDE:")
+        logger.info(f"Shares: {self.shares} (~${self.shares * 0.53:.2f} @ 53¢)")
+        logger.info("CONFIG 4 PAIRS:")
+        total_tpd = 0
         for sym in self.symbols:
             base = sym.split('/')[0]
             cfg = SYMBOL_CONFIG.get(base, {})
-            logger.info(f"  {base}: RSI({cfg.get('rsi_period')}) {cfg.get('rsi_oversold')}/{cfg.get('rsi_overbought')} + Stoch {cfg.get('stoch_oversold')}/{cfg.get('stoch_overbought')} | ~{cfg.get('expected_tpd')}/j ~{cfg.get('expected_wr')}%")
-        logger.info(f"TOTAL ATTENDU: ~72 trades/jour | 55%+ WR par pair")
+            blocked = cfg.get('blocked_hours', [])
+            blocked_str = f" | Blacklist: {len(blocked)}h" if blocked else ""
+            logger.info(f"  {base}: RSI({cfg.get('rsi_period')}) {cfg.get('rsi_oversold')}/{cfg.get('rsi_overbought')} + Stoch {cfg.get('stoch_oversold')}/{cfg.get('stoch_overbought')} | ~{cfg.get('expected_tpd')}/j{blocked_str}")
+            total_tpd += cfg.get('expected_tpd', 0)
+        logger.info(f"TOTAL ATTENDU: ~{total_tpd} trades/jour | 55% WR")
         logger.info("=" * 60)
 
         # Notification démarrage
         self.telegram.send_message(f"""
-🤖 <b>BOT HYBRIDE</b> - {mode}
+🤖 <b>BOT 4 PAIRS</b> - {mode}
 
 📊 Symboles: {', '.join([s.split('/')[0] for s in self.symbols])}
-💰 Mise: {self.shares} shares (~${self.shares * 0.50:.2f})
+💰 Mise: {self.shares} shares (~${self.shares * 0.53:.2f})
 
-⚙️ <b>Config HYBRIDE (~72/jour, 55%+ WR):</b>
-• BTC: RSI(7) 35/65 + Stoch 30/70 (~30/j)
-• ETH: RSI(7) 35/65 + Stoch 30/70 (~30/j)
-• XRP: RSI(5) 25/75 + Stoch 20/80 (~12/j)
+⚙️ <b>Config (~{total_tpd}/jour, 55% WR):</b>
+• BTC: RSI(7) 35/65 + Stoch 30/70 (~17/j)
+• ETH: RSI(7) 35/65 + Stoch 30/70 (~16/j)
+• XRP: RSI(5) 25/75 + Stoch 20/80 (~11/j)
+• SOL: RSI(7) 35/65 + Stoch 30/70 (~10/j) + Blacklist 13h
 
 ⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 """)
@@ -358,7 +379,7 @@ def main():
     parser.add_argument('--live', action='store_true', help='Mode live (argent réel)')
     parser.add_argument('--yes', action='store_true', help='Skip confirmation (pour VPS)')
     parser.add_argument('--shares', type=int, default=5, help='Nombre de shares par trade')
-    parser.add_argument('--symbols', type=str, default='BTC/USDT,ETH/USDT,XRP/USDT')
+    parser.add_argument('--symbols', type=str, default='BTC/USDT,ETH/USDT,XRP/USDT,SOL/USDT')
 
     args = parser.parse_args()
 
