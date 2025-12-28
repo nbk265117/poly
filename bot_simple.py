@@ -205,7 +205,7 @@ class SimpleBot:
 
         return None
 
-    def execute_trade(self, symbol: str, signal: str, btc_price: float):
+    def execute_trade(self, symbol: str, signal: str, current_price: float):
         """Exécute un trade"""
         base = symbol.split('/')[0]
 
@@ -239,14 +239,15 @@ class SimpleBot:
                     actual_price = order.get('price', entry_price)
                     logger.info(f"✅ ORDRE PLACÉ | ID: {order_id} | Prix: {actual_price*100:.0f}¢")
 
-                    # Notification Telegram
+                    # Notification Telegram - Prix formaté selon le symbole
+                    price_fmt = f"${current_price:,.0f}" if current_price > 100 else f"${current_price:.2f}"
                     self.telegram.send_message(f"""
 🎯 <b>TRADE PLACÉ</b>
 
 🪙 <b>Marché:</b> {base} {signal}
 💰 <b>BET:</b> ${bet_cost:.2f} ({self.shares} shares)
 🎯 <b>TO WIN:</b> ${potential_win:.2f}
-💵 <b>Prix BTC:</b> ${btc_price:,.0f}
+💵 <b>Prix {base}:</b> {price_fmt}
 
 ⏰ {datetime.now(timezone.utc).strftime('%H:%M:%S')} UTC
 """)
@@ -259,12 +260,13 @@ class SimpleBot:
         else:
             # Mode simulation
             logger.info(f"🔵 [SIMULATION] Trade non exécuté")
+            price_fmt = f"${current_price:,.0f}" if current_price > 100 else f"${current_price:.2f}"
             self.telegram.send_message(f"""
 🔵 <b>SIGNAL (Simulation)</b>
 
 🪙 <b>Marché:</b> {base} {signal}
 💰 <b>BET:</b> ${bet_cost:.2f} ({self.shares} shares)
-💵 <b>Prix BTC:</b> ${btc_price:,.0f}
+💵 <b>Prix {base}:</b> {price_fmt}
 
 ⏰ {datetime.now(timezone.utc).strftime('%H:%M:%S')} UTC
 """)
