@@ -37,12 +37,46 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Constantes MAX TRADES (~57/jour, WR 53%)
-RSI_PERIOD = 14
-RSI_OVERSOLD = 33      # Relaxed pour plus de trades
-RSI_OVERBOUGHT = 67    # Relaxed pour plus de trades
-CONSEC_THRESHOLD = 2   # Relaxed (était 5)
-MIN_MOMENTUM = 0.0     # Désactivé pour max trades
+# CONFIG HYBRIDE (~72/jour, 55%+ WR par pair)
+# BTC/ETH: Config agressive (plus de trades)
+# XRP: Config stricte (meilleur WR)
+
+SYMBOL_CONFIG = {
+    'BTC': {
+        'rsi_period': 7,
+        'rsi_oversold': 35,
+        'rsi_overbought': 65,
+        'stoch_period': 5,
+        'stoch_oversold': 30,
+        'stoch_overbought': 70,
+        'consec_threshold': 1,
+        'expected_tpd': 30,
+        'expected_wr': 56
+    },
+    'ETH': {
+        'rsi_period': 7,
+        'rsi_oversold': 35,
+        'rsi_overbought': 65,
+        'stoch_period': 5,
+        'stoch_oversold': 30,
+        'stoch_overbought': 70,
+        'consec_threshold': 1,
+        'expected_tpd': 30,
+        'expected_wr': 56
+    },
+    'XRP': {
+        'rsi_period': 5,
+        'rsi_oversold': 25,
+        'rsi_overbought': 75,
+        'stoch_period': 5,
+        'stoch_oversold': 20,
+        'stoch_overbought': 80,
+        'consec_threshold': 2,
+        'expected_tpd': 12,
+        'expected_wr': 55
+    }
+}
+
 MAX_PRICE = 0.50       # 50 centimes max
 BLOCKED_HOURS = []     # Aucune heure bloquée
 
@@ -79,16 +113,23 @@ class SimpleBot:
             logger.error(f"Erreur données {symbol}: {e}")
             return None
 
-    def calculate_rsi(self, closes: pd.Series) -> float:
-        """RSI simple"""
+    def calculate_rsi(self, closes: pd.Series, period: int = 14) -> float:
+        """RSI avec période configurable"""
         delta = closes.diff()
         gain = delta.where(delta > 0, 0)
         loss = -delta.where(delta < 0, 0)
-        avg_gain = gain.ewm(span=RSI_PERIOD, adjust=False).mean()
-        avg_loss = loss.ewm(span=RSI_PERIOD, adjust=False).mean()
+        avg_gain = gain.ewm(span=period, adjust=False).mean()
+        avg_loss = loss.ewm(span=period, adjust=False).mean()
         rs = avg_gain / avg_loss
         rsi = 100 - (100 / (1 + rs))
         return rsi.iloc[-1]
+
+    def calculate_stochastic(self, df: pd.DataFrame, period: int = 5) -> float:
+        """Stochastic %K"""
+        low_min = df['low'].rolling(period).min()
+        high_max = df['high'].rolling(period).max()
+        stoch = 100 * (df['close'] - low_min) / (high_max - low_min)
+        return stoch.iloc[-1]
 
     def count_consecutive(self, df: pd.DataFrame) -> tuple:
         """Compte bougies consécutives"""
@@ -115,9 +156,9 @@ class SimpleBot:
 
         return consec_up, consec_down
 
-    def get_signal(self, df: pd.DataFrame) -> str:
-        """Génère signal UP, DOWN ou None - VERSION OPTIMISÉE"""
-        if df is None or len(df) < RSI_PERIOD + 5:
+    def get_signal(self, df: pd.DataFrame, symbol: str) -> str:
+        """Génère signal UP, DOWN ou None - CONFIG HYBRIDE par symbole"""
+        if df is None or len(df) < 20:
             return None
 
         # Filtre des heures faibles
@@ -126,21 +167,32 @@ class SimpleBot:
             logger.info(f"⏰ Heure {current_hour}h bloquée - pas de trading")
             return None
 
+        # Récupérer la config pour ce symbole
+        base = symbol.split('/')[0]
+        cfg = SYMBOL_CONFIG.get(base, SYMBOL_CONFIG['BTC'])
+
+        # Calcul des indicateurs
         closes = df['close']
-        rsi = self.calculate_rsi(closes)
+        rsi = self.calculate_rsi(closes, cfg['rsi_period'])
+        stoch = self.calculate_stochastic(df, cfg['stoch_period'])
         consec_up, consec_down = self.count_consecutive(df)
 
-        # Momentum (doit être > MIN_MOMENTUM)
-        momentum = (closes.iloc[-1] - closes.iloc[-4]) / closes.iloc[-4] * 100
+        # Signal UP: RSI survendu + Stoch survendu (+ consec pour XRP)
+        up_signal = (rsi < cfg['rsi_oversold']) and (stoch < cfg['stoch_oversold'])
+        if cfg['consec_threshold'] > 1:
+            up_signal = up_signal and (consec_down >= cfg['consec_threshold'])
 
-        # Signal UP: 5+ DOWN consécutives OU RSI < 25, avec momentum < -0.2%
-        if (consec_down >= CONSEC_THRESHOLD or rsi < RSI_OVERSOLD) and momentum < -MIN_MOMENTUM:
-            logger.info(f"📈 Signal UP | RSI={rsi:.1f} | DOWN={consec_down} | Mom={momentum:.2f}%")
+        if up_signal:
+            logger.info(f"📈 Signal UP | {base} | RSI={rsi:.1f} | Stoch={stoch:.1f} | DOWN={consec_down}")
             return 'UP'
 
-        # Signal DOWN: 5+ UP consécutives OU RSI > 75, avec momentum > +0.2%
-        if (consec_up >= CONSEC_THRESHOLD or rsi > RSI_OVERBOUGHT) and momentum > MIN_MOMENTUM:
-            logger.info(f"📉 Signal DOWN | RSI={rsi:.1f} | UP={consec_up} | Mom={momentum:.2f}%")
+        # Signal DOWN: RSI suracheté + Stoch suracheté (+ consec pour XRP)
+        down_signal = (rsi > cfg['rsi_overbought']) and (stoch > cfg['stoch_overbought'])
+        if cfg['consec_threshold'] > 1:
+            down_signal = down_signal and (consec_up >= cfg['consec_threshold'])
+
+        if down_signal:
+            logger.info(f"📉 Signal DOWN | {base} | RSI={rsi:.1f} | Stoch={stoch:.1f} | UP={consec_up}")
             return 'DOWN'
 
         return None
@@ -233,27 +285,29 @@ class SimpleBot:
         mode = "🔴 LIVE" if self.is_live else "🔵 SIMULATION"
 
         logger.info("=" * 60)
-        logger.info(f"🤖 BOT OPTIMISÉ DÉMARRÉ - {mode}")
+        logger.info(f"🤖 BOT HYBRIDE DÉMARRÉ - {mode}")
         logger.info("=" * 60)
         logger.info(f"Symboles: {', '.join(self.symbols)}")
         logger.info(f"Shares: {self.shares} (~${self.shares * 0.50:.2f} @ 50¢)")
-        logger.info(f"RSI: {RSI_OVERSOLD}/{RSI_OVERBOUGHT} | Consec: {CONSEC_THRESHOLD} | Mom: {MIN_MOMENTUM}%")
-        logger.info(f"Heures bloquées: {BLOCKED_HOURS}")
-        logger.info(f"Win Rate attendu: ~53.5% (MAX TRADES)")
+        logger.info("CONFIG HYBRIDE:")
+        for sym in self.symbols:
+            base = sym.split('/')[0]
+            cfg = SYMBOL_CONFIG.get(base, {})
+            logger.info(f"  {base}: RSI({cfg.get('rsi_period')}) {cfg.get('rsi_oversold')}/{cfg.get('rsi_overbought')} + Stoch {cfg.get('stoch_oversold')}/{cfg.get('stoch_overbought')} | ~{cfg.get('expected_tpd')}/j ~{cfg.get('expected_wr')}%")
+        logger.info(f"TOTAL ATTENDU: ~72 trades/jour | 55%+ WR par pair")
         logger.info("=" * 60)
 
         # Notification démarrage
         self.telegram.send_message(f"""
-🤖 <b>BOT OPTIMISÉ</b> - {mode}
+🤖 <b>BOT HYBRIDE</b> - {mode}
 
 📊 Symboles: {', '.join([s.split('/')[0] for s in self.symbols])}
 💰 Mise: {self.shares} shares (~${self.shares * 0.50:.2f})
 
-⚙️ <b>Config MAX TRADES (~57/jour, WR ~53%):</b>
-• RSI: {RSI_OVERSOLD}/{RSI_OVERBOUGHT}
-• Consécutives: {CONSEC_THRESHOLD}
-• Momentum min: {MIN_MOMENTUM}%
-• Heures bloquées: {len(BLOCKED_HOURS)}
+⚙️ <b>Config HYBRIDE (~72/jour, 55%+ WR):</b>
+• BTC: RSI(7) 35/65 + Stoch 30/70 (~30/j)
+• ETH: RSI(7) 35/65 + Stoch 30/70 (~30/j)
+• XRP: RSI(5) 25/75 + Stoch 20/80 (~12/j)
 
 ⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 """)
@@ -274,7 +328,7 @@ class SimpleBot:
                     if df is None:
                         continue
 
-                    signal = self.get_signal(df)
+                    signal = self.get_signal(df, symbol)
 
                     if signal:
                         self.execute_trade(symbol, signal, df['close'].iloc[-1])
