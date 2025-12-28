@@ -280,10 +280,11 @@ class TradingBot:
 
                     # Fermer sur Polymarket
                     outcome = 'UP' if trade.direction == 'BUY' else 'DOWN'
+                    # IMPORTANT: amount = nombre de shares (pas dollars)
                     self.executor.close_position(
                         symbol=trade.symbol,
                         outcome=outcome,
-                        amount=trade.position_size * current_price
+                        amount=self.config.position_size_usd  # Nombre de shares
                     )
 
                     # NOUVEAU: Enregistrer dans le PerformanceMonitor

@@ -52,7 +52,8 @@ strategy:
   # Gestion du risque (mode Polymarket - pas de TP/SL)
   risk:
     max_positions: 1           # 1 position à la fois (Polymarket)
-    position_size_usd: 100     # Mise fixe par trade
+    position_size_usd: 5       # IMPORTANT: C'est le nombre de SHARES (pas USD!)
+                               # 5 shares @ 50c = $2.50 de mise
 
     # TP/SL non utilisés en mode Polymarket UP/DOWN
     stop_loss_percent: 0       # N/A pour Polymarket
