@@ -1,0 +1,16 @@
+[Unit]
+Description=Polymarket Bot ETH
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/poly
+ExecStart=/root/poly/venv/bin/python3 /root/poly/bot_eth.py --live --yes --shares 5
+Restart=always
+RestartSec=10
+StandardOutput=append:/root/poly/logs/bot_eth.log
+StandardError=append:/root/poly/logs/bot_eth.log
+
+[Install]
+WantedBy=multi-user.target

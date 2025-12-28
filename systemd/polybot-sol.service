@@ -1,0 +1,16 @@
+[Unit]
+Description=Polymarket Bot SOL
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/poly
+ExecStart=/root/poly/venv/bin/python3 /root/poly/bot_sol.py --live --yes --shares 5
+Restart=always
+RestartSec=10
+StandardOutput=append:/root/poly/logs/bot_sol.log
+StandardError=append:/root/poly/logs/bot_sol.log
+
+[Install]
+WantedBy=multi-user.target
