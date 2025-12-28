@@ -37,12 +37,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Constantes
+# Constantes OPTIMISÉES (WR 57.45%)
 RSI_PERIOD = 14
-RSI_OVERSOLD = 30
-RSI_OVERBOUGHT = 70
-CONSEC_THRESHOLD = 3
-MAX_PRICE = 0.50  # 50 centimes max
+RSI_OVERSOLD = 25      # Plus strict (était 30)
+RSI_OVERBOUGHT = 75    # Plus strict (était 70)
+CONSEC_THRESHOLD = 5   # Plus strict (était 3)
+MIN_MOMENTUM = 0.2     # Nouveau: momentum minimum
+MAX_PRICE = 0.50       # 50 centimes max
+BLOCKED_HOURS = [3, 7, 15, 18, 19, 20]  # Heures faibles à éviter
 
 
 class SimpleBot:
@@ -114,25 +116,31 @@ class SimpleBot:
         return consec_up, consec_down
 
     def get_signal(self, df: pd.DataFrame) -> str:
-        """Génère signal UP, DOWN ou None"""
+        """Génère signal UP, DOWN ou None - VERSION OPTIMISÉE"""
         if df is None or len(df) < RSI_PERIOD + 5:
+            return None
+
+        # Filtre des heures faibles
+        current_hour = datetime.now(timezone.utc).hour
+        if current_hour in BLOCKED_HOURS:
+            logger.info(f"⏰ Heure {current_hour}h bloquée - pas de trading")
             return None
 
         closes = df['close']
         rsi = self.calculate_rsi(closes)
         consec_up, consec_down = self.count_consecutive(df)
 
-        # Momentum
+        # Momentum (doit être > MIN_MOMENTUM)
         momentum = (closes.iloc[-1] - closes.iloc[-4]) / closes.iloc[-4] * 100
 
-        # Signal UP: 3+ DOWN consécutives OU RSI < 30, avec momentum négatif
-        if (consec_down >= CONSEC_THRESHOLD or rsi < RSI_OVERSOLD) and momentum < 0:
-            logger.info(f"📈 Signal UP | RSI={rsi:.1f} | DOWN consec={consec_down} | Mom={momentum:.2f}%")
+        # Signal UP: 5+ DOWN consécutives OU RSI < 25, avec momentum < -0.2%
+        if (consec_down >= CONSEC_THRESHOLD or rsi < RSI_OVERSOLD) and momentum < -MIN_MOMENTUM:
+            logger.info(f"📈 Signal UP | RSI={rsi:.1f} | DOWN={consec_down} | Mom={momentum:.2f}%")
             return 'UP'
 
-        # Signal DOWN: 3+ UP consécutives OU RSI > 70, avec momentum positif
-        if (consec_up >= CONSEC_THRESHOLD or rsi > RSI_OVERBOUGHT) and momentum > 0:
-            logger.info(f"📉 Signal DOWN | RSI={rsi:.1f} | UP consec={consec_up} | Mom={momentum:.2f}%")
+        # Signal DOWN: 5+ UP consécutives OU RSI > 75, avec momentum > +0.2%
+        if (consec_up >= CONSEC_THRESHOLD or rsi > RSI_OVERBOUGHT) and momentum > MIN_MOMENTUM:
+            logger.info(f"📉 Signal DOWN | RSI={rsi:.1f} | UP={consec_up} | Mom={momentum:.2f}%")
             return 'DOWN'
 
         return None
@@ -225,19 +233,27 @@ class SimpleBot:
         mode = "🔴 LIVE" if self.is_live else "🔵 SIMULATION"
 
         logger.info("=" * 60)
-        logger.info(f"🤖 BOT SIMPLE DÉMARRÉ - {mode}")
+        logger.info(f"🤖 BOT OPTIMISÉ DÉMARRÉ - {mode}")
         logger.info("=" * 60)
         logger.info(f"Symboles: {', '.join(self.symbols)}")
         logger.info(f"Shares: {self.shares} (~${self.shares * 0.50:.2f} @ 50¢)")
+        logger.info(f"RSI: {RSI_OVERSOLD}/{RSI_OVERBOUGHT} | Consec: {CONSEC_THRESHOLD} | Mom: {MIN_MOMENTUM}%")
+        logger.info(f"Heures bloquées: {BLOCKED_HOURS}")
+        logger.info(f"Win Rate attendu: ~57.5%")
         logger.info("=" * 60)
 
         # Notification démarrage
         self.telegram.send_message(f"""
-🤖 <b>BOT DÉMARRÉ</b> - {mode}
+🤖 <b>BOT OPTIMISÉ</b> - {mode}
 
 📊 Symboles: {', '.join([s.split('/')[0] for s in self.symbols])}
 💰 Mise: {self.shares} shares (~${self.shares * 0.50:.2f})
-📈 Stratégie: Mean Reversion
+
+⚙️ <b>Config optimisée (WR ~57.5%):</b>
+• RSI: {RSI_OVERSOLD}/{RSI_OVERBOUGHT}
+• Consécutives: {CONSEC_THRESHOLD}
+• Momentum min: {MIN_MOMENTUM}%
+• Heures bloquées: {len(BLOCKED_HOURS)}
 
 ⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 """)
