@@ -26,16 +26,24 @@ from src.config import get_config
 from src.telegram_bot import TelegramNotifier
 from src.polymarket_client import PolymarketClient
 
-# Logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s | %(levelname)s | %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler('logs/bot_simple.log')
-    ]
-)
+# Logging - éviter les doublons
 logger = logging.getLogger(__name__)
+if not logger.handlers:
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
+
+    # Console handler
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+    # File handler
+    Path('logs').mkdir(exist_ok=True)
+    file_handler = logging.FileHandler('logs/bot_simple.log')
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+    logger.propagate = False  # Éviter propagation aux loggers parents
 
 # CONFIG HYBRIDE (~72/jour, 55%+ WR par pair)
 # BTC/ETH: Config agressive (plus de trades)
