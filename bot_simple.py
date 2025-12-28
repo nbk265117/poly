@@ -37,14 +37,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Constantes OPTIMISÉES (WR 57.45%)
+# Constantes MAX TRADES (~57/jour, WR 53%)
 RSI_PERIOD = 14
-RSI_OVERSOLD = 25      # Plus strict (était 30)
-RSI_OVERBOUGHT = 75    # Plus strict (était 70)
-CONSEC_THRESHOLD = 5   # Plus strict (était 3)
-MIN_MOMENTUM = 0.2     # Nouveau: momentum minimum
+RSI_OVERSOLD = 33      # Relaxed pour plus de trades
+RSI_OVERBOUGHT = 67    # Relaxed pour plus de trades
+CONSEC_THRESHOLD = 2   # Relaxed (était 5)
+MIN_MOMENTUM = 0.0     # Désactivé pour max trades
 MAX_PRICE = 0.50       # 50 centimes max
-BLOCKED_HOURS = [3, 7, 15, 18, 19, 20]  # Heures faibles à éviter
+BLOCKED_HOURS = []     # Aucune heure bloquée
 
 
 class SimpleBot:
@@ -239,7 +239,7 @@ class SimpleBot:
         logger.info(f"Shares: {self.shares} (~${self.shares * 0.50:.2f} @ 50¢)")
         logger.info(f"RSI: {RSI_OVERSOLD}/{RSI_OVERBOUGHT} | Consec: {CONSEC_THRESHOLD} | Mom: {MIN_MOMENTUM}%")
         logger.info(f"Heures bloquées: {BLOCKED_HOURS}")
-        logger.info(f"Win Rate attendu: ~57.5%")
+        logger.info(f"Win Rate attendu: ~53.5% (MAX TRADES)")
         logger.info("=" * 60)
 
         # Notification démarrage
@@ -249,7 +249,7 @@ class SimpleBot:
 📊 Symboles: {', '.join([s.split('/')[0] for s in self.symbols])}
 💰 Mise: {self.shares} shares (~${self.shares * 0.50:.2f})
 
-⚙️ <b>Config optimisée (WR ~57.5%):</b>
+⚙️ <b>Config MAX TRADES (~57/jour, WR ~53%):</b>
 • RSI: {RSI_OVERSOLD}/{RSI_OVERBOUGHT}
 • Consécutives: {CONSEC_THRESHOLD}
 • Momentum min: {MIN_MOMENTUM}%
