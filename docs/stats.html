@@ -3,14 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Statistiques Bot Polymarket - Stratégie HYBRID @ 53¢</title>
+    <title>Statistiques Bot Polymarket - 4 Pairs + Blacklist</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
@@ -18,10 +14,7 @@
             min-height: 100vh;
             padding: 20px;
         }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1400px; margin: 0 auto; }
         h1 {
             text-align: center;
             font-size: 2.5rem;
@@ -30,11 +23,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .subtitle {
-            text-align: center;
-            color: #888;
-            margin-bottom: 30px;
-        }
+        .subtitle { text-align: center; color: #888; margin-bottom: 30px; }
         .config-badge {
             display: inline-block;
             background: rgba(0,212,255,0.2);
@@ -62,21 +51,12 @@
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(0,212,255,0.2);
         }
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
+        .stat-value { font-size: 2.5rem; font-weight: bold; margin-bottom: 5px; }
         .stat-value.green { color: #00ff88; }
         .stat-value.blue { color: #00d4ff; }
         .stat-value.yellow { color: #ffd700; }
         .stat-value.purple { color: #a855f7; }
-        .stat-label {
-            color: #888;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .stat-label { color: #888; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
         .charts-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
@@ -89,25 +69,10 @@
             padding: 25px;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        .chart-card h3 {
-            margin-bottom: 20px;
-            color: #00d4ff;
-            font-size: 1.2rem;
-        }
-        .chart-container {
-            position: relative;
-            height: 300px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
+        .chart-card h3 { margin-bottom: 20px; color: #00d4ff; font-size: 1.2rem; }
+        .chart-container { position: relative; height: 300px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
         th {
             background: rgba(0,212,255,0.2);
             color: #00d4ff;
@@ -116,64 +81,31 @@
             font-size: 0.8rem;
             letter-spacing: 1px;
         }
-        tr:hover {
-            background: rgba(255,255,255,0.05);
-        }
-        .badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
+        tr:hover { background: rgba(255,255,255,0.05); }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
         .badge-btc { background: #f7931a20; color: #f7931a; }
         .badge-eth { background: #627eea20; color: #627eea; }
         .badge-xrp { background: #23292f20; color: #fff; }
+        .badge-sol { background: #9945ff20; color: #9945ff; }
         .positive { color: #00ff88; }
         .negative { color: #ff4757; }
-        .highlight-row {
-            background: rgba(0,212,255,0.15) !important;
-            border-left: 3px solid #00d4ff;
-        }
-        footer {
-            text-align: center;
-            padding: 30px;
-            color: #666;
-            font-size: 0.9rem;
-        }
-        footer a {
-            color: #00d4ff;
-            text-decoration: none;
-        }
-        .year-comparison {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-        .year-card {
+        .highlight-row { background: rgba(0,255,136,0.1) !important; border-left: 3px solid #00ff88; }
+        .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .comparison-card {
             background: rgba(255,255,255,0.03);
             border-radius: 10px;
             padding: 20px;
             border: 1px solid rgba(255,255,255,0.1);
         }
-        .year-card h4 {
-            color: #00d4ff;
-            margin-bottom: 15px;
-            font-size: 1.1rem;
-        }
+        .comparison-card h4 { color: #888; margin-bottom: 15px; font-size: 1rem; }
+        .comparison-card.active { border-color: #00ff88; background: rgba(0,255,136,0.05); }
+        .comparison-card.active h4 { color: #00ff88; }
+        footer { text-align: center; padding: 30px; color: #666; font-size: 0.9rem; }
+        footer a { color: #00d4ff; text-decoration: none; }
         @media (max-width: 768px) {
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-            .chart-container {
-                height: 250px;
-            }
-            h1 {
-                font-size: 1.8rem;
-            }
-            .year-comparison {
-                grid-template-columns: 1fr;
-            }
+            .charts-grid, .comparison-grid { grid-template-columns: 1fr; }
+            .chart-container { height: 250px; }
+            h1 { font-size: 1.8rem; }
         }
     </style>
 </head>
@@ -181,74 +113,133 @@
     <div class="container">
         <h1>📊 Bot Polymarket Stats</h1>
         <p class="subtitle">
-            Stratégie HYBRID - Backtest 2024-2025<br>
+            4 Pairs + Blacklist - Backtest 2024-2025<br>
             <span class="config-badge">Entry: 53¢</span>
             <span class="config-badge">Timing: -20s</span>
-            <span class="config-badge">Optimisé</span>
+            <span class="config-badge">Blacklist Optimisé</span>
         </p>
 
         <!-- Stats Cards -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-value green">+$3,498</div>
+                <div class="stat-value green">+$4,756</div>
                 <div class="stat-label">PnL Total 2024-2025</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value blue">55.2%</div>
+                <div class="stat-value blue">55.9%</div>
                 <div class="stat-label">Win Rate</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value yellow">32,461</div>
+                <div class="stat-value yellow">33,109</div>
                 <div class="stat-label">Total Trades</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value purple">53¢</div>
-                <div class="stat-label">Prix Entrée</div>
+                <div class="stat-value purple">45/jour</div>
+                <div class="stat-label">Trades/Jour</div>
             </div>
         </div>
 
-        <!-- Year Comparison -->
+        <!-- Comparison Section -->
         <div class="chart-card" style="margin-bottom: 30px;">
-            <h3>📅 Comparaison Annuelle @ 53¢</h3>
-            <div class="year-comparison">
-                <div class="year-card">
-                    <h4>2024</h4>
+            <h3>⚖️ Comparaison: Sans vs Avec Blacklist</h3>
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h4>❌ Sans Blacklist</h4>
                     <table>
-                        <tr><td>BTC</td><td>6,185 trades</td><td>55.8%</td><td class="positive">+$879.75</td></tr>
-                        <tr><td>ETH</td><td>6,049 trades</td><td>54.6%</td><td class="positive">+$495.15</td></tr>
-                        <tr><td>XRP</td><td>4,002 trades</td><td>55.2%</td><td class="positive">+$449.70</td></tr>
-                        <tr style="font-weight: bold; border-top: 2px solid rgba(255,255,255,0.2);">
-                            <td>TOTAL</td><td>16,236</td><td>55.2%</td><td class="positive">+$1,824.60</td>
-                        </tr>
+                        <tr><td>Trades/jour</td><td>54</td></tr>
+                        <tr><td>Win Rate</td><td>55.2%</td></tr>
+                        <tr><td>PnL/trade</td><td>$0.108</td></tr>
+                        <tr><td>PnL/jour</td><td>$4.79</td></tr>
+                        <tr><td>PnL/mois</td><td>$144</td></tr>
+                        <tr style="font-weight: bold;"><td>PnL Total</td><td>+$3,498</td></tr>
                     </table>
                 </div>
-                <div class="year-card">
-                    <h4>2025</h4>
+                <div class="comparison-card active">
+                    <h4>✅ Avec Blacklist (Actuel)</h4>
                     <table>
-                        <tr><td>BTC</td><td>6,210 trades</td><td>54.8%</td><td class="positive">+$543.50</td></tr>
-                        <tr><td>ETH</td><td>5,922 trades</td><td>55.5%</td><td class="positive">+$736.70</td></tr>
-                        <tr><td>XRP</td><td>4,093 trades</td><td>54.9%</td><td class="positive">+$393.55</td></tr>
-                        <tr style="font-weight: bold; border-top: 2px solid rgba(255,255,255,0.2);">
-                            <td>TOTAL</td><td>16,225</td><td>55.1%</td><td class="positive">+$1,673.75</td>
-                        </tr>
+                        <tr><td>Trades/jour</td><td>45 <span style="color:#ff4757;">(-17%)</span></td></tr>
+                        <tr><td>Win Rate</td><td>55.9% <span class="positive">(+0.7%)</span></td></tr>
+                        <tr><td>PnL/trade</td><td>$0.144 <span class="positive">(+33%)</span></td></tr>
+                        <tr><td>PnL/jour</td><td>$6.52 <span class="positive">(+36%)</span></td></tr>
+                        <tr><td>PnL/mois</td><td>$196 <span class="positive">(+$52)</span></td></tr>
+                        <tr style="font-weight: bold;"><td>PnL Total</td><td class="positive">+$4,756</td></tr>
                     </table>
                 </div>
             </div>
+        </div>
+
+        <!-- Per Pair Results -->
+        <div class="chart-card" style="margin-bottom: 30px;">
+            <h3>🪙 Résultats par Pair (2024-2025)</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Pair</th>
+                        <th>Trades</th>
+                        <th>/Jour</th>
+                        <th>Win Rate</th>
+                        <th>PnL</th>
+                        <th>Blacklist</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge badge-btc">BTC</span></td>
+                        <td>11,107</td>
+                        <td>15.2</td>
+                        <td class="positive">55.8%</td>
+                        <td class="positive">+$1,551</td>
+                        <td>3h (4, 14, 15)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-eth">ETH</span></td>
+                        <td>9,864</td>
+                        <td>13.5</td>
+                        <td class="positive">55.7%</td>
+                        <td class="positive">+$1,325</td>
+                        <td>5h (0, 6, 7, 14, 23)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-xrp">XRP</span></td>
+                        <td>5,819</td>
+                        <td>8.0</td>
+                        <td class="positive">57.0%</td>
+                        <td class="positive">+$1,155</td>
+                        <td>8h (1, 4, 7, 13, 16, 18, 19, 21)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-sol">SOL</span></td>
+                        <td>6,319</td>
+                        <td>8.7</td>
+                        <td class="positive">55.3%</td>
+                        <td class="positive">+$725</td>
+                        <td>13h (0, 1, 4-8, 14, 15, 17, 19, 22, 23)</td>
+                    </tr>
+                    <tr class="highlight-row" style="font-weight: bold;">
+                        <td>TOTAL</td>
+                        <td>33,109</td>
+                        <td>45.4</td>
+                        <td class="positive">55.9%</td>
+                        <td class="positive">+$4,756</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
         <!-- Charts -->
         <div class="charts-grid">
-            <!-- PnL by Year Chart -->
+            <!-- PnL by Pair -->
             <div class="chart-card">
-                <h3>📈 PnL par Année @ 53¢</h3>
+                <h3>💰 PnL par Pair</h3>
                 <div class="chart-container">
-                    <canvas id="yearlyPnlChart"></canvas>
+                    <canvas id="pnlByPairChart"></canvas>
                 </div>
             </div>
 
             <!-- Win Rate by Pair -->
             <div class="chart-card">
-                <h3>🎯 Win Rate par Pair (2024-2025)</h3>
+                <h3>🎯 Win Rate par Pair</h3>
                 <div class="chart-container">
                     <canvas id="winRateChart"></canvas>
                 </div>
@@ -262,146 +253,59 @@
                 </div>
             </div>
 
-            <!-- Price Impact -->
+            <!-- Comparison Chart -->
             <div class="chart-card">
-                <h3>💰 Impact du Prix d'Entrée</h3>
+                <h3>📈 Sans vs Avec Blacklist</h3>
                 <div class="chart-container">
-                    <canvas id="priceImpactChart"></canvas>
+                    <canvas id="comparisonChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Price Analysis Section -->
-        <div class="chart-card" style="margin-top: 30px;">
-            <h3>💰 Analyse du Prix d'Achat (Backtest 2024-2025)</h3>
-            <p style="color: #888; margin-bottom: 20px;">Impact du prix d'entrée sur 32,461 trades avec 55.2% Win Rate</p>
-
+        <!-- Yearly Results -->
+        <div class="chart-card" style="margin-bottom: 30px;">
+            <h3>📅 Résultats par Année</h3>
             <table>
                 <thead>
                     <tr>
-                        <th>Prix Achat</th>
-                        <th>Coût/Trade</th>
-                        <th>Gain/Win</th>
-                        <th>Perte/Loss</th>
-                        <th>PnL Total</th>
-                        <th>Fill Rate Est.</th>
-                        <th>Status</th>
+                        <th>Année</th>
+                        <th>BTC</th>
+                        <th>ETH</th>
+                        <th>XRP</th>
+                        <th>SOL</th>
+                        <th>Total Trades</th>
+                        <th>Win Rate</th>
+                        <th>PnL</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>50¢</strong></td>
-                        <td>$2.50</td>
-                        <td class="positive">+$2.50</td>
-                        <td class="negative">-$2.50</td>
-                        <td class="positive"><strong>+$8,115</strong></td>
-                        <td>~30%</td>
-                        <td>🟡 Faible fill</td>
+                        <td><strong>2024</strong></td>
+                        <td>5,534 (56.7%)</td>
+                        <td>4,976 (55.2%)</td>
+                        <td>2,846 (56.7%)</td>
+                        <td>3,198 (55.2%)</td>
+                        <td>16,554</td>
+                        <td class="positive">56.0%</td>
+                        <td class="positive">+$2,462</td>
                     </tr>
                     <tr>
-                        <td><strong>52¢</strong></td>
-                        <td>$2.60</td>
-                        <td class="positive">+$2.40</td>
-                        <td class="negative">-$2.60</td>
-                        <td class="positive">+$5,525</td>
-                        <td>~45%</td>
-                        <td>🟡 Moyen</td>
-                    </tr>
-                    <tr class="highlight-row">
-                        <td><strong>53¢</strong> ⭐</td>
-                        <td>$2.65</td>
-                        <td class="positive">+$2.35</td>
-                        <td class="negative">-$2.65</td>
-                        <td class="positive"><strong>+$3,498</strong></td>
-                        <td>~55%</td>
-                        <td>🟢 Optimal</td>
-                    </tr>
-                    <tr>
-                        <td><strong>54¢</strong></td>
-                        <td>$2.70</td>
-                        <td class="positive">+$2.30</td>
-                        <td class="negative">-$2.70</td>
-                        <td class="positive">+$1,623</td>
-                        <td>~65%</td>
-                        <td>🟢 Bon fill</td>
-                    </tr>
-                    <tr style="background: rgba(255,215,0,0.1);">
-                        <td><strong>55¢</strong></td>
-                        <td>$2.75</td>
-                        <td class="positive">+$2.25</td>
-                        <td class="negative">-$2.75</td>
-                        <td>~$0</td>
-                        <td>~75%</td>
-                        <td>⚠️ Break-Even</td>
-                    </tr>
-                    <tr>
-                        <td><strong>56¢</strong></td>
-                        <td>$2.80</td>
-                        <td class="positive">+$2.20</td>
-                        <td class="negative">-$2.80</td>
-                        <td class="negative">-$1,948</td>
-                        <td>~80%</td>
-                        <td>🔴 Perte</td>
+                        <td><strong>2025</strong></td>
+                        <td>5,573 (54.9%)</td>
+                        <td>4,888 (56.2%)</td>
+                        <td>2,973 (57.2%)</td>
+                        <td>3,121 (55.4%)</td>
+                        <td>16,555</td>
+                        <td class="positive">55.8%</td>
+                        <td class="positive">+$2,294</td>
                     </tr>
                 </tbody>
             </table>
-
-            <div style="margin-top: 25px; padding: 20px; background: rgba(0,255,136,0.1); border-radius: 10px; border-left: 4px solid #00ff88;">
-                <h4 style="color: #00ff88; margin-bottom: 10px;">💡 Optimisation (2 mois de tests)</h4>
-                <ul style="color: #aaa; font-size: 0.95rem; list-style: none;">
-                    <li>✅ <strong>Entry -20 secondes</strong> avant la bougie (meilleur prix moyen)</li>
-                    <li>✅ <strong>Prix max 53-54¢</strong> (équilibre profit/fill rate)</li>
-                    <li>✅ <strong>Prix moyen réel: 53.5¢</strong> en conditions réelles</li>
-                </ul>
-            </div>
-
-            <div style="margin-top: 20px; padding: 20px; background: rgba(0,212,255,0.1); border-radius: 10px; border-left: 4px solid #00d4ff;">
-                <h4 style="color: #00d4ff; margin-bottom: 10px;">📐 Formule Break-Even</h4>
-                <code style="background: rgba(0,0,0,0.3); padding: 10px 15px; border-radius: 5px; display: block; margin-bottom: 15px;">
-                    Prix Break-Even = Win Rate = 55.2% ≈ 55¢
-                </code>
-                <p style="color: #aaa; font-size: 0.9rem;">
-                    Avec <strong>MAX_PRICE = 53¢</strong>, on garde une marge de <strong>2¢</strong> (3.6%) tout en ayant un fill rate acceptable (~55%).
-                </p>
-            </div>
         </div>
 
         <!-- Config Section -->
-        <div class="chart-card" style="margin-top: 30px;">
+        <div class="chart-card" style="margin-bottom: 30px;">
             <h3>⚙️ Configuration Bot Actuelle</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Paramètre</th>
-                        <th>Valeur</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>MAX_PRICE</strong></td>
-                        <td class="positive">53¢</td>
-                        <td>Prix maximum d'achat des shares</td>
-                    </tr>
-                    <tr>
-                        <td><strong>TIMING</strong></td>
-                        <td class="positive">-20 sec</td>
-                        <td>Entrée 20 secondes avant la bougie 15m</td>
-                    </tr>
-                    <tr>
-                        <td><strong>SHARES</strong></td>
-                        <td>5</td>
-                        <td>Nombre de shares par trade (~$2.65)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>COOLDOWN</strong></td>
-                        <td>15 min</td>
-                        <td>Délai minimum entre trades sur même pair</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h4 style="color: #888; margin-top: 25px; margin-bottom: 15px;">Configuration par Pair</h4>
             <table>
                 <thead>
                     <tr>
@@ -411,6 +315,7 @@
                         <th>Stoch</th>
                         <th>Seuils Stoch</th>
                         <th>Consec</th>
+                        <th>Heures Bloquées (UTC)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -421,6 +326,7 @@
                         <td>5</td>
                         <td>30 / 70</td>
                         <td>1</td>
+                        <td>4h, 14h, 15h</td>
                     </tr>
                     <tr>
                         <td><span class="badge badge-eth">ETH</span></td>
@@ -429,6 +335,7 @@
                         <td>5</td>
                         <td>30 / 70</td>
                         <td>1</td>
+                        <td>0h, 6h, 7h, 14h, 23h</td>
                     </tr>
                     <tr>
                         <td><span class="badge badge-xrp">XRP</span></td>
@@ -437,144 +344,76 @@
                         <td>5</td>
                         <td>20 / 80</td>
                         <td>2</td>
+                        <td>1h, 4h, 7h, 13h, 16h, 18h, 19h, 21h</td>
                     </tr>
+                    <tr>
+                        <td><span class="badge badge-sol">SOL</span></td>
+                        <td>7</td>
+                        <td>35 / 65</td>
+                        <td>5</td>
+                        <td>30 / 70</td>
+                        <td>1</td>
+                        <td>0h, 1h, 4h-8h, 14h, 15h, 17h, 19h, 22h, 23h</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="margin-top: 25px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                <div style="background: rgba(0,212,255,0.1); padding: 15px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 1.5rem; color: #00d4ff; font-weight: bold;">53¢</div>
+                    <div style="color: #888; font-size: 0.8rem;">MAX_PRICE</div>
+                </div>
+                <div style="background: rgba(0,255,136,0.1); padding: 15px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 1.5rem; color: #00ff88; font-weight: bold;">-20s</div>
+                    <div style="color: #888; font-size: 0.8rem;">TIMING</div>
+                </div>
+                <div style="background: rgba(168,85,247,0.1); padding: 15px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 1.5rem; color: #a855f7; font-weight: bold;">5</div>
+                    <div style="color: #888; font-size: 0.8rem;">SHARES</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PnL Summary -->
+        <div class="chart-card">
+            <h3>💵 Résumé PnL Moyen</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Métrique</th>
+                        <th>Valeur</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>PnL par trade</td><td class="positive">+$0.144</td></tr>
+                    <tr><td>PnL par jour</td><td class="positive">+$6.52</td></tr>
+                    <tr><td>PnL par semaine</td><td class="positive">+$45.64</td></tr>
+                    <tr><td>PnL par mois</td><td class="positive">+$196</td></tr>
+                    <tr><td>PnL par an</td><td class="positive">+$2,378</td></tr>
                 </tbody>
             </table>
         </div>
 
         <footer>
-            <p>Bot Polymarket - Stratégie HYBRID v2.0</p>
+            <p>Bot Polymarket - 4 Pairs + Blacklist v3.0</p>
             <p><a href="STRATEGY_GUIDE.html">📖 Guide Complet</a> | Mis à jour le 28 Décembre 2025</p>
         </footer>
     </div>
 
     <script>
-        // Chart.js Configuration
         Chart.defaults.color = '#888';
         Chart.defaults.borderColor = 'rgba(255,255,255,0.1)';
 
-        // Yearly PnL Chart
-        new Chart(document.getElementById('yearlyPnlChart'), {
+        // PnL by Pair
+        new Chart(document.getElementById('pnlByPairChart'), {
             type: 'bar',
             data: {
-                labels: ['2024', '2025'],
-                datasets: [
-                    {
-                        label: 'BTC',
-                        data: [879.75, 543.50],
-                        backgroundColor: 'rgba(247, 147, 26, 0.7)',
-                        borderColor: '#f7931a',
-                        borderWidth: 2
-                    },
-                    {
-                        label: 'ETH',
-                        data: [495.15, 736.70],
-                        backgroundColor: 'rgba(98, 126, 234, 0.7)',
-                        borderColor: '#627eea',
-                        borderWidth: 2
-                    },
-                    {
-                        label: 'XRP',
-                        data: [449.70, 393.55],
-                        backgroundColor: 'rgba(100, 100, 100, 0.7)',
-                        borderColor: '#888',
-                        borderWidth: 2
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: { padding: 15 }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: value => '$' + value
-                        }
-                    }
-                }
-            }
-        });
-
-        // Win Rate by Pair Chart
-        new Chart(document.getElementById('winRateChart'), {
-            type: 'doughnut',
-            data: {
-                labels: ['BTC (55.3%)', 'ETH (55.0%)', 'XRP (55.0%)'],
-                datasets: [{
-                    data: [55.3, 55.0, 55.0],
-                    backgroundColor: ['#f7931a', '#627eea', '#666'],
-                    borderColor: ['#f7931a', '#627eea', '#888'],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { padding: 20 }
-                    }
-                }
-            }
-        });
-
-        // Trades Distribution Chart
-        new Chart(document.getElementById('tradesDistChart'), {
-            type: 'pie',
-            data: {
-                labels: ['BTC (12,395)', 'ETH (11,971)', 'XRP (8,095)'],
-                datasets: [{
-                    data: [12395, 11971, 8095],
-                    backgroundColor: ['rgba(247, 147, 26, 0.8)', 'rgba(98, 126, 234, 0.8)', 'rgba(100, 100, 100, 0.8)'],
-                    borderColor: ['#f7931a', '#627eea', '#888'],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { padding: 20 }
-                    }
-                }
-            }
-        });
-
-        // Price Impact Chart
-        const prices = ['50¢', '52¢', '53¢', '54¢', '55¢', '56¢'];
-        const pnlByPrice = [8115, 5525, 3498, 1623, 0, -1948];
-
-        new Chart(document.getElementById('priceImpactChart'), {
-            type: 'bar',
-            data: {
-                labels: prices,
+                labels: ['BTC', 'ETH', 'XRP', 'SOL'],
                 datasets: [{
                     label: 'PnL ($)',
-                    data: pnlByPrice,
-                    backgroundColor: pnlByPrice.map((v, i) => {
-                        if (i === 2) return 'rgba(0, 212, 255, 0.9)'; // 53¢ highlighted
-                        if (v > 5000) return 'rgba(0, 255, 136, 0.7)';
-                        if (v > 0) return 'rgba(255, 215, 0, 0.7)';
-                        if (v === 0) return 'rgba(255, 255, 255, 0.3)';
-                        return 'rgba(255, 71, 87, 0.7)';
-                    }),
-                    borderColor: pnlByPrice.map((v, i) => {
-                        if (i === 2) return '#00d4ff';
-                        if (v > 5000) return '#00ff88';
-                        if (v > 0) return '#ffd700';
-                        if (v === 0) return '#888';
-                        return '#ff4757';
-                    }),
+                    data: [1551, 1325, 1155, 725],
+                    backgroundColor: ['#f7931a', '#627eea', '#23292f', '#9945ff'],
+                    borderColor: ['#f7931a', '#627eea', '#888', '#9945ff'],
                     borderWidth: 2,
                     borderRadius: 5
                 }]
@@ -582,31 +421,76 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const fillRates = ['~30%', '~45%', '~55%', '~65%', '~75%', '~80%'];
-                                return ['PnL: $' + context.raw.toLocaleString(), 'Fill Rate: ' + fillRates[context.dataIndex]];
-                            }
-                        }
-                    }
-                },
+                plugins: { legend: { display: false } },
                 scales: {
-                    y: {
-                        ticks: {
-                            callback: value => '$' + value.toLocaleString()
-                        }
-                    },
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Prix d\'achat moyen',
-                            color: '#888'
-                        }
-                    }
+                    y: { beginAtZero: true, ticks: { callback: v => '$' + v } }
                 }
+            }
+        });
+
+        // Win Rate
+        new Chart(document.getElementById('winRateChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['BTC (55.8%)', 'ETH (55.7%)', 'XRP (57.0%)', 'SOL (55.3%)'],
+                datasets: [{
+                    data: [55.8, 55.7, 57.0, 55.3],
+                    backgroundColor: ['#f7931a', '#627eea', '#666', '#9945ff'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { padding: 15 } } }
+            }
+        });
+
+        // Trades Distribution
+        new Chart(document.getElementById('tradesDistChart'), {
+            type: 'pie',
+            data: {
+                labels: ['BTC (11,107)', 'ETH (9,864)', 'XRP (5,819)', 'SOL (6,319)'],
+                datasets: [{
+                    data: [11107, 9864, 5819, 6319],
+                    backgroundColor: ['rgba(247,147,26,0.8)', 'rgba(98,126,234,0.8)', 'rgba(100,100,100,0.8)', 'rgba(153,69,255,0.8)'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { padding: 15 } } }
+            }
+        });
+
+        // Comparison Chart
+        new Chart(document.getElementById('comparisonChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Trades/jour', 'Win Rate (%)', 'PnL/jour ($)'],
+                datasets: [
+                    {
+                        label: 'Sans Blacklist',
+                        data: [54, 55.2, 4.79],
+                        backgroundColor: 'rgba(255,71,87,0.7)',
+                        borderColor: '#ff4757',
+                        borderWidth: 2
+                    },
+                    {
+                        label: 'Avec Blacklist',
+                        data: [45, 55.9, 6.52],
+                        backgroundColor: 'rgba(0,255,136,0.7)',
+                        borderColor: '#00ff88',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { beginAtZero: true } }
             }
         });
     </script>
