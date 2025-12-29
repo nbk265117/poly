@@ -1,21 +1,30 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Strategie - Botayo</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            line-height: 1.7;
+        }
         /* Navigation */
         nav {
-            background: #007bff;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
             padding: 15px 30px;
             position: sticky;
             top: 0;
             z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         nav .nav-container {
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
@@ -24,118 +33,111 @@
         nav .logo {
             font-size: 1.5rem;
             font-weight: bold;
-            color: #fff;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 30px;
-        }
-        nav a {
-            color: rgba(255,255,255,0.9);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
-        nav a:hover { color: #fff; }
-        nav a.active { color: #fff; border-bottom: 2px solid #fff; padding-bottom: 5px; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            font-size: 12pt;
-            line-height: 1.6;
-            color: #333;
-            background: #f8f9fa;
-        }
-        .content {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px;
-            background: #fff;
-        }
+        nav ul { display: flex; list-style: none; gap: 30px; }
+        nav a { color: #fff; text-decoration: none; font-weight: 500; transition: color 0.3s; }
+        nav a:hover { color: #00d4ff; }
+        nav a.active { color: #00ff88; }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+
         h1 {
-            color: #1a1a1a;
-            border-bottom: 3px solid #007bff;
-            padding-bottom: 10px;
-            font-size: 26pt;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
         }
         h2 {
-            color: #2c3e50;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 5px;
-            margin-top: 35px;
-            font-size: 18pt;
-            page-break-after: avoid;
+            color: #00d4ff;
+            font-size: 1.5rem;
+            margin: 40px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(0,212,255,0.3);
         }
-        h3 {
-            color: #34495e;
-            font-size: 14pt;
-            page-break-after: avoid;
+        h3 { color: #00ff88; font-size: 1.2rem; margin: 25px 0 15px; }
+
+        p { color: #ccc; margin-bottom: 15px; }
+        strong { color: #00d4ff; }
+
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 15px 0;
-            page-break-inside: avoid;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px 12px;
-            text-align: left;
-        }
-        th {
-            background-color: #007bff;
-            color: white;
-            font-weight: 600;
-        }
-        tr:nth-child(even) {
-            background-color: #f9f9f9;
+
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,212,255,0.2); color: #00d4ff; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; }
+        tr:hover { background: rgba(255,255,255,0.05); }
+
+        .positive { color: #00ff88; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin: 2px; }
+        .badge-btc { background: #f7931a20; color: #f7931a; }
+        .badge-eth { background: #627eea20; color: #627eea; }
+        .badge-xrp { background: #23292f20; color: #fff; border: 1px solid #555; }
+
+        pre {
+            background: rgba(0,0,0,0.4);
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9rem;
+            color: #00ff88;
+            border: 1px solid rgba(0,255,136,0.2);
         }
         code {
-            background-color: #f4f4f4;
-            padding: 2px 6px;
-            border-radius: 3px;
+            background: rgba(0,212,255,0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
             font-family: 'Monaco', 'Consolas', monospace;
-            font-size: 11pt;
+            color: #00d4ff;
         }
-        pre {
-            background-color: #1e1e1e;
-            color: #d4d4d4;
-            padding: 15px;
-            border-radius: 5px;
-            overflow-x: auto;
-            font-size: 10pt;
-            page-break-inside: avoid;
+
+        .highlight-box {
+            background: rgba(0,255,136,0.1);
+            border-left: 4px solid #00ff88;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
         }
-        pre code {
-            background-color: transparent;
-            padding: 0;
-            color: inherit;
+        .warning-box {
+            background: rgba(255,193,7,0.1);
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
         }
-        hr {
-            border: none;
-            border-top: 1px solid #eee;
-            margin: 30px 0;
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
         }
-        strong {
-            color: #007bff;
+        .stat-box {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
         }
-        @media print {
-            body {
-                padding: 20px;
-                font-size: 11pt;
-            }
-            h1 {
-                font-size: 22pt;
-            }
-            h2 {
-                font-size: 16pt;
-            }
-            pre {
-                font-size: 9pt;
-            }
-            .no-print {
-                display: none;
-            }
+        .stat-box .value { font-size: 1.8rem; font-weight: bold; color: #00d4ff; }
+        .stat-box .label { font-size: 0.8rem; color: #888; text-transform: uppercase; margin-top: 5px; }
+
+        footer { text-align: center; padding: 40px; color: #666; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 60px; }
+
+        @media (max-width: 768px) {
+            nav ul { gap: 15px; }
+            h1 { font-size: 1.8rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -150,764 +152,173 @@
             </ul>
         </div>
     </nav>
-    <div class="content">
-    <div class="no-print" style="background:#007bff;color:white;padding:15px;margin-bottom:20px;border-radius:5px;text-align:center;">
-        <strong>Pour sauvegarder en PDF:</strong> Appuie sur Cmd+P (Mac) ou Ctrl+P (Windows) - "Enregistrer en PDF"
-    </div>
-<h1>Bot Polymarket - Guide Strategie Mean Reversion</h1>
 
-<h2>1. CONCEPT GÉNÉRAL</h2>
+    <div class="container">
+        <h1>Strategie Mean Reversion</h1>
 
-<p>Tu trades sur <strong>Polymarket</strong> des marchés binaires "Up or Down" sur crypto:
-- <strong>BTC</strong> va-t-il monter ou descendre dans les 15 prochaines minutes?
-- <strong>ETH</strong> va-t-il monter ou descendre dans les 15 prochaines minutes?
-- <strong>XRP</strong> va-t-il monter ou descendre dans les 15 prochaines minutes?</p>
+        <div class="highlight-box">
+            <strong>Strategie basee sur le backtest 2024-2025</strong><br>
+            Configuration optimisee pour 3 paires (BTC, ETH, XRP) avec entry price 52.5c
+        </div>
 
-<p><strong>Paiement:</strong> Si tu as raison → tu récupères $1 par share. Si tu as tort → tu perds ta mise.</p>
+        <h2>1. Concept General</h2>
+        <div class="card">
+            <p>Trading sur <strong>Polymarket</strong> des marches binaires "Up or Down" sur crypto:</p>
+            <ul style="color:#ccc; margin-left:20px;">
+                <li><span class="badge badge-btc">BTC</span> va-t-il monter ou descendre dans les 15 prochaines minutes?</li>
+                <li><span class="badge badge-eth">ETH</span> va-t-il monter ou descendre dans les 15 prochaines minutes?</li>
+                <li><span class="badge badge-xrp">XRP</span> va-t-il monter ou descendre dans les 15 prochaines minutes?</li>
+            </ul>
+            <p style="margin-top:15px;"><strong>Paiement:</strong> Si tu as raison → tu recuperes $1 par share. Si tu as tort → tu perds ta mise.</p>
+        </div>
 
-<hr />
+        <h2>2. Strategie Mean Reversion</h2>
+        <div class="card">
+            <p><strong>Principe:</strong> Apres un mouvement extreme, le prix tend a revenir vers sa moyenne.</p>
+            <table>
+                <thead>
+                    <tr><th>Condition</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Prix monte trop haut (RSI > 65)</td><td class="positive">Parie <strong>DOWN</strong></td></tr>
+                    <tr><td>Prix descend trop bas (RSI < 35)</td><td class="positive">Parie <strong>UP</strong></td></tr>
+                </tbody>
+            </table>
+        </div>
 
-<h2>2. STRATÉGIE: MEAN REVERSION (Retour à la Moyenne)</h2>
+        <h2>3. Indicateurs Utilises</h2>
 
-<p><strong>Principe:</strong> Après un mouvement extrême, le prix tend à revenir vers sa moyenne.</p>
+        <h3>A) RSI (Relative Strength Index)</h3>
+        <div class="card">
+            <p>Mesure la force relative des mouvements de prix recents. Varie de 0 a 100.</p>
+            <table>
+                <thead><tr><th>RSI</th><th>Interpretation</th><th>Signal</th></tr></thead>
+                <tbody>
+                    <tr><td>&lt; 35</td><td>Survendu (trop de ventes)</td><td class="positive">UP</td></tr>
+                    <tr><td>&gt; 65</td><td>Surachete (trop d'achats)</td><td class="positive">DOWN</td></tr>
+                    <tr><td>35-65</td><td>Zone neutre</td><td>Pas de signal</td></tr>
+                </tbody>
+            </table>
+            <pre>RSI = 100 - (100 / (1 + RS))
+RS = Moyenne des gains / Moyenne des pertes</pre>
+        </div>
 
-<table>
-<thead>
-<tr>
-  <th>Condition</th>
-  <th>Action</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>Prix monte trop haut</td>
-  <td>Il va probablement redescendre → Parie <strong>DOWN</strong></td>
-</tr>
-<tr>
-  <td>Prix descend trop bas</td>
-  <td>Il va probablement remonter → Parie <strong>UP</strong></td>
-</tr>
-</tbody>
-</table>
+        <h3>B) Stochastic %K</h3>
+        <div class="card">
+            <p>Compare le prix de cloture actuel au range haut/bas sur une periode donnee.</p>
+            <table>
+                <thead><tr><th>Stochastic</th><th>Interpretation</th><th>Signal</th></tr></thead>
+                <tbody>
+                    <tr><td>&lt; 30</td><td>Prix proche du bas</td><td class="positive">UP</td></tr>
+                    <tr><td>&gt; 70</td><td>Prix proche du haut</td><td class="positive">DOWN</td></tr>
+                </tbody>
+            </table>
+            <pre>%K = 100 × (Close - Low_n) / (High_n - Low_n)</pre>
+        </div>
 
-<hr />
+        <h2>4. Configuration Actuelle</h2>
+        <div class="card">
+            <p>Configuration unifiee pour toutes les paires (optimisee par backtest):</p>
+            <div class="stats-grid">
+                <div class="stat-box"><div class="value">7</div><div class="label">RSI Period</div></div>
+                <div class="stat-box"><div class="value">35/65</div><div class="label">RSI Seuils</div></div>
+                <div class="stat-box"><div class="value">5</div><div class="label">Stoch Period</div></div>
+                <div class="stat-box"><div class="value">30/70</div><div class="label">Stoch Seuils</div></div>
+                <div class="stat-box"><div class="value">52.5c</div><div class="label">Entry Price</div></div>
+                <div class="stat-box"><div class="value">-20s</div><div class="label">Timing</div></div>
+            </div>
+        </div>
 
-<h2>3. INDICATEURS UTILISÉS</h2>
+        <h2>5. Generation des Signaux</h2>
+        <div class="card">
+            <h3>Signal UP (acheter "le prix va monter")</h3>
+            <pre>RSI < 35 ET Stoch < 30</pre>
 
-<h3>A) RSI (Relative Strength Index)</h3>
+            <h3>Signal DOWN (acheter "le prix va baisser")</h3>
+            <pre>RSI > 65 ET Stoch > 70</pre>
+        </div>
 
-<p>Le RSI mesure la force relative des mouvements de prix récents. Il varie de 0 à 100.</p>
+        <h2>6. Timing: -20 Secondes</h2>
+        <div class="card">
+            <p>Le bot analyse le marche <strong>20 secondes avant</strong> la fin de chaque bougie 15 minutes.</p>
+            <pre>Bougie 15m: 18:00:00 → 18:14:59
+                        │
+                18:14:40 = Analyse (-20 sec)
+                        │
+                Signal detecte? → Placer ordre
+                        │
+                18:15:00 = Nouvelle bougie commence
+                        │
+                18:30:00 = Resolution du marche</pre>
+        </div>
 
-<table>
-<thead>
-<tr>
-  <th>RSI</th>
-  <th>Interprétation</th>
-  <th>Signal</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>&lt; 35</td>
-  <td>Survendu (trop de ventes)</td>
-  <td><strong>UP</strong></td>
-</tr>
-<tr>
-  <td>&gt; 65</td>
-  <td>Suracheté (trop d'achats)</td>
-  <td><strong>DOWN</strong></td>
-</tr>
-<tr>
-  <td>35-65</td>
-  <td>Zone neutre</td>
-  <td>Pas de signal</td>
-</tr>
-</tbody>
-</table>
+        <h2>7. Resultats Backtest 2024-2025</h2>
+        <div class="card">
+            <table>
+                <thead>
+                    <tr><th>Annee</th><th>Trades</th><th>Trades/jour</th><th>Win Rate</th><th>PnL/mois ($100)</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>2024</strong></td><td>37,924</td><td>103.9</td><td class="positive">55.1%</td><td class="positive">$18,343</td></tr>
+                    <tr><td><strong>2025</strong></td><td>39,405</td><td>109.2</td><td class="positive">54.5%</td><td class="positive">$15,796</td></tr>
+                </tbody>
+            </table>
 
-<p><strong>Formule:</strong></p>
+            <h3>Par Paire (2025, config actuelle 52.5c)</h3>
+            <table>
+                <thead>
+                    <tr><th>Paire</th><th>Trades/jour</th><th>Win Rate</th><th>PnL/mois</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><span class="badge badge-btc">BTC</span></td><td>27.8</td><td class="positive">54.7%</td><td class="positive">$3,495</td></tr>
+                    <tr><td><span class="badge badge-eth">ETH</span></td><td>26.0</td><td class="positive">55.4%</td><td class="positive">$4,309</td></tr>
+                    <tr><td><span class="badge badge-xrp">XRP</span></td><td>27.1</td><td class="positive">54.4%</td><td class="positive">$2,942</td></tr>
+                    <tr style="background:rgba(0,255,136,0.1);font-weight:bold;"><td>TOTAL</td><td>80.9</td><td class="positive">54.8%</td><td class="positive">$10,746</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-<pre><code>RSI = 100 - (100 / (1 + RS))
-RS = Moyenne des gains / Moyenne des pertes
-</code></pre>
+        <div class="warning-box">
+            <strong>Note:</strong> SOL a ete retire car son Win Rate de 53.7% etait trop proche du seuil de rentabilite (52%).
+        </div>
 
-<h3>B) Stochastic %K</h3>
+        <h2>8. Money Management</h2>
+        <div class="card">
+            <div class="stats-grid">
+                <div class="stat-box"><div class="value">$100</div><div class="label">Mise/Trade</div></div>
+                <div class="stat-box"><div class="value">190</div><div class="label">Shares</div></div>
+                <div class="stat-box"><div class="value">52.5c</div><div class="label">Prix Max</div></div>
+                <div class="stat-box"><div class="value">$90.48</div><div class="label">Gain si Win</div></div>
+            </div>
 
-<p>Compare le prix de clôture actuel au range haut/bas sur une période donnée.</p>
+            <h3>Calcul de rentabilite (54.8% Win Rate)</h3>
+            <pre>Sur 100 trades a $100 chacun:
 
-<table>
-<thead>
-<tr>
-  <th>Stochastic</th>
-  <th>Interprétation</th>
-  <th>Signal</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>&lt; 30</td>
-  <td>Prix proche du bas</td>
-  <td><strong>UP</strong></td>
-</tr>
-<tr>
-  <td>&gt; 70</td>
-  <td>Prix proche du haut</td>
-  <td><strong>DOWN</strong></td>
-</tr>
-</tbody>
-</table>
-
-<p><strong>Formule:</strong></p>
-
-<pre><code>%K = 100 × (Close - Low_n) / (High_n - Low_n)
-</code></pre>
-
-<h3>C) Bougies Consécutives</h3>
-
-<p>Compte le nombre de bougies allant dans la même direction.</p>
-
-<table>
-<thead>
-<tr>
-  <th>Condition</th>
-  <th>Signal</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>3+ bougies DOWN consécutives</td>
-  <td>Retournement probable → <strong>UP</strong></td>
-</tr>
-<tr>
-  <td>3+ bougies UP consécutives</td>
-  <td>Retournement probable → <strong>DOWN</strong></td>
-</tr>
-</tbody>
-</table>
-
-<hr />
-
-<h2>4. CONFIGURATION HYBRID PAR SYMBOLE</h2>
-
-<p>La stratégie HYBRID utilise des paramètres différents pour chaque crypto:</p>
-
-<h3>BTC (Bitcoin)</h3>
-
-<table>
-<thead>
-<tr>
-  <th>Paramètre</th>
-  <th>Valeur</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>RSI Period</td>
-  <td>7</td>
-</tr>
-<tr>
-  <td>RSI Oversold</td>
-  <td>&lt; 35</td>
-</tr>
-<tr>
-  <td>RSI Overbought</td>
-  <td>&gt; 65</td>
-</tr>
-<tr>
-  <td>Stoch Period</td>
-  <td>5</td>
-</tr>
-<tr>
-  <td>Stoch Oversold</td>
-  <td>&lt; 30</td>
-</tr>
-<tr>
-  <td>Stoch Overbought</td>
-  <td>&gt; 70</td>
-</tr>
-<tr>
-  <td>Consec Threshold</td>
-  <td>1</td>
-</tr>
-<tr>
-  <td><strong>Trades attendus/jour</strong></td>
-  <td>~40</td>
-</tr>
-<tr>
-  <td><strong>Win Rate attendu</strong></td>
-  <td>56%</td>
-</tr>
-</tbody>
-</table>
-
-<h3>ETH (Ethereum)</h3>
-
-<table>
-<thead>
-<tr>
-  <th>Paramètre</th>
-  <th>Valeur</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>RSI Period</td>
-  <td>7</td>
-</tr>
-<tr>
-  <td>RSI Oversold</td>
-  <td>&lt; 35</td>
-</tr>
-<tr>
-  <td>RSI Overbought</td>
-  <td>&gt; 65</td>
-</tr>
-<tr>
-  <td>Stoch Period</td>
-  <td>5</td>
-</tr>
-<tr>
-  <td>Stoch Oversold</td>
-  <td>&lt; 30</td>
-</tr>
-<tr>
-  <td>Stoch Overbought</td>
-  <td>&gt; 70</td>
-</tr>
-<tr>
-  <td>Consec Threshold</td>
-  <td>1</td>
-</tr>
-<tr>
-  <td><strong>Trades attendus/jour</strong></td>
-  <td>~40</td>
-</tr>
-<tr>
-  <td><strong>Win Rate attendu</strong></td>
-  <td>56%</td>
-</tr>
-</tbody>
-</table>
-
-<h3>XRP (Ripple)</h3>
-
-<table>
-<thead>
-<tr>
-  <th>Paramètre</th>
-  <th>Valeur</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>RSI Period</td>
-  <td>5</td>
-</tr>
-<tr>
-  <td>RSI Oversold</td>
-  <td>&lt; 25</td>
-</tr>
-<tr>
-  <td>RSI Overbought</td>
-  <td>&gt; 75</td>
-</tr>
-<tr>
-  <td>Stoch Period</td>
-  <td>5</td>
-</tr>
-<tr>
-  <td>Stoch Oversold</td>
-  <td>&lt; 20</td>
-</tr>
-<tr>
-  <td>Stoch Overbought</td>
-  <td>&gt; 80</td>
-</tr>
-<tr>
-  <td>Consec Threshold</td>
-  <td>2</td>
-</tr>
-<tr>
-  <td><strong>Trades attendus/jour</strong></td>
-  <td>~18</td>
-</tr>
-<tr>
-  <td><strong>Win Rate attendu</strong></td>
-  <td>55%</td>
-</tr>
-</tbody>
-</table>
-
-<p><strong>Pourquoi XRP est différent?</strong>
-- XRP est plus volatile
-- Configuration plus stricte (RSI 25/75 au lieu de 35/65)
-- Nécessite 2 bougies consécutives en plus des indicateurs</p>
-
-<hr />
-
-<h2>5. GÉNÉRATION DES SIGNAUX</h2>
-
-<h3>Signal UP (acheter "le prix va monter")</h3>
-
-<pre><code>Pour BTC/ETH:
-  RSI &lt; 35 ET Stoch &lt; 30
-
-Pour XRP:
-  RSI &lt; 25 ET Stoch &lt; 20 ET consec_down &gt;= 2
-</code></pre>
-
-<h3>Signal DOWN (acheter "le prix va baisser")</h3>
-
-<pre><code>Pour BTC/ETH:
-  RSI &gt; 65 ET Stoch &gt; 70
-
-Pour XRP:
-  RSI &gt; 75 ET Stoch &gt; 80 ET consec_up &gt;= 2
-</code></pre>
-
-<hr />
-
-<h2>6. TIMING: -8 SECONDES</h2>
-
-<p>Le bot analyse le marché <strong>8 secondes avant</strong> la fin de chaque bougie 15 minutes.</p>
-
-<pre><code>Bougie 15m: 18:00:00 → 18:14:59
-                            │
-                    18:14:52 = Analyse (-8 sec)
-                            │
-                    Signal détecté? → Placer ordre
-                            │
-                    18:15:00 = Nouvelle bougie commence
-                            │
-                    18:30:00 = Résolution du marché
-</code></pre>
-
-<p><strong>Pourquoi -8 secondes?</strong>
-1. Avoir les données les plus récentes possibles
-2. Placer l'ordre AVANT que le nouveau marché commence
-3. Trader sur le marché de la PROCHAINE bougie 15m</p>
-
-<hr />
-
-<h2>7. FLUX D'EXÉCUTION COMPLET</h2>
-
-<pre><code>┌─────────────────────────────────────────────────────────┐
-│  1. ATTENDRE                                            │
-│     → Calculer temps jusqu'à -8 sec avant bougie 15m    │
-│     → sleep(temps)                                      │
-└─────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────┐
-│  2. RÉCUPÉRER DONNÉES (Binance)                         │
-│     → fetch_ohlcv('BTC/USDT', '15m', limit=50)          │
-│     → fetch_ohlcv('ETH/USDT', '15m', limit=50)          │
-│     → fetch_ohlcv('XRP/USDT', '15m', limit=50)          │
-└─────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────┐
-│  3. CALCULER INDICATEURS (pour chaque symbole)          │
-│     → RSI avec période configurée                       │
-│     → Stochastic %K                                     │
-│     → Bougies consécutives                              │
-└─────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────┐
-│  4. GÉNÉRER SIGNAL                                      │
-│     → Vérifier conditions RSI + Stoch (+ consec)        │
-│     → Signal UP, DOWN, ou rien                          │
-└─────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────┐
-│  5. VÉRIFIER COOLDOWN                                   │
-│     → Dernier trade sur ce symbole &gt; 15 min?            │
-│     → Si non, skip ce symbole                           │
-└─────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────┐
-│  6. PLACER ORDRE (Polymarket)                           │
-│     → Trouver le marché actif (ex: BTC Up/Down 15m)     │
-│     → Vérifier prix &lt;= 50¢                              │
-│     → Créer ordre limite: 5 shares @ 50¢ max            │
-│     → Poster l'ordre via API                            │
-└─────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────┐
-│  7. NOTIFICATION TELEGRAM                               │
-│     → Envoyer détails du trade                          │
-│     → Symbole, direction, BET, TO WIN, prix             │
-└─────────────────────────────────────────────────────────┘
-                           │
-                           ▼
-             (Répéter toutes les 15 minutes)
-</code></pre>
-
-<hr />
-
-<h2>8. EXEMPLE CONCRET</h2>
-
-<pre><code>🕐 18:14:52 UTC - Analyse déclenchée
-
-📊 BTC/USDT:
-   Données: 50 dernières bougies 15m
-   RSI(7) = 26.6   (&lt; 35 ✓ survendu)
-   Stoch(5) = 0.0  (&lt; 30 ✓ proche du bas)
-
-📈 Signal généré: UP (le prix devrait remonter)
-
-🎯 TRADE:
-   Marché: "Bitcoin Up or Down - 18:15-18:30"
-   Pari: UP (Yes)
-   Shares: 5
-   Prix: 50¢
-   Coût total: $2.50
-
-✅ Résultat à 18:30:
-   Si BTC a monté  → Gain: $5.00 - $2.50 = +$2.50 (100%)
-   Si BTC a baissé → Perte: -$2.50 (100%)
-</code></pre>
-
-<hr />
-
-<h2>9. MONEY MANAGEMENT</h2>
-
-<h3>Paramètres de trading</h3>
-
-<table>
-<thead>
-<tr>
-  <th>Paramètre</th>
-  <th>Valeur</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>Shares par trade</td>
-  <td>5</td>
-</tr>
-<tr>
-  <td>Prix maximum</td>
-  <td>50¢</td>
-</tr>
-<tr>
-  <td>Coût max par trade</td>
-  <td>$2.50</td>
-</tr>
-<tr>
-  <td>Gain potentiel max</td>
-  <td>$2.50 (100%)</td>
-</tr>
-<tr>
-  <td>Cooldown</td>
-  <td>15 min par symbole</td>
-</tr>
-</tbody>
-</table>
-
-<h3>Calcul de rentabilité (avec 55% Win Rate)</h3>
-
-<pre><code>Sur 100 trades à $2.50 chacun:
-
-Misé total:    100 × $2.50 = $250.00
-Gains (55%):    55 × $2.50 = $137.50
-Pertes (45%):   45 × $2.50 = -$112.50
+Mise totale:    100 × $100 = $10,000
+Gains (54.8%):   54.8 × $90.48 = $4,958
+Pertes (45.2%):  45.2 × $100 = -$4,520
 ─────────────────────────────────────
-Profit net:                  +$25.00 (10% ROI)
-</code></pre>
+Profit net:                   +$438 (4.38% ROI)</pre>
+        </div>
 
-<h3>Projection mensuelle</h3>
+        <h2>9. Deploiement VPS</h2>
+        <div class="card">
+            <table>
+                <thead><tr><th>Parametre</th><th>Valeur</th></tr></thead>
+                <tbody>
+                    <tr><td>Provider</td><td>AWS Lightsail</td></tr>
+                    <tr><td>OS</td><td>Ubuntu 22.04</td></tr>
+                    <tr><td>Region</td><td>ca-central-1</td></tr>
+                    <tr><td>Bots actifs</td><td>3 (BTC, ETH, XRP)</td></tr>
+                    <tr><td>Mode</td><td>Systemd services (auto-restart)</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-<table>
-<thead>
-<tr>
-  <th>Métrique</th>
-  <th>Valeur</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>Trades/jour</td>
-  <td>~98</td>
-</tr>
-<tr>
-  <td>Trades/mois</td>
-  <td>~2,940</td>
-</tr>
-<tr>
-  <td>Win Rate</td>
-  <td>55.5%</td>
-</tr>
-<tr>
-  <td>Profit/trade</td>
-  <td>~$0.25</td>
-</tr>
-<tr>
-  <td><strong>Profit/mois</strong></td>
-  <td><strong>~$735</strong></td>
-</tr>
-</tbody>
-</table>
-
-<hr />
-
-<h2>10. RÉSULTATS DE BACKTEST (2024-2025)</h2>
-
-<h3>Par symbole et année</h3>
-
-<table>
-<thead>
-<tr>
-  <th>Année</th>
-  <th>Symbole</th>
-  <th>Trades</th>
-  <th>Trades/jour</th>
-  <th>Win Rate</th>
-  <th>PnL</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>2024</td>
-  <td>BTC</td>
-  <td>14,461</td>
-  <td>39.5</td>
-  <td>56.0%</td>
-  <td>+$4,358</td>
-</tr>
-<tr>
-  <td>2024</td>
-  <td>ETH</td>
-  <td>13,979</td>
-  <td>38.2</td>
-  <td>55.4%</td>
-  <td>+$3,788</td>
-</tr>
-<tr>
-  <td>2024</td>
-  <td>XRP</td>
-  <td>6,522</td>
-  <td>17.8</td>
-  <td>57.1%</td>
-  <td>+$2,300</td>
-</tr>
-<tr>
-  <td><strong>2024</strong></td>
-  <td><strong>Total</strong></td>
-  <td><strong>34,962</strong></td>
-  <td><strong>95.5</strong></td>
-  <td><strong>56.0%</strong></td>
-  <td><strong>+$10,445</strong></td>
-</tr>
-<tr>
-  <td>2025</td>
-  <td>BTC</td>
-  <td>15,382</td>
-  <td>42.5</td>
-  <td>54.6%</td>
-  <td>+$3,525</td>
-</tr>
-<tr>
-  <td>2025</td>
-  <td>ETH</td>
-  <td>14,132</td>
-  <td>39.0</td>
-  <td>55.1%</td>
-  <td>+$3,620</td>
-</tr>
-<tr>
-  <td>2025</td>
-  <td>XRP</td>
-  <td>7,149</td>
-  <td>19.7</td>
-  <td>55.8%</td>
-  <td>+$2,072</td>
-</tr>
-<tr>
-  <td><strong>2025</strong></td>
-  <td><strong>Total</strong></td>
-  <td><strong>36,663</strong></td>
-  <td><strong>101.2</strong></td>
-  <td><strong>55.0%</strong></td>
-  <td><strong>+$9,218</strong></td>
-</tr>
-</tbody>
-</table>
-
-<h3>Résumé global</h3>
-
-<table>
-<thead>
-<tr>
-  <th>Métrique</th>
-  <th>Valeur</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>Total trades</td>
-  <td>71,625</td>
-</tr>
-<tr>
-  <td>Trades/jour moyen</td>
-  <td>~98</td>
-</tr>
-<tr>
-  <td>Win Rate global</td>
-  <td>55.5%</td>
-</tr>
-<tr>
-  <td><strong>PnL total</strong></td>
-  <td><strong>+$19,662</strong></td>
-</tr>
-</tbody>
-</table>
-
-<hr />
-
-<h2>11. FICHIERS DU PROJET</h2>
-
-<table>
-<thead>
-<tr>
-  <th>Fichier</th>
-  <th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td><code>bot_simple.py</code></td>
-  <td>Bot principal, boucle de trading</td>
-</tr>
-<tr>
-  <td><code>src/polymarket_client.py</code></td>
-  <td>Connexion API Polymarket</td>
-</tr>
-<tr>
-  <td><code>src/telegram_bot.py</code></td>
-  <td>Notifications Telegram</td>
-</tr>
-<tr>
-  <td><code>src/config.py</code></td>
-  <td>Chargement configuration (.env)</td>
-</tr>
-<tr>
-  <td><code>src/trade_validator.py</code></td>
-  <td>Validation des prix</td>
-</tr>
-<tr>
-  <td><code>logs/bot_simple.log</code></td>
-  <td>Logs du bot</td>
-</tr>
-</tbody>
-</table>
-
-<hr />
-
-<h2>12. CONFIGURATION SERVEUR (VPS)</h2>
-
-<table>
-<thead>
-<tr>
-  <th>Paramètre</th>
-  <th>Valeur</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>Provider</td>
-  <td>AWS Lightsail</td>
-</tr>
-<tr>
-  <td>OS</td>
-  <td>Ubuntu 22.04</td>
-</tr>
-<tr>
-  <td>Région</td>
-  <td>ca-central-1</td>
-</tr>
-<tr>
-  <td>Path</td>
-  <td>/home/ubuntu/poly</td>
-</tr>
-<tr>
-  <td>Service</td>
-  <td>bot_simple.py</td>
-</tr>
-</tbody>
-</table>
-
-<h3>Commandes utiles</h3>
-
-<div class="codehilite">
-<pre><span></span><code><span class="c1"># Démarrer le bot</span>
-<span class="nb">cd</span><span class="w"> </span>/home/ubuntu/poly
-<span class="nb">source</span><span class="w"> </span>venv/bin/activate
-<span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;OUI&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>nohup<span class="w"> </span>python<span class="w"> </span>-u<span class="w"> </span>bot_simple.py<span class="w"> </span>--live<span class="w"> </span>--shares<span class="w"> </span><span class="m">5</span><span class="w"> </span>&gt;<span class="w"> </span>logs/bot_simple.log<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span><span class="w"> </span><span class="p">&amp;</span>
-
-<span class="c1"># Vérifier le status</span>
-ps<span class="w"> </span>aux<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>bot_simple
-
-<span class="c1"># Voir les logs</span>
-tail<span class="w"> </span>-f<span class="w"> </span>logs/bot_simple.log
-
-<span class="c1"># Arrêter le bot</span>
-pkill<span class="w"> </span>-f<span class="w"> </span>bot_simple.py
-</code></pre>
-</div>
-
-<h3>Cron jobs configurés</h3>
-
-<table>
-<thead>
-<tr>
-  <th>Heure (UTC)</th>
-  <th>Script</th>
-  <th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td>04:00</td>
-  <td>daily_maintenance.sh</td>
-  <td>Nettoyage logs + vérification bot</td>
-</tr>
-<tr>
-  <td>13:00</td>
-  <td>daily_summary.py</td>
-  <td>Résumé quotidien</td>
-</tr>
-</tbody>
-</table>
-
-<hr />
-
-<h2>13. SCHÉMA RÉCAPITULATIF</h2>
-
-<pre><code>     BINANCE                          POLYMARKET
-    (données)                          (trading)
-        │                                  │
-        ▼                                  ▼
-   ┌─────────┐    ┌──────────────┐   ┌─────────────┐
-   │ BTC 15m │───▶│ RSI &lt; 35 ?   │──▶│ BUY UP 5sh  │
-   │ ETH 15m │    │ Stoch &lt; 30 ? │   │ @ 50¢ max   │
-   │ XRP 15m │    └──────────────┘   └─────────────┘
-   └─────────┘          │                  │
-                        ▼                  ▼
-                   ┌─────────┐      ┌─────────────┐
-                   │ Signal  │      │  TELEGRAM   │
-                   │ UP/DOWN │      │ Notification│
-                   └─────────┘      └─────────────┘
-</code></pre>
-
-<hr />
-
-<p><em>Document mis a jour le 29 Decembre 2025</em><br>
-<em>Strategie Mean Reversion v4.0</em></p>
+        <footer>
+            <p>Botayo - Bot Polymarket v4.0</p>
+            <p>Mis a jour le 29 Decembre 2025</p>
+        </footer>
     </div>
 </body>
 </html>
