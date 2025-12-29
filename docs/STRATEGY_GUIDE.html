@@ -139,9 +139,175 @@
             h1 { font-size: 1.8rem; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
+
+        /* PIN Lock Overlay */
+        .pin-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .pin-box {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            max-width: 350px;
+            width: 90%;
+        }
+        .pin-box h2 {
+            color: #00d4ff;
+            margin-bottom: 10px;
+            border: none;
+            font-size: 1.5rem;
+        }
+        .pin-box p {
+            color: #888;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+        }
+        .pin-input {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .pin-input input {
+            width: 50px;
+            height: 60px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            color: #00ff88;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .pin-input input:focus {
+            border-color: #00d4ff;
+        }
+        .pin-input input.error {
+            border-color: #ff4757;
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .pin-error {
+            color: #ff4757;
+            font-size: 0.85rem;
+            margin-top: -15px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .pin-btn {
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            color: #000;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .pin-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(0,212,255,0.4);
+        }
+        .lock-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        .content-locked { display: none; }
+        .content-unlocked { display: block; }
     </style>
 </head>
 <body>
+    <!-- PIN Lock Overlay -->
+    <div class="pin-overlay" id="pinOverlay">
+        <div class="pin-box">
+            <div class="lock-icon">🔒</div>
+            <h2>Acces Protege</h2>
+            <p>Entrez le code PIN pour acceder a la strategie</p>
+            <div class="pin-input">
+                <input type="text" maxlength="1" class="pin-digit" data-index="0" inputmode="numeric" pattern="[0-9]">
+                <input type="text" maxlength="1" class="pin-digit" data-index="1" inputmode="numeric" pattern="[0-9]">
+                <input type="text" maxlength="1" class="pin-digit" data-index="2" inputmode="numeric" pattern="[0-9]">
+                <input type="text" maxlength="1" class="pin-digit" data-index="3" inputmode="numeric" pattern="[0-9]">
+            </div>
+            <p class="pin-error" id="pinError">Code PIN incorrect</p>
+            <button class="pin-btn" onclick="verifyPin()">Deverrouiller</button>
+        </div>
+    </div>
+
+    <script>
+        const CORRECT_PIN = '1991';
+        const pinInputs = document.querySelectorAll('.pin-digit');
+
+        // Auto-focus et navigation entre les inputs
+        pinInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                const value = e.target.value;
+                if (value && index < pinInputs.length - 1) {
+                    pinInputs[index + 1].focus();
+                }
+                // Auto-verify quand tous les chiffres sont entres
+                if (index === pinInputs.length - 1 && value) {
+                    verifyPin();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    pinInputs[index - 1].focus();
+                }
+                if (e.key === 'Enter') {
+                    verifyPin();
+                }
+            });
+        });
+
+        // Focus sur le premier input au chargement
+        pinInputs[0].focus();
+
+        function verifyPin() {
+            const enteredPin = Array.from(pinInputs).map(i => i.value).join('');
+
+            if (enteredPin === CORRECT_PIN) {
+                document.getElementById('pinOverlay').style.display = 'none';
+                sessionStorage.setItem('strategyUnlocked', 'true');
+            } else {
+                document.getElementById('pinError').style.display = 'block';
+                pinInputs.forEach(input => {
+                    input.classList.add('error');
+                    input.value = '';
+                });
+                pinInputs[0].focus();
+                setTimeout(() => {
+                    pinInputs.forEach(input => input.classList.remove('error'));
+                    document.getElementById('pinError').style.display = 'none';
+                }, 1500);
+            }
+        }
+
+        // Verifier si deja deverrouille dans cette session
+        if (sessionStorage.getItem('strategyUnlocked') === 'true') {
+            document.getElementById('pinOverlay').style.display = 'none';
+        }
+    </script>
     <nav>
         <div class="nav-container">
             <div class="logo">Botayo</div>
