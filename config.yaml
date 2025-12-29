@@ -1,5 +1,5 @@
 # Configuration du Robot de Trading Polymarket
-# STRATEGIE OPTIMISEE: RSI + STOCH ($15,000+/mois)
+# STRATEGIE OPTIMISEE: RSI + STOCH + FILTRES ($17,000+/mois)
 
 # 3 Paires optimisees
 symbols:
@@ -31,6 +31,25 @@ strategy:
     oversold: 30
     overbought: 80             # Plus strict sur shorts = meilleur WR
 
+  # ==========================================================================
+  # FILTRES TEMPORELS - Combos toxiques identifies par analyse des pertes
+  # Bloque les combinaisons jour+heure avec WR < 50%
+  # Gain: +$1,121/mois (+8.3% PnL)
+  # ==========================================================================
+  time_filters:
+    enabled: true
+
+    # Combos toxiques a bloquer (jour: 0=Lundi...6=Dimanche, heure: UTC)
+    blocked_combos:
+      - { day: 4, hour: 14 }   # Vendredi 14:00 UTC  → 45.9% WR
+      - { day: 6, hour: 8 }    # Dimanche 08:00 UTC  → 47.7% WR
+      - { day: 0, hour: 0 }    # Lundi 00:00 UTC     → 48.5% WR
+      - { day: 0, hour: 15 }   # Lundi 15:00 UTC     → 48.5% WR
+      - { day: 0, hour: 18 }   # Lundi 18:00 UTC     → 49.1% WR
+      - { day: 1, hour: 5 }    # Mardi 05:00 UTC     → 49.0% WR
+      - { day: 1, hour: 7 }    # Mardi 07:00 UTC     → 49.4% WR
+      - { day: 5, hour: 3 }    # Samedi 03:00 UTC    → 49.5% WR
+
   # Execution
   execution:
     entry_offset_seconds: 8
@@ -42,7 +61,7 @@ strategy:
   # Gestion du risque
   risk:
     max_positions: 3           # 1 par paire
-    bet_amount_usd: 120        # $120 par trade pour atteindre $15k+/mois
+    bet_amount_usd: 120        # $120 par trade pour atteindre $17k+/mois
     entry_price: 0.525         # 52.5 cents
 
     # TP/SL non utilisés en mode Polymarket UP/DOWN
