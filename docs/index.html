@@ -12,7 +12,6 @@
             color: #fff;
             min-height: 100vh;
         }
-        /* Navigation */
         nav {
             background: rgba(0,0,0,0.3);
             backdrop-filter: blur(10px);
@@ -36,26 +35,12 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 30px;
-        }
-        nav a {
-            color: #fff;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-        }
+        nav ul { display: flex; list-style: none; gap: 30px; }
+        nav a { color: #fff; text-decoration: none; font-weight: 500; transition: color 0.3s; }
         nav a:hover { color: #00d4ff; }
         nav a.active { color: #00ff88; }
         .container { max-width: 1400px; margin: 0 auto; padding: 40px 20px; }
-
-        /* Hero */
-        .hero {
-            text-align: center;
-            padding: 80px 20px;
-        }
+        .hero { text-align: center; padding: 80px 20px; }
         .hero h1 {
             font-size: 3.5rem;
             margin-bottom: 20px;
@@ -63,18 +48,8 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .hero p {
-            font-size: 1.3rem;
-            color: #888;
-            margin-bottom: 40px;
-        }
-        .badge-row {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-bottom: 40px;
-        }
+        .hero p { font-size: 1.3rem; color: #888; margin-bottom: 40px; }
+        .badge-row { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 40px; }
         .badge {
             background: rgba(0,212,255,0.15);
             color: #00d4ff;
@@ -85,8 +60,6 @@
         }
         .badge.green { background: rgba(0,255,136,0.15); color: #00ff88; border-color: rgba(0,255,136,0.3); }
         .badge.purple { background: rgba(168,85,247,0.15); color: #a855f7; border-color: rgba(168,85,247,0.3); }
-
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -111,8 +84,6 @@
         .stat-value.yellow { color: #ffd700; }
         .stat-value.purple { color: #a855f7; }
         .stat-label { color: #888; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; }
-
-        /* Features */
         .features {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -125,14 +96,8 @@
             padding: 40px;
             border: 1px solid rgba(255,255,255,0.08);
         }
-        .feature-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            color: #00d4ff;
-        }
+        .feature-card h3 { font-size: 1.3rem; margin-bottom: 15px; color: #00d4ff; }
         .feature-card p { color: #888; line-height: 1.8; }
-
-        /* CTA */
         .cta-section {
             text-align: center;
             padding: 60px;
@@ -151,21 +116,9 @@
             text-decoration: none;
             transition: transform 0.3s, box-shadow 0.3s;
         }
-        .btn-primary {
-            background: linear-gradient(90deg, #00d4ff, #00ff88);
-            color: #000;
-        }
-        .btn-secondary {
-            background: transparent;
-            border: 2px solid #00d4ff;
-            color: #00d4ff;
-        }
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0,212,255,0.3);
-        }
-
-        /* Footer */
+        .btn-primary { background: linear-gradient(90deg, #00d4ff, #00ff88); color: #000; }
+        .btn-secondary { background: transparent; border: 2px solid #00d4ff; color: #00d4ff; }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,212,255,0.3); }
         footer {
             text-align: center;
             padding: 40px;
@@ -174,7 +127,6 @@
             margin-top: 60px;
         }
         footer a { color: #00d4ff; text-decoration: none; }
-
         @media (max-width: 900px) {
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
             .features { grid-template-columns: 1fr; }
@@ -201,68 +153,67 @@
 
     <div class="hero">
         <h1>Bot Trading Polymarket</h1>
-        <p>Strategie Mean Reversion automatisee sur 4 crypto-monnaies</p>
+        <p>Strategie RSI + Stochastic optimisee sur 3 crypto-monnaies</p>
         <div class="badge-row">
             <span class="badge">BTC</span>
             <span class="badge">ETH</span>
             <span class="badge">XRP</span>
-            <span class="badge">SOL</span>
-            <span class="badge green">54.6% Win Rate</span>
-            <span class="badge purple">109 trades/jour</span>
+            <span class="badge green">55% Win Rate</span>
+            <span class="badge purple">94 trades/jour</span>
         </div>
     </div>
 
     <div class="container">
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-value green">$15,948</div>
-                <div class="stat-label">PnL Mensuel ($100/trade)</div>
+                <div class="stat-value green">$16,297</div>
+                <div class="stat-label">PnL Mensuel Moyen</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value blue">54.6%</div>
-                <div class="stat-label">Win Rate 2025</div>
+                <div class="stat-value blue">55.0%</div>
+                <div class="stat-label">Win Rate Moyen</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value yellow">109</div>
+                <div class="stat-value yellow">94</div>
                 <div class="stat-label">Trades / Jour</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value purple">4</div>
-                <div class="stat-label">Crypto Pairs</div>
+                <div class="stat-value purple">$120</div>
+                <div class="stat-label">Mise / Trade</div>
             </div>
         </div>
 
         <div class="features">
             <div class="feature-card">
-                <h3>Mean Reversion</h3>
-                <p>Strategie basee sur le retour a la moyenne. Quand le prix monte trop, on parie DOWN. Quand il descend trop, on parie UP.</p>
+                <h3>RSI + Stochastic</h3>
+                <p>Strategie optimisee avec RSI(7) seuils 38/58 et Stochastic(5) seuils 30/80. Configuration asymetrique pour maximum de trades rentables.</p>
             </div>
             <div class="feature-card">
-                <h3>Indicateurs RSI + Stoch</h3>
-                <p>RSI(7) avec seuils 35/65 et Stochastic(5) avec seuils 30/70 pour detecter les zones de surachat/survente.</p>
+                <h3>3 Pairs Optimisees</h3>
+                <p>BTC, ETH et XRP selectionnees pour leur liquidite et win rate superieur. ETH est le meilleur performer avec 55.8% WR.</p>
             </div>
             <div class="feature-card">
-                <h3>Trading 24/7</h3>
-                <p>Bot automatise sur VPS AWS. Analyse toutes les 15 minutes, 20 secondes avant chaque bougie. Zero intervention humaine.</p>
+                <h3>$120/Trade</h3>
+                <p>Mise optimisee a $120 par trade @ 52.5c pour atteindre l'objectif de $15,000+ mensuel. WIN: +$108.57 | LOSS: -$120.</p>
             </div>
         </div>
 
         <div class="cta-section">
             <h2>Resultats Backtest 2024-2025</h2>
-            <p style="color:#888; margin-bottom:20px;">Base sur 2 ans de donnees historiques avec simulation realiste</p>
+            <p style="color:#888; margin-bottom:20px;">Base sur 2 ans de donnees historiques (70,080 candles/pair)</p>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; text-align:left; max-width:600px; margin:0 auto;">
                 <div>
                     <h4 style="color:#00d4ff; margin-bottom:15px;">2024</h4>
-                    <p>Trades: 37,924</p>
-                    <p>Win Rate: 55.1%</p>
-                    <p style="color:#00ff88; font-weight:bold;">PnL: $18,343/mois</p>
+                    <p>Trades: 33,259</p>
+                    <p>Win Rate: 55.5%</p>
+                    <p style="color:#00ff88; font-weight:bold;">PnL: $18,581/mois</p>
                 </div>
                 <div>
                     <h4 style="color:#00d4ff; margin-bottom:15px;">2025</h4>
-                    <p>Trades: 39,405</p>
-                    <p>Win Rate: 54.5%</p>
-                    <p style="color:#00ff88; font-weight:bold;">PnL: $15,796/mois</p>
+                    <p>Trades: 34,650</p>
+                    <p>Win Rate: 54.6%</p>
+                    <p style="color:#00ff88; font-weight:bold;">PnL: $14,013/mois</p>
                 </div>
             </div>
 
@@ -274,7 +225,7 @@
     </div>
 
     <footer>
-        <p>Botayo - Bot Polymarket v4.0</p>
+        <p>Botayo - Bot Polymarket v5.0</p>
         <p>Mis a jour le 29 Decembre 2025</p>
     </footer>
 </body>

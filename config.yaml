@@ -1,59 +1,49 @@
 # Configuration du Robot de Trading Polymarket
-# STRATÉGIE : MEAN REVERSION (Win Rate 55%+, 30+ trades/jour)
+# STRATEGIE OPTIMISEE: RSI + STOCH ($15,000+/mois)
 
-# Paires à trader (BTC uniquement pour concentration)
+# 3 Paires optimisees
 symbols:
   - BTC/USDT
+  - ETH/USDT
+  - XRP/USDT
 
 # Timeframes
 timeframes:
-  primary: 15m      # Timeframe principal pour Polymarket
+  primary: 15m
 
-# Stratégie Mean Reversion
-# RÈGLES :
-# 1. Signal UP  : 3+ bougies DOWN consécutives OU RSI < 30
-# 2. Signal DOWN: 3+ bougies UP consécutives OU RSI > 70
+# Strategie Optimisee RSI + Stochastic
+# REGLES SIMPLES:
+# - UP Signal:   RSI(7) < 38 AND Stoch(5) < 30
+# - DOWN Signal: RSI(7) > 58 AND Stoch(5) > 80
 
 strategy:
-  # Type de stratégie
-  type: mean_reversion  # 'mean_reversion' ou 'legacy' (ancienne stratégie)
+  type: rsi_stoch_optimized
 
-  # Indicateurs Mean Reversion
-  mean_reversion:
-    # Indicateur 1 : Bougies consécutives
-    consecutive_threshold: 3     # Nombre de bougies consécutives pour signal
+  # RSI - Seuils elargis pour plus de trades
+  rsi:
+    period: 7
+    oversold: 38               # Plus large que 35 = +30% trades
+    overbought: 58             # Plus large que 65 = +30% trades
 
-    # Indicateur 2 : RSI
-    rsi_period: 14               # Période RSI standard
-    rsi_oversold: 30             # Seuil survente (signal UP)
-    rsi_overbought: 70           # Seuil surachat (signal DOWN)
+  # Stochastic - Asymetrique pour meilleur WR
+  stochastic:
+    period: 5
+    oversold: 30
+    overbought: 80             # Plus strict sur shorts = meilleur WR
 
-    # Indicateur 3 : Momentum (optionnel)
-    use_momentum_filter: true    # Utiliser le filtre momentum
-    momentum_period: 3           # Nombre de bougies pour calcul momentum
-
-  # Anciens indicateurs (désactivés par défaut)
-  indicators:
-    price_action:
-      enabled: false
-    ftfc:
-      enabled: false
-    volume:
-      enabled: false
-
-  # Exécution
+  # Execution
   execution:
-    entry_offset_seconds: 8    # Entrée 8 secondes avant clôture bougie
-    min_trades_per_day: 20     # Objectif minimum
-    max_trades_per_day: 100    # Pas de limite stricte
-    enable_buy_signals: true   # Signaux UP activés (55.2% win rate)
-    enable_sell_signals: true  # Signaux DOWN activés (55.1% win rate)
+    entry_offset_seconds: 8
+    min_trades_per_day: 30
+    max_trades_per_day: 150
+    enable_buy_signals: true
+    enable_sell_signals: true
 
-  # Gestion du risque (mode Polymarket - pas de TP/SL)
+  # Gestion du risque
   risk:
-    max_positions: 1           # 1 position à la fois (Polymarket)
-    position_size_usd: 5       # IMPORTANT: C'est le nombre de SHARES (pas USD!)
-                               # 5 shares @ 50c = $2.50 de mise
+    max_positions: 3           # 1 par paire
+    bet_amount_usd: 120        # $120 par trade pour atteindre $15k+/mois
+    entry_price: 0.525         # 52.5 cents
 
     # TP/SL non utilisés en mode Polymarket UP/DOWN
     stop_loss_percent: 0       # N/A pour Polymarket
