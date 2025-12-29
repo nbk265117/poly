@@ -138,7 +138,24 @@
             nav ul { gap: 15px; }
             h1 { font-size: 1.8rem; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            pre { font-size: 0.8rem; padding: 15px; }
         }
+        @media (max-width: 500px) {
+            nav .nav-container { flex-direction: column; gap: 15px; }
+            nav ul { gap: 10px; font-size: 0.9rem; }
+            h1 { font-size: 1.5rem; }
+            h2 { font-size: 1.2rem; }
+            .container { padding: 20px 15px; }
+            .card { padding: 15px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .stat-box { padding: 15px 10px; }
+            .stat-box .value { font-size: 1.3rem; }
+            table { font-size: 0.85rem; }
+            th, td { padding: 8px 10px; }
+            pre { font-size: 0.75rem; overflow-x: auto; }
+            .highlight-box, .warning-box { padding: 15px; font-size: 0.9rem; }
+        }
+        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
         /* PIN Lock Overlay */
         .pin-overlay {
@@ -314,7 +331,7 @@
             <ul>
                 <li><a href="index.html">Accueil</a></li>
                 <li><a href="stats.html">Statistiques</a></li>
-                <li><a href="STRATEGY_GUIDE.html" class="active">Strategie</a></li>
+                <li><a href="strategy.html" class="active">Strategie</a></li>
             </ul>
         </div>
     </nav>
@@ -341,7 +358,7 @@
         <h2>2. Strategie Mean Reversion</h2>
         <div class="card">
             <p><strong>Principe:</strong> Apres un mouvement extreme, le prix tend a revenir vers sa moyenne.</p>
-            <table>
+            <div class="table-wrapper"><table>
                 <thead>
                     <tr><th>Condition</th><th>Action</th></tr>
                 </thead>
@@ -349,7 +366,7 @@
                     <tr><td>Prix monte trop haut (RSI > 65)</td><td class="positive">Parie <strong>DOWN</strong></td></tr>
                     <tr><td>Prix descend trop bas (RSI < 35)</td><td class="positive">Parie <strong>UP</strong></td></tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <h2>3. Indicateurs Utilises</h2>
@@ -357,14 +374,14 @@
         <h3>A) RSI (Relative Strength Index)</h3>
         <div class="card">
             <p>Mesure la force relative des mouvements de prix recents. Varie de 0 a 100.</p>
-            <table>
+            <div class="table-wrapper"><table>
                 <thead><tr><th>RSI</th><th>Interpretation</th><th>Signal</th></tr></thead>
                 <tbody>
                     <tr><td>&lt; 35</td><td>Survendu (trop de ventes)</td><td class="positive">UP</td></tr>
                     <tr><td>&gt; 65</td><td>Surachete (trop d'achats)</td><td class="positive">DOWN</td></tr>
                     <tr><td>35-65</td><td>Zone neutre</td><td>Pas de signal</td></tr>
                 </tbody>
-            </table>
+            </table></div>
             <pre>RSI = 100 - (100 / (1 + RS))
 RS = Moyenne des gains / Moyenne des pertes</pre>
         </div>
@@ -372,13 +389,13 @@ RS = Moyenne des gains / Moyenne des pertes</pre>
         <h3>B) Stochastic %K</h3>
         <div class="card">
             <p>Compare le prix de cloture actuel au range haut/bas sur une periode donnee.</p>
-            <table>
+            <div class="table-wrapper"><table>
                 <thead><tr><th>Stochastic</th><th>Interpretation</th><th>Signal</th></tr></thead>
                 <tbody>
                     <tr><td>&lt; 30</td><td>Prix proche du bas</td><td class="positive">UP</td></tr>
                     <tr><td>&gt; 70</td><td>Prix proche du haut</td><td class="positive">DOWN</td></tr>
                 </tbody>
-            </table>
+            </table></div>
             <pre>%K = 100 × (Close - Low_n) / (High_n - Low_n)</pre>
         </div>
 
@@ -420,7 +437,7 @@ RS = Moyenne des gains / Moyenne des pertes</pre>
 
         <h2>7. Resultats Backtest 2024-2025</h2>
         <div class="card">
-            <table>
+            <div class="table-wrapper"><table>
                 <thead>
                     <tr><th>Annee</th><th>Trades</th><th>Trades/jour</th><th>Win Rate</th><th>PnL/mois ($100)</th></tr>
                 </thead>
@@ -428,10 +445,10 @@ RS = Moyenne des gains / Moyenne des pertes</pre>
                     <tr><td><strong>2024</strong></td><td>37,924</td><td>103.9</td><td class="positive">55.1%</td><td class="positive">$18,343</td></tr>
                     <tr><td><strong>2025</strong></td><td>39,405</td><td>109.2</td><td class="positive">54.5%</td><td class="positive">$15,796</td></tr>
                 </tbody>
-            </table>
+            </table></div>
 
             <h3>Par Paire (2025, config actuelle 52.5c)</h3>
-            <table>
+            <div class="table-wrapper"><table>
                 <thead>
                     <tr><th>Paire</th><th>Trades/jour</th><th>Win Rate</th><th>PnL/mois</th></tr>
                 </thead>
@@ -441,7 +458,7 @@ RS = Moyenne des gains / Moyenne des pertes</pre>
                     <tr><td><span class="badge badge-xrp">XRP</span></td><td>27.1</td><td class="positive">54.4%</td><td class="positive">$2,942</td></tr>
                     <tr style="background:rgba(0,255,136,0.1);font-weight:bold;"><td>TOTAL</td><td>80.9</td><td class="positive">54.8%</td><td class="positive">$10,746</td></tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <div class="warning-box">
@@ -469,7 +486,7 @@ Profit net:                   +$438 (4.38% ROI)</pre>
 
         <h2>9. Deploiement VPS</h2>
         <div class="card">
-            <table>
+            <div class="table-wrapper"><table>
                 <thead><tr><th>Parametre</th><th>Valeur</th></tr></thead>
                 <tbody>
                     <tr><td>Provider</td><td>AWS Lightsail</td></tr>
@@ -478,7 +495,7 @@ Profit net:                   +$438 (4.38% ROI)</pre>
                     <tr><td>Bots actifs</td><td>3 (BTC, ETH, XRP)</td></tr>
                     <tr><td>Mode</td><td>Systemd services (auto-restart)</td></tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <footer>

@@ -41,12 +41,13 @@
         .stat-value.yellow { color: #ffd700; }
         .stat-value.purple { color: #a855f7; }
         .stat-label { color: #888; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
-        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 30px; margin-bottom: 30px; }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 500px), 1fr)); gap: 30px; margin-bottom: 30px; }
         .chart-card { background: rgba(255,255,255,0.05); border-radius: 15px; padding: 25px; border: 1px solid rgba(255,255,255,0.1); }
         .chart-card h3 { margin-bottom: 20px; color: #00d4ff; font-size: 1.2rem; }
         .chart-container { position: relative; height: 300px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; min-width: 400px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); white-space: nowrap; }
         th { background: rgba(0,212,255,0.2); color: #00d4ff; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
         tr:hover { background: rgba(255,255,255,0.05); }
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
@@ -58,7 +59,23 @@
         .highlight-row { background: rgba(0,255,136,0.1) !important; border-left: 3px solid #00ff88; }
         footer { text-align: center; padding: 30px; color: #666; font-size: 0.9rem; }
         footer a { color: #00d4ff; text-decoration: none; }
-        @media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr; } .chart-container { height: 250px; } h1 { font-size: 1.8rem; } nav ul { gap: 15px; } }
+        @media (max-width: 768px) {
+            .charts-grid { grid-template-columns: 1fr; }
+            .chart-container { height: 250px; }
+            h1 { font-size: 1.8rem; }
+            nav ul { gap: 15px; }
+            .config-grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 500px) {
+            nav .nav-container { flex-direction: column; gap: 15px; }
+            nav ul { gap: 10px; font-size: 0.9rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .stat-value { font-size: 1.8rem; }
+            .stat-card { padding: 15px; }
+            .chart-card { padding: 15px; }
+            .config-grid-4 { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+            th, td { padding: 8px 10px; font-size: 0.85rem; }
+        }
     </style>
 </head>
 <body>
@@ -68,7 +85,7 @@
             <ul>
                 <li><a href="index.html">Accueil</a></li>
                 <li><a href="stats.html" class="active">Statistiques</a></li>
-                <li><a href="STRATEGY_GUIDE.html">Strategie</a></li>
+                <li><a href="strategy.html">Strategie</a></li>
             </ul>
         </div>
     </nav>
@@ -103,7 +120,7 @@
 
         <div class="chart-card" style="margin-bottom: 30px;">
             <h3>Resultats par Pair (Moyenne 2024-2025)</h3>
-            <table>
+            <div class="table-wrapper"><table>
                 <thead>
                     <tr>
                         <th>Pair</th>
@@ -148,7 +165,7 @@
                         <td class="positive">$14,013</td>
                     </tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <div class="charts-grid">
@@ -180,7 +197,7 @@
 
         <div class="chart-card" style="margin-bottom: 30px;">
             <h3>Top Mois (PnL > $20,000)</h3>
-            <table>
+            <div class="table-wrapper"><table>
                 <thead>
                     <tr><th>Mois</th><th>Win Rate</th><th>PnL</th></tr>
                 </thead>
@@ -194,12 +211,12 @@
                     <tr><td>Juil 2025</td><td class="positive">55.4%</td><td class="positive">$20,280</td></tr>
                     <tr><td>Jan 2025</td><td class="positive">55.8%</td><td class="positive">$20,674</td></tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <div class="chart-card" style="margin-bottom: 30px;">
             <h3>Meilleures Heures (UTC)</h3>
-            <table>
+            <div class="table-wrapper"><table>
                 <thead><tr><th>Heure</th><th>Win Rate</th><th>Status</th></tr></thead>
                 <tbody>
                     <tr><td>12:00</td><td class="positive">59.4%</td><td style="color:#00ff88;">BEST</td></tr>
@@ -209,20 +226,20 @@
                     <tr><td>10:00</td><td class="positive">56.4%</td><td style="color:#00d4ff;">Excellent</td></tr>
                     <tr><td>13:00</td><td class="positive">56.4%</td><td style="color:#00d4ff;">Excellent</td></tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <div class="chart-card" style="margin-bottom: 30px;">
             <h3>Configuration Actuelle</h3>
-            <table>
+            <div class="table-wrapper"><table>
                 <thead><tr><th>Pair</th><th>RSI</th><th>RSI Seuils</th><th>Stoch</th><th>Stoch Seuils</th></tr></thead>
                 <tbody>
                     <tr><td><span class="badge badge-btc">BTC</span></td><td>7</td><td>38 / 58</td><td>5</td><td>30 / 80</td></tr>
                     <tr><td><span class="badge badge-eth">ETH</span></td><td>7</td><td>38 / 58</td><td>5</td><td>30 / 80</td></tr>
                     <tr><td><span class="badge badge-xrp">XRP</span></td><td>7</td><td>38 / 58</td><td>5</td><td>30 / 80</td></tr>
                 </tbody>
-            </table>
-            <div style="margin-top: 25px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+            </table></div>
+            <div class="config-grid-4" style="margin-top: 25px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
                 <div style="background: rgba(0,212,255,0.1); padding: 15px; border-radius: 10px; text-align: center;">
                     <div style="font-size: 1.5rem; color: #00d4ff; font-weight: bold;">52.5c</div>
                     <div style="color: #888; font-size: 0.8rem;">ENTRY PRICE</div>
@@ -244,7 +261,7 @@
 
         <div class="chart-card">
             <h3>Resume PnL ($120/trade)</h3>
-            <table>
+            <div class="table-wrapper"><table>
                 <thead><tr><th>Metrique</th><th>Valeur</th></tr></thead>
                 <tbody>
                     <tr><td>PnL par jour</td><td class="positive">+$543</td></tr>
@@ -252,12 +269,12 @@
                     <tr><td>PnL par mois</td><td class="positive">+$16,297</td></tr>
                     <tr><td>PnL par an</td><td class="positive">+$195,564</td></tr>
                 </tbody>
-            </table>
+            </table></div>
         </div>
 
         <footer>
             <p>Botayo - Bot Polymarket v5.0</p>
-            <p><a href="STRATEGY_GUIDE.html">Guide Strategie</a> | Mis a jour le 29 Decembre 2025</p>
+            <p><a href="strategy.html">Guide Strategie</a> | Mis a jour le 29 Decembre 2025</p>
         </footer>
     </div>
 

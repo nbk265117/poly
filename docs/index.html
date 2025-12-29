@@ -132,10 +132,21 @@
             .features { grid-template-columns: 1fr; }
             .hero h1 { font-size: 2.5rem; }
             nav ul { gap: 15px; }
+            .cta-grid { grid-template-columns: 1fr !important; }
         }
         @media (max-width: 600px) {
             .stats-grid { grid-template-columns: 1fr; }
             nav .container { flex-direction: column; gap: 15px; }
+            .hero { padding: 40px 15px; }
+            .hero h1 { font-size: 2rem; }
+            .hero p { font-size: 1rem; }
+            .stat-value { font-size: 2rem; }
+            .stat-card { padding: 20px; }
+            .cta-section { padding: 30px 20px; }
+            .cta-section h2 { font-size: 1.5rem; }
+            .cta-buttons { flex-direction: column; gap: 15px; }
+            .btn { width: 100%; text-align: center; }
+            .badge { padding: 8px 15px; font-size: 0.85rem; }
         }
     </style>
 </head>
@@ -146,7 +157,7 @@
             <ul>
                 <li><a href="index.html" class="active">Accueil</a></li>
                 <li><a href="stats.html">Statistiques</a></li>
-                <li><a href="STRATEGY_GUIDE.html">Strategie</a></li>
+                <li><a href="strategy.html">Strategie</a></li>
             </ul>
         </div>
     </nav>
@@ -202,7 +213,7 @@
             <h2>Resultats Backtest 2024-2025</h2>
             <p style="color:#888; margin-bottom:20px;">Base sur 2 ans de donnees historiques (70,080 candles/pair)</p>
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; text-align:left; max-width:600px; margin:0 auto;">
+            <div class="cta-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:30px; text-align:left; max-width:600px; margin:0 auto;">
                 <div>
                     <h4 style="color:#00d4ff; margin-bottom:15px;">2024</h4>
                     <p>Trades: 33,259</p>
@@ -219,7 +230,7 @@
 
             <div class="cta-buttons">
                 <a href="stats.html" class="btn btn-primary">Voir les Stats</a>
-                <a href="STRATEGY_GUIDE.html" class="btn btn-secondary">Guide Strategie</a>
+                <a href="strategy.html" class="btn btn-secondary">Guide Strategie</a>
             </div>
         </div>
     </div>

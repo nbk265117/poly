@@ -4,5 +4,5 @@
 
 [[redirects]]
   from = "/"
-  to = "/STRATEGY_GUIDE.html"
+  to = "/index.html"
   status = 200
