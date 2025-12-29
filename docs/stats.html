@@ -120,53 +120,54 @@
         </div>
 
         <div class="chart-card" style="margin-bottom: 30px;">
-            <h3>Resultats par Pair (avec Filtres Temporels)</h3>
+            <h3>Classement par Win Rate + Allocation Shares</h3>
             <div class="table-wrapper"><table>
                 <thead>
                     <tr>
+                        <th>Rang</th>
                         <th>Pair</th>
-                        <th>Trades/jour</th>
+                        <th>WR Moyen</th>
                         <th>WR 2024</th>
                         <th>WR 2025</th>
-                        <th>PnL 2024</th>
-                        <th>PnL 2025</th>
+                        <th>Shares</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td><span class="badge badge-btc">BTC</span></td>
-                        <td>29-32</td>
-                        <td class="positive">56.2%</td>
-                        <td class="positive">54.6%</td>
-                        <td class="positive">$7,850</td>
-                        <td class="positive">$4,620</td>
-                    </tr>
-                    <tr>
+                    <tr class="highlight-row">
+                        <td style="color:#ffd700;">🥇 #1</td>
                         <td><span class="badge badge-eth">ETH</span></td>
-                        <td>27-29</td>
-                        <td class="positive">56.3%</td>
-                        <td class="positive">55.8%</td>
-                        <td class="positive">$7,580</td>
-                        <td class="positive">$6,520</td>
+                        <td class="positive" style="font-weight:bold;">56.20%</td>
+                        <td class="positive">56.44%</td>
+                        <td class="positive">55.96%</td>
+                        <td style="color:#00ff88; font-weight:bold;">10 shares</td>
                     </tr>
                     <tr>
-                        <td><span class="badge badge-xrp">XRP</span></td>
-                        <td>29-31</td>
-                        <td class="positive">54.9%</td>
-                        <td class="positive">54.5%</td>
-                        <td class="positive">$4,494</td>
-                        <td class="positive">$4,547</td>
+                        <td style="color:#c0c0c0;">🥈 #2</td>
+                        <td><span class="badge badge-btc">BTC</span></td>
+                        <td class="positive" style="font-weight:bold;">55.58%</td>
+                        <td class="positive">56.41%</td>
+                        <td class="positive">54.82%</td>
+                        <td style="color:#00d4ff; font-weight:bold;">7 shares</td>
                     </tr>
-                    <tr class="highlight-row" style="font-weight: bold;">
+                    <tr>
+                        <td style="color:#cd7f32;">🥉 #3</td>
+                        <td><span class="badge badge-xrp">XRP</span></td>
+                        <td class="positive" style="font-weight:bold;">55.40%</td>
+                        <td class="positive">56.18%</td>
+                        <td class="positive">54.66%</td>
+                        <td style="color:#a855f7; font-weight:bold;">5 shares</td>
+                    </tr>
+                    <tr style="background: rgba(255,255,255,0.05); font-weight: bold;">
+                        <td></td>
                         <td>TOTAL</td>
-                        <td>86-90</td>
-                        <td class="positive">55.8%</td>
-                        <td class="positive">55.0%</td>
-                        <td class="positive">$19,924</td>
-                        <td class="positive">$15,687</td>
+                        <td class="positive">55.73%</td>
+                        <td class="positive">56.34%</td>
+                        <td class="positive">55.15%</td>
+                        <td style="color:#ffd700;">22 shares</td>
                     </tr>
                 </tbody>
             </table></div>
+            <p style="color:#888; margin-top:15px; font-size:0.9rem;">Allocation basee sur Win Rate: plus le WR est eleve, plus on alloue de shares</p>
         </div>
 
         <div class="charts-grid">
@@ -319,8 +320,8 @@
         new Chart(document.getElementById('winRateChart'), {
             type: 'doughnut',
             data: {
-                labels: ['BTC (55.4%)', 'ETH (56.1%)', 'XRP (54.7%)'],
-                datasets: [{ data: [55.4, 56.1, 54.7], backgroundColor: ['#f7931a', '#627eea', '#666'], borderWidth: 2 }]
+                labels: ['ETH (56.2%) 🥇', 'BTC (55.6%) 🥈', 'XRP (55.4%) 🥉'],
+                datasets: [{ data: [56.2, 55.6, 55.4], backgroundColor: ['#627eea', '#f7931a', '#666'], borderWidth: 2 }]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 15 } } } }
         });
