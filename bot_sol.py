@@ -40,7 +40,7 @@ CONFIG = {
     'blocked_hours': [],  # Aucune - maximise trades
 }
 
-MAX_PRICE = 0.52  # 52¢ comme Adnane
+MAX_PRICE = 0.52  # 52¢
 
 # Logging
 logger = logging.getLogger(f'bot_{BASE.lower()}')
