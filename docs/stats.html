@@ -93,33 +93,34 @@
     <div class="container">
         <h1>Statistiques Bot</h1>
         <p class="subtitle">
-            3 Pairs - Backtest 2024-2025 - $120/trade<br>
+            3 Pairs - Backtest 2024-2025 - $120/trade + Filtres Temporels<br>
             <span class="config-badge">Entry: 52.5c</span>
             <span class="config-badge">RSI: 38/58</span>
             <span class="config-badge">Stoch: 30/80</span>
+            <span class="config-badge">8 Combos Bloques</span>
         </p>
 
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-value green">$16,297</div>
+                <div class="stat-value green">$17,939</div>
                 <div class="stat-label">PnL Mensuel Moyen</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value blue">55.0%</div>
+                <div class="stat-value blue">55.4%</div>
                 <div class="stat-label">Win Rate Moyen</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value yellow">67,909</div>
+                <div class="stat-value yellow">64,536</div>
                 <div class="stat-label">Total Trades (2 ans)</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value purple">94/jour</div>
+                <div class="stat-value purple">88/jour</div>
                 <div class="stat-label">Trades/Jour</div>
             </div>
         </div>
 
         <div class="chart-card" style="margin-bottom: 30px;">
-            <h3>Resultats par Pair (Moyenne 2024-2025)</h3>
+            <h3>Resultats par Pair (avec Filtres Temporels)</h3>
             <div class="table-wrapper"><table>
                 <thead>
                     <tr>
@@ -134,35 +135,35 @@
                 <tbody>
                     <tr>
                         <td><span class="badge badge-btc">BTC</span></td>
-                        <td>31-34</td>
-                        <td class="positive">55.9%</td>
-                        <td class="positive">54.3%</td>
-                        <td class="positive">$7,316</td>
-                        <td class="positive">$4,285</td>
+                        <td>29-32</td>
+                        <td class="positive">56.2%</td>
+                        <td class="positive">54.6%</td>
+                        <td class="positive">$7,850</td>
+                        <td class="positive">$4,620</td>
                     </tr>
                     <tr>
                         <td><span class="badge badge-eth">ETH</span></td>
-                        <td>29-30</td>
-                        <td class="positive">56.0%</td>
-                        <td class="positive">55.5%</td>
-                        <td class="positive">$7,097</td>
-                        <td class="positive">$6,103</td>
+                        <td>27-29</td>
+                        <td class="positive">56.3%</td>
+                        <td class="positive">55.8%</td>
+                        <td class="positive">$7,580</td>
+                        <td class="positive">$6,520</td>
                     </tr>
                     <tr>
                         <td><span class="badge badge-xrp">XRP</span></td>
-                        <td>31-32</td>
+                        <td>29-31</td>
+                        <td class="positive">54.9%</td>
                         <td class="positive">54.5%</td>
-                        <td class="positive">54.1%</td>
-                        <td class="positive">$4,168</td>
-                        <td class="positive">$3,625</td>
+                        <td class="positive">$4,494</td>
+                        <td class="positive">$4,547</td>
                     </tr>
                     <tr class="highlight-row" style="font-weight: bold;">
                         <td>TOTAL</td>
-                        <td>91-96</td>
-                        <td class="positive">55.5%</td>
-                        <td class="positive">54.6%</td>
-                        <td class="positive">$18,581</td>
-                        <td class="positive">$14,013</td>
+                        <td>86-90</td>
+                        <td class="positive">55.8%</td>
+                        <td class="positive">55.0%</td>
+                        <td class="positive">$19,924</td>
+                        <td class="positive">$15,687</td>
                     </tr>
                 </tbody>
             </table></div>
@@ -230,6 +231,24 @@
         </div>
 
         <div class="chart-card" style="margin-bottom: 30px;">
+            <h3>Combos Bloques (Filtres Temporels)</h3>
+            <p style="color:#888; margin-bottom:15px;">8 combinaisons jour+heure avec WR &lt; 50% - eliminees pour +$1,364/mois</p>
+            <div class="table-wrapper"><table>
+                <thead><tr><th>Jour</th><th>Heure (UTC)</th><th>Win Rate</th><th>Impact</th></tr></thead>
+                <tbody>
+                    <tr><td>Vendredi</td><td>14:00</td><td class="negative">45.9%</td><td class="negative">Toxique</td></tr>
+                    <tr><td>Dimanche</td><td>08:00</td><td class="negative">47.7%</td><td class="negative">Toxique</td></tr>
+                    <tr><td>Lundi</td><td>00:00</td><td class="negative">48.5%</td><td class="negative">Toxique</td></tr>
+                    <tr><td>Lundi</td><td>15:00</td><td class="negative">48.5%</td><td class="negative">Toxique</td></tr>
+                    <tr><td>Lundi</td><td>18:00</td><td class="negative">49.1%</td><td class="negative">Toxique</td></tr>
+                    <tr><td>Mardi</td><td>05:00</td><td class="negative">49.0%</td><td class="negative">Toxique</td></tr>
+                    <tr><td>Mardi</td><td>07:00</td><td class="negative">49.4%</td><td class="negative">Toxique</td></tr>
+                    <tr><td>Samedi</td><td>03:00</td><td class="negative">49.5%</td><td class="negative">Toxique</td></tr>
+                </tbody>
+            </table></div>
+        </div>
+
+        <div class="chart-card" style="margin-bottom: 30px;">
             <h3>Configuration Actuelle</h3>
             <div class="table-wrapper"><table>
                 <thead><tr><th>Pair</th><th>RSI</th><th>RSI Seuils</th><th>Stoch</th><th>Stoch Seuils</th></tr></thead>
@@ -260,20 +279,20 @@
         </div>
 
         <div class="chart-card">
-            <h3>Resume PnL ($120/trade)</h3>
+            <h3>Resume PnL ($120/trade + Filtres)</h3>
             <div class="table-wrapper"><table>
-                <thead><tr><th>Metrique</th><th>Valeur</th></tr></thead>
+                <thead><tr><th>Metrique</th><th>Sans Filtres</th><th>Avec Filtres</th><th>Gain</th></tr></thead>
                 <tbody>
-                    <tr><td>PnL par jour</td><td class="positive">+$543</td></tr>
-                    <tr><td>PnL par semaine</td><td class="positive">+$3,801</td></tr>
-                    <tr><td>PnL par mois</td><td class="positive">+$16,297</td></tr>
-                    <tr><td>PnL par an</td><td class="positive">+$195,564</td></tr>
+                    <tr><td>PnL par jour</td><td>+$552</td><td class="positive">+$598</td><td class="positive">+$46</td></tr>
+                    <tr><td>PnL par semaine</td><td>+$3,864</td><td class="positive">+$4,186</td><td class="positive">+$322</td></tr>
+                    <tr><td>PnL par mois</td><td>+$16,575</td><td class="positive">+$17,939</td><td class="positive">+$1,364</td></tr>
+                    <tr><td>PnL par an</td><td>+$198,900</td><td class="positive">+$215,268</td><td class="positive">+$16,368</td></tr>
                 </tbody>
             </table></div>
         </div>
 
         <footer>
-            <p>Botayo - Bot Polymarket v5.0</p>
+            <p>Botayo - Bot Polymarket v6.0 (Filtres Temporels)</p>
             <p><a href="strategy.html">Guide Strategie</a> | Mis a jour le 29 Decembre 2025</p>
         </footer>
     </div>
@@ -288,7 +307,7 @@
                 labels: ['BTC', 'ETH', 'XRP'],
                 datasets: [{
                     label: 'PnL ($/mois)',
-                    data: [5800, 6600, 3897],
+                    data: [6235, 7050, 4520],
                     backgroundColor: ['#f7931a', '#627eea', '#666'],
                     borderColor: ['#f7931a', '#627eea', '#888'],
                     borderWidth: 2, borderRadius: 5
@@ -300,8 +319,8 @@
         new Chart(document.getElementById('winRateChart'), {
             type: 'doughnut',
             data: {
-                labels: ['BTC (55.1%)', 'ETH (55.8%)', 'XRP (54.3%)'],
-                datasets: [{ data: [55.1, 55.8, 54.3], backgroundColor: ['#f7931a', '#627eea', '#666'], borderWidth: 2 }]
+                labels: ['BTC (55.4%)', 'ETH (56.1%)', 'XRP (54.7%)'],
+                datasets: [{ data: [55.4, 56.1, 54.7], backgroundColor: ['#f7931a', '#627eea', '#666'], borderWidth: 2 }]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 15 } } } }
         });
@@ -309,8 +328,8 @@
         new Chart(document.getElementById('tradesDistChart'), {
             type: 'pie',
             data: {
-                labels: ['BTC (32/j)', 'ETH (30/j)', 'XRP (32/j)'],
-                datasets: [{ data: [32, 30, 32], backgroundColor: ['rgba(247,147,26,0.8)', 'rgba(98,126,234,0.8)', 'rgba(100,100,100,0.8)'], borderWidth: 2 }]
+                labels: ['BTC (30/j)', 'ETH (28/j)', 'XRP (30/j)'],
+                datasets: [{ data: [30, 28, 30], backgroundColor: ['rgba(247,147,26,0.8)', 'rgba(98,126,234,0.8)', 'rgba(100,100,100,0.8)'], borderWidth: 2 }]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 15 } } } }
         });
@@ -320,8 +339,8 @@
             data: {
                 labels: ['Trades/jour', 'Win Rate (%)', 'PnL/mois ($K)'],
                 datasets: [
-                    { label: '2024', data: [91, 55.5, 18.6], backgroundColor: 'rgba(0,212,255,0.7)', borderColor: '#00d4ff', borderWidth: 2 },
-                    { label: '2025', data: [96, 54.6, 14.0], backgroundColor: 'rgba(0,255,136,0.7)', borderColor: '#00ff88', borderWidth: 2 }
+                    { label: '2024', data: [86, 55.8, 19.9], backgroundColor: 'rgba(0,212,255,0.7)', borderColor: '#00d4ff', borderWidth: 2 },
+                    { label: '2025', data: [90, 55.0, 15.7], backgroundColor: 'rgba(0,255,136,0.7)', borderColor: '#00ff88', borderWidth: 2 }
                 ]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
