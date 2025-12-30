@@ -46,6 +46,7 @@ venv.bak/
 # Logs
 logs/
 *.log
+!.specify/logs/
 
 # Data
 data/
@@ -97,3 +98,6 @@ temp/
 
 # Local Netlify folder
 .netlify
+
+# Spec Kit - Claude credentials
+.claude/
