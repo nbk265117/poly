@@ -79,17 +79,36 @@
     </style>
 </head>
 <body>
+    <link rel="stylesheet" href="nav.css">
     <nav>
-        <div class="container">
-            <div class="logo">Botayo</div>
-            <ul>
+        <div class="nav-container">
+            <a href="index.html" class="logo">Botayo</a>
+            <div class="burger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-links">
                 <li><a href="index.html">Accueil</a></li>
                 <li><a href="stats.html">Statistiques</a></li>
                 <li><a href="strategy.html">Strategie</a></li>
+                <li><a href="pipeline.html">Pipeline</a></li>
                 <li><a href="growth.html" class="active">Croissance</a></li>
             </ul>
         </div>
     </nav>
+    <script>
+        function toggleMenu() {
+            document.querySelector('.burger').classList.toggle('active');
+            document.querySelector('.nav-links').classList.toggle('active');
+        }
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.querySelector('.burger').classList.remove('active');
+                document.querySelector('.nav-links').classList.remove('active');
+            });
+        });
+    </script>
 
     <div class="container">
         <h1>Plan de Croissance</h1>
