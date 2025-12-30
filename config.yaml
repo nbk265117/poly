@@ -1,6 +1,6 @@
 # Configuration du Robot de Trading Polymarket
-# STRATEGIE OPTIMISEE V3: RSI + STOCH + 7 FILTRES CRITIQUES
-# PnL: +$8,597/mois ($100/trade) | 88.7 trades/jour | WR: 55.7%
+# STRATEGIE OPTIMISEE V2: RSI + STOCH + 44 FILTRES TEMPORELS
+# PnL: +$17,232/mois | Pire mois: +$9,105
 
 # 3 Paires optimisees
 symbols:
@@ -33,22 +33,66 @@ strategy:
     overbought: 80             # Plus strict sur shorts = meilleur WR
 
   # ==========================================================================
-  # FILTRES TEMPORELS V3 - 7 combos CRITIQUES (WR < 50%)
-  # +$1,350/mois vs 44 filtres | +21 trades/jour
-  # Recommandation expert: bloquer uniquement les heures vraiment toxiques
+  # FILTRES TEMPORELS V2 - 44 combos toxiques (WR < 53%)
+  # Gain: +$1,956/mois vs config precedente
+  # Pire mois: +$9,105 (vs +$2,981 avant)
   # ==========================================================================
   time_filters:
     enabled: true
 
-    # 7 Combos critiques a bloquer (WR < 50%)
+    # 44 Combos toxiques a bloquer (jour: 0=Lundi...6=Dimanche, heure: UTC)
     blocked_combos:
-      - { day: 0, hour: 0 }    # Lundi 00h - WR 49.4%
-      - { day: 0, hour: 15 }   # Lundi 15h - WR 48.8%
-      - { day: 0, hour: 18 }   # Lundi 18h - WR 49.1%
-      - { day: 1, hour: 5 }    # Mardi 05h - WR 49.2%
-      - { day: 1, hour: 7 }    # Mardi 07h - WR 49.6%
-      - { day: 4, hour: 14 }   # Vendredi 14h - WR 45.9% (LE PIRE)
-      - { day: 6, hour: 8 }    # Dimanche 08h - WR 48.2%
+      # Lundi (0)
+      - { day: 0, hour: 0 }
+      - { day: 0, hour: 1 }
+      - { day: 0, hour: 2 }
+      - { day: 0, hour: 3 }
+      - { day: 0, hour: 6 }
+      - { day: 0, hour: 7 }
+      - { day: 0, hour: 14 }
+      - { day: 0, hour: 15 }
+      - { day: 0, hour: 18 }
+      - { day: 0, hour: 20 }
+      # Mardi (1)
+      - { day: 1, hour: 1 }
+      - { day: 1, hour: 4 }
+      - { day: 1, hour: 5 }
+      - { day: 1, hour: 7 }
+      - { day: 1, hour: 14 }
+      - { day: 1, hour: 16 }
+      - { day: 1, hour: 18 }
+      - { day: 1, hour: 19 }
+      - { day: 1, hour: 22 }
+      # Mercredi (2)
+      - { day: 2, hour: 0 }
+      - { day: 2, hour: 3 }
+      - { day: 2, hour: 8 }
+      - { day: 2, hour: 17 }
+      - { day: 2, hour: 19 }
+      - { day: 2, hour: 23 }
+      # Jeudi (3)
+      - { day: 3, hour: 4 }
+      - { day: 3, hour: 5 }
+      - { day: 3, hour: 9 }
+      - { day: 3, hour: 16 }
+      - { day: 3, hour: 22 }
+      # Vendredi (4)
+      - { day: 4, hour: 2 }
+      - { day: 4, hour: 5 }
+      - { day: 4, hour: 6 }
+      - { day: 4, hour: 7 }
+      - { day: 4, hour: 10 }
+      - { day: 4, hour: 14 }
+      - { day: 4, hour: 15 }
+      - { day: 4, hour: 17 }
+      - { day: 4, hour: 18 }
+      # Samedi (5)
+      - { day: 5, hour: 3 }
+      # Dimanche (6)
+      - { day: 6, hour: 8 }
+      - { day: 6, hour: 13 }
+      - { day: 6, hour: 22 }
+      - { day: 6, hour: 23 }
 
   # Execution
   execution:
