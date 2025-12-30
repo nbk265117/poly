@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# WATCHDOG - Surveillance et relance automatique des bots
+# WATCHDOG v7.0 - Surveillance et relance automatique des bots
 # ============================================================
 # Usage: ./watchdog.sh
 # Cron: */5 * * * * /home/ubuntu/poly/watchdog.sh >> /home/ubuntu/poly/logs/watchdog.log 2>&1
@@ -8,15 +8,13 @@
 
 POLY_DIR="/home/ubuntu/poly"
 LOG_FILE="$POLY_DIR/logs/watchdog.log"
-SHARES=5
 
-# Couleurs pour les logs
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
+# Config par bot (symbol:shares)
+declare -A BOT_CONFIG
+BOT_CONFIG["ETH"]=10
+BOT_CONFIG["BTC"]=7
+BOT_CONFIG["XRP"]=5
 
-# Timestamp
 timestamp() {
     date "+%Y-%m-%d %H:%M:%S"
 }
@@ -25,10 +23,7 @@ log() {
     echo "[$(timestamp)] $1"
 }
 
-# Bots à surveiller
-BOTS=("BTC" "ETH" "XRP")
-
-# Vérifier si un bot tourne
+# Verifier si un bot tourne
 check_bot() {
     local symbol=$1
     pgrep -f "bot_simple.py.*--symbols $symbol" > /dev/null
@@ -38,30 +33,30 @@ check_bot() {
 # Relancer un bot
 restart_bot() {
     local symbol=$1
-    log "🔄 Relance du bot $symbol..."
+    local shares=${BOT_CONFIG[$symbol]}
+    log "Relance du bot $symbol avec $shares shares..."
 
     cd $POLY_DIR
     source venv/bin/activate
 
-    # Lancer le bot
-    nohup python bot_simple.py --live --yes --shares $SHARES --symbols $symbol > logs/bot_$(echo $symbol | tr '[:upper:]' '[:lower:]').log 2>&1 &
+    nohup python bot_simple.py --live --yes --shares $shares --symbols $symbol > logs/$(echo $symbol | tr '[:upper:]' '[:lower:]').log 2>&1 &
 
-    sleep 2
+    sleep 3
 
     if check_bot $symbol; then
-        log "✅ Bot $symbol relancé avec succès (PID: $(pgrep -f "bot_simple.py.*--symbols $symbol"))"
+        log "Bot $symbol relance avec succes (PID: $(pgrep -f "bot_simple.py.*--symbols $symbol"))"
         return 0
     else
-        log "❌ Échec du relancement du bot $symbol"
+        log "Echec du relancement du bot $symbol"
         return 1
     fi
 }
 
-# Vérifier l'espace disque
+# Verifier espace disque
 check_disk() {
     local usage=$(df -h / | awk 'NR==2 {print $5}' | sed 's/%//')
     if [ "$usage" -gt 90 ]; then
-        log "⚠️ ALERTE: Espace disque critique ($usage%)"
+        log "ALERTE: Espace disque critique ($usage%)"
         return 1
     fi
     return 0
@@ -69,23 +64,22 @@ check_disk() {
 
 # Main
 log "=========================================="
-log "🔍 WATCHDOG - Vérification des bots"
+log "WATCHDOG v7.0 - Verification des bots"
 log "=========================================="
 
-# Vérifier l'espace disque
 check_disk
 
-# Compteurs
 running=0
 restarted=0
 failed=0
 
-for bot in "${BOTS[@]}"; do
+for bot in ETH BTC XRP; do
+    shares=${BOT_CONFIG[$bot]}
     if check_bot $bot; then
-        log "✅ $bot: En cours d'exécution"
+        log "$bot ($shares shares): En cours"
         ((running++))
     else
-        log "❌ $bot: ARRÊTÉ - Tentative de relance..."
+        log "$bot: ARRETE - Relance..."
         if restart_bot $bot; then
             ((restarted++))
         else
@@ -95,11 +89,8 @@ for bot in "${BOTS[@]}"; do
 done
 
 log "------------------------------------------"
-log "📊 Résumé: $running actifs, $restarted relancés, $failed échecs"
+log "Resume: $running actifs, $restarted relances, $failed echecs"
 log "=========================================="
 
-# Code de sortie
-if [ $failed -gt 0 ]; then
-    exit 1
-fi
+[ $failed -gt 0 ] && exit 1
 exit 0
