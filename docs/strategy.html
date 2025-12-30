@@ -405,21 +405,26 @@ RS = Moyenne des gains / Moyenne des pertes</pre>
             <p>Configuration unifiee pour toutes les paires (optimisee par backtest):</p>
             <div class="stats-grid">
                 <div class="stat-box"><div class="value">7</div><div class="label">RSI Period</div></div>
-                <div class="stat-box"><div class="value">35/65</div><div class="label">RSI Seuils</div></div>
+                <div class="stat-box"><div class="value">38/58</div><div class="label">RSI Seuils</div></div>
                 <div class="stat-box"><div class="value">5</div><div class="label">Stoch Period</div></div>
-                <div class="stat-box"><div class="value">30/70</div><div class="label">Stoch Seuils</div></div>
+                <div class="stat-box"><div class="value">30/80</div><div class="label">Stoch Seuils</div></div>
                 <div class="stat-box"><div class="value">52.5c</div><div class="label">Entry Price</div></div>
-                <div class="stat-box"><div class="value">-20s</div><div class="label">Timing</div></div>
+                <div class="stat-box"><div class="value">235</div><div class="label">Candles Bloquees</div></div>
             </div>
         </div>
 
         <h2>5. Generation des Signaux</h2>
         <div class="card">
             <h3>Signal UP (acheter "le prix va monter")</h3>
-            <pre>RSI < 35 ET Stoch < 30</pre>
+            <pre>RSI < 38 ET Stoch < 30</pre>
 
             <h3>Signal DOWN (acheter "le prix va baisser")</h3>
-            <pre>RSI > 65 ET Stoch > 70</pre>
+            <pre>RSI > 58 ET Stoch > 80</pre>
+
+            <h3>Filtrage 235 Candles 15min</h3>
+            <pre>Candles avec WR < 53% sont bloquees
+Ex: Lundi 00:00-03:45 = 16 candles bloquees
+Gain vs V7: +$5,655/mois (+33%)</pre>
         </div>
 
         <h2>6. Timing: -20 Secondes</h2>
@@ -436,28 +441,29 @@ RS = Moyenne des gains / Moyenne des pertes</pre>
                 18:30:00 = Resolution du marche</pre>
         </div>
 
-        <h2>7. Resultats Backtest 2024-2025</h2>
+        <h2>7. Resultats Backtest 2024-2025 (V8 - 235 Filtres)</h2>
         <div class="card">
             <div class="table-wrapper"><table>
                 <thead>
                     <tr><th>Annee</th><th>Trades</th><th>Trades/jour</th><th>Win Rate</th><th>PnL/mois ($100)</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td><strong>2024</strong></td><td>37,924</td><td>103.9</td><td class="positive">55.1%</td><td class="positive">$18,343</td></tr>
-                    <tr><td><strong>2025</strong></td><td>39,405</td><td>109.2</td><td class="positive">54.5%</td><td class="positive">$15,796</td></tr>
+                    <tr><td><strong>2024</strong></td><td>21,142</td><td>58</td><td class="positive">59.5%</td><td class="positive">$23,503</td></tr>
+                    <tr><td><strong>2025</strong></td><td>22,169</td><td>61</td><td class="positive">58.8%</td><td class="positive">$22,278</td></tr>
+                    <tr style="background:rgba(0,255,136,0.1);font-weight:bold;"><td>MOYENNE</td><td>43,311</td><td>59</td><td class="positive">59.2%</td><td class="positive">$22,891</td></tr>
                 </tbody>
             </table></div>
 
-            <h3>Par Paire (2025, config actuelle 52.5c)</h3>
+            <h3>Par Paire (config V8: RSI 38/58 + Stoch 30/80)</h3>
             <div class="table-wrapper"><table>
                 <thead>
                     <tr><th>Paire</th><th>Trades/jour</th><th>Win Rate</th><th>PnL/mois</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td><span class="badge badge-btc">BTC</span></td><td>27.8</td><td class="positive">54.7%</td><td class="positive">$3,495</td></tr>
-                    <tr><td><span class="badge badge-eth">ETH</span></td><td>26.0</td><td class="positive">55.4%</td><td class="positive">$4,309</td></tr>
-                    <tr><td><span class="badge badge-xrp">XRP</span></td><td>27.1</td><td class="positive">54.4%</td><td class="positive">$2,942</td></tr>
-                    <tr style="background:rgba(0,255,136,0.1);font-weight:bold;"><td>TOTAL</td><td>80.9</td><td class="positive">54.8%</td><td class="positive">$10,746</td></tr>
+                    <tr><td><span class="badge badge-eth">ETH</span></td><td>20</td><td class="positive">59.4%</td><td class="positive">$9,350</td></tr>
+                    <tr><td><span class="badge badge-btc">BTC</span></td><td>20</td><td class="positive">59.2%</td><td class="positive">$8,250</td></tr>
+                    <tr><td><span class="badge badge-xrp">XRP</span></td><td>19</td><td class="positive">59.0%</td><td class="positive">$5,291</td></tr>
+                    <tr style="background:rgba(0,255,136,0.1);font-weight:bold;"><td>TOTAL</td><td>59</td><td class="positive">59.2%</td><td class="positive">$22,891</td></tr>
                 </tbody>
             </table></div>
         </div>
@@ -475,14 +481,14 @@ RS = Moyenne des gains / Moyenne des pertes</pre>
                 <div class="stat-box"><div class="value">$90.48</div><div class="label">Gain si Win</div></div>
             </div>
 
-            <h3>Calcul de rentabilite (54.8% Win Rate)</h3>
+            <h3>Calcul de rentabilite (59.2% Win Rate - V8)</h3>
             <pre>Sur 100 trades a $100 chacun:
 
 Mise totale:    100 × $100 = $10,000
-Gains (54.8%):   54.8 × $90.48 = $4,958
-Pertes (45.2%):  45.2 × $100 = -$4,520
+Gains (59.2%):   59.2 × $90.48 = $5,356
+Pertes (40.8%):  40.8 × $100 = -$4,080
 ─────────────────────────────────────
-Profit net:                   +$438 (4.38% ROI)</pre>
+Profit net:                   +$1,276 (12.76% ROI)</pre>
         </div>
 
         <h2>9. Deploiement VPS</h2>
@@ -500,8 +506,8 @@ Profit net:                   +$438 (4.38% ROI)</pre>
         </div>
 
         <footer>
-            <p>Botayo - Bot Polymarket v4.0</p>
-            <p>Mis a jour le 29 Decembre 2025</p>
+            <p>Botayo - Bot Polymarket v8.0 (235 Filtres 15min)</p>
+            <p>Mis a jour le 31 Decembre 2025</p>
         </footer>
     </div>
 </body>
