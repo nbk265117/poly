@@ -1,0 +1,279 @@
+# 235 FILTRES CANDLE 15min (WR < 53%)
+# PnL: +$22,891/mois | WR: 59.2% | Pire mois: +$14,761
+# Format: { day: 0-6 (Lun-Dim), hour: 0-23, minute: 0/15/30/45 }
+
+blocked_candles:
+  # Lundi (44 candles)
+  - { day: 0, hour: 0, minute: 0 }    # WR: 48.6%
+  - { day: 0, hour: 0, minute: 15 }   # WR: 46.3%
+  - { day: 0, hour: 0, minute: 30 }   # WR: 49.1%
+  - { day: 0, hour: 1, minute: 30 }   # WR: 46.4%
+  - { day: 0, hour: 1, minute: 45 }   # WR: 50.4%
+  - { day: 0, hour: 2, minute: 0 }    # WR: 48.1%
+  - { day: 0, hour: 2, minute: 45 }   # WR: 42.0%
+  - { day: 0, hour: 3, minute: 0 }    # WR: 52.1%
+  - { day: 0, hour: 3, minute: 15 }   # WR: 49.5%
+  - { day: 0, hour: 3, minute: 30 }   # WR: 51.0%
+  - { day: 0, hour: 4, minute: 30 }   # WR: 47.7%
+  - { day: 0, hour: 5, minute: 30 }   # WR: 48.6%
+  - { day: 0, hour: 6, minute: 15 }   # WR: 44.1%
+  - { day: 0, hour: 6, minute: 30 }   # WR: 44.6%
+  - { day: 0, hour: 7, minute: 0 }    # WR: 52.0%
+  - { day: 0, hour: 7, minute: 15 }   # WR: 48.6%
+  - { day: 0, hour: 7, minute: 30 }   # WR: 51.4%
+  - { day: 0, hour: 8, minute: 0 }    # WR: 48.3%
+  - { day: 0, hour: 9, minute: 0 }    # WR: 48.4%
+  - { day: 0, hour: 11, minute: 30 }  # WR: 52.2%
+  - { day: 0, hour: 14, minute: 15 }  # WR: 50.9%
+  - { day: 0, hour: 14, minute: 30 }  # WR: 45.9%
+  - { day: 0, hour: 14, minute: 45 }  # WR: 52.1%
+  - { day: 0, hour: 15, minute: 0 }   # WR: 50.4%
+  - { day: 0, hour: 15, minute: 15 }  # WR: 49.5%
+  - { day: 0, hour: 15, minute: 30 }  # WR: 44.1%
+  - { day: 0, hour: 15, minute: 45 }  # WR: 50.9%
+  - { day: 0, hour: 16, minute: 45 }  # WR: 47.9%
+  - { day: 0, hour: 17, minute: 15 }  # WR: 44.8%
+  - { day: 0, hour: 17, minute: 30 }  # WR: 51.2%
+  - { day: 0, hour: 18, minute: 0 }   # WR: 43.8%
+  - { day: 0, hour: 18, minute: 15 }  # WR: 48.0%
+  - { day: 0, hour: 18, minute: 30 }  # WR: 42.3%
+  - { day: 0, hour: 19, minute: 0 }   # WR: 52.4%
+  - { day: 0, hour: 19, minute: 15 }  # WR: 47.9%
+  - { day: 0, hour: 19, minute: 30 }  # WR: 52.7%
+  - { day: 0, hour: 20, minute: 15 }  # WR: 47.4%
+  - { day: 0, hour: 20, minute: 30 }  # WR: 47.7%
+  - { day: 0, hour: 20, minute: 45 }  # WR: 48.5%
+  - { day: 0, hour: 21, minute: 0 }   # WR: 46.1%
+  - { day: 0, hour: 21, minute: 30 }  # WR: 47.6%
+  - { day: 0, hour: 22, minute: 0 }   # WR: 46.2%
+  - { day: 0, hour: 23, minute: 0 }   # WR: 52.1%
+  - { day: 0, hour: 23, minute: 30 }  # WR: 49.5%
+
+  # Mardi (33 candles)
+  - { day: 1, hour: 0, minute: 0 }    # WR: 49.5%
+  - { day: 1, hour: 1, minute: 15 }   # WR: 52.0%
+  - { day: 1, hour: 1, minute: 30 }   # WR: 48.0%
+  - { day: 1, hour: 2, minute: 45 }   # WR: 45.5%
+  - { day: 1, hour: 3, minute: 15 }   # WR: 47.9%
+  - { day: 1, hour: 4, minute: 15 }   # WR: 52.7%
+  - { day: 1, hour: 4, minute: 30 }   # WR: 44.6%
+  - { day: 1, hour: 5, minute: 0 }    # WR: 44.1%
+  - { day: 1, hour: 5, minute: 15 }   # WR: 42.1%
+  - { day: 1, hour: 6, minute: 0 }    # WR: 49.1%
+  - { day: 1, hour: 7, minute: 0 }    # WR: 49.5%
+  - { day: 1, hour: 7, minute: 30 }   # WR: 49.0%
+  - { day: 1, hour: 7, minute: 45 }   # WR: 45.4%
+  - { day: 1, hour: 9, minute: 0 }    # WR: 52.3%
+  - { day: 1, hour: 9, minute: 30 }   # WR: 52.0%
+  - { day: 1, hour: 10, minute: 15 }  # WR: 47.4%
+  - { day: 1, hour: 11, minute: 15 }  # WR: 50.9%
+  - { day: 1, hour: 14, minute: 15 }  # WR: 41.9%
+  - { day: 1, hour: 15, minute: 0 }   # WR: 50.5%
+  - { day: 1, hour: 15, minute: 30 }  # WR: 46.9%
+  - { day: 1, hour: 16, minute: 30 }  # WR: 47.2%
+  - { day: 1, hour: 17, minute: 0 }   # WR: 51.3%
+  - { day: 1, hour: 18, minute: 0 }   # WR: 46.2%
+  - { day: 1, hour: 18, minute: 15 }  # WR: 49.0%
+  - { day: 1, hour: 18, minute: 45 }  # WR: 52.9%
+  - { day: 1, hour: 19, minute: 0 }   # WR: 49.1%
+  - { day: 1, hour: 19, minute: 15 }  # WR: 51.0%
+  - { day: 1, hour: 19, minute: 30 }  # WR: 48.7%
+  - { day: 1, hour: 20, minute: 0 }   # WR: 45.3%
+  - { day: 1, hour: 22, minute: 15 }  # WR: 50.5%
+  - { day: 1, hour: 22, minute: 30 }  # WR: 50.0%
+  - { day: 1, hour: 22, minute: 45 }  # WR: 46.1%
+  - { day: 1, hour: 23, minute: 0 }   # WR: 50.4%
+
+  # Mercredi (31 candles)
+  - { day: 2, hour: 0, minute: 0 }    # WR: 50.5%
+  - { day: 2, hour: 0, minute: 15 }   # WR: 45.3%
+  - { day: 2, hour: 0, minute: 30 }   # WR: 52.3%
+  - { day: 2, hour: 2, minute: 45 }   # WR: 49.4%
+  - { day: 2, hour: 3, minute: 15 }   # WR: 47.1%
+  - { day: 2, hour: 3, minute: 30 }   # WR: 48.7%
+  - { day: 2, hour: 4, minute: 15 }   # WR: 43.6%
+  - { day: 2, hour: 5, minute: 0 }    # WR: 51.5%
+  - { day: 2, hour: 6, minute: 30 }   # WR: 40.7%
+  - { day: 2, hour: 7, minute: 0 }    # WR: 52.4%
+  - { day: 2, hour: 7, minute: 30 }   # WR: 52.3%
+  - { day: 2, hour: 8, minute: 0 }    # WR: 50.5%
+  - { day: 2, hour: 8, minute: 15 }   # WR: 49.1%
+  - { day: 2, hour: 8, minute: 30 }   # WR: 52.7%
+  - { day: 2, hour: 9, minute: 15 }   # WR: 50.0%
+  - { day: 2, hour: 9, minute: 30 }   # WR: 52.7%
+  - { day: 2, hour: 10, minute: 30 }  # WR: 46.7%
+  - { day: 2, hour: 11, minute: 15 }  # WR: 50.5%
+  - { day: 2, hour: 15, minute: 0 }   # WR: 46.2%
+  - { day: 2, hour: 16, minute: 0 }   # WR: 48.6%
+  - { day: 2, hour: 16, minute: 45 }  # WR: 52.6%
+  - { day: 2, hour: 17, minute: 15 }  # WR: 48.5%
+  - { day: 2, hour: 17, minute: 30 }  # WR: 50.9%
+  - { day: 2, hour: 18, minute: 0 }   # WR: 48.1%
+  - { day: 2, hour: 18, minute: 30 }  # WR: 49.0%
+  - { day: 2, hour: 19, minute: 30 }  # WR: 37.4%
+  - { day: 2, hour: 20, minute: 30 }  # WR: 49.5%
+  - { day: 2, hour: 21, minute: 45 }  # WR: 52.3%
+  - { day: 2, hour: 23, minute: 0 }   # WR: 48.0%
+  - { day: 2, hour: 23, minute: 15 }  # WR: 49.0%
+  - { day: 2, hour: 23, minute: 45 }  # WR: 48.0%
+
+  # Jeudi (42 candles)
+  - { day: 3, hour: 0, minute: 0 }    # WR: 44.1%
+  - { day: 3, hour: 0, minute: 15 }   # WR: 46.7%
+  - { day: 3, hour: 1, minute: 30 }   # WR: 50.5%
+  - { day: 3, hour: 2, minute: 0 }    # WR: 52.3%
+  - { day: 3, hour: 2, minute: 15 }   # WR: 46.9%
+  - { day: 3, hour: 3, minute: 0 }    # WR: 49.4%
+  - { day: 3, hour: 3, minute: 30 }   # WR: 51.6%
+  - { day: 3, hour: 4, minute: 0 }    # WR: 52.6%
+  - { day: 3, hour: 4, minute: 15 }   # WR: 51.0%
+  - { day: 3, hour: 4, minute: 30 }   # WR: 49.1%
+  - { day: 3, hour: 5, minute: 15 }   # WR: 50.0%
+  - { day: 3, hour: 5, minute: 30 }   # WR: 47.8%
+  - { day: 3, hour: 5, minute: 45 }   # WR: 52.6%
+  - { day: 3, hour: 6, minute: 15 }   # WR: 52.3%
+  - { day: 3, hour: 6, minute: 30 }   # WR: 50.4%
+  - { day: 3, hour: 7, minute: 0 }    # WR: 49.4%
+  - { day: 3, hour: 7, minute: 30 }   # WR: 52.9%
+  - { day: 3, hour: 7, minute: 45 }   # WR: 48.9%
+  - { day: 3, hour: 8, minute: 0 }    # WR: 52.9%
+  - { day: 3, hour: 8, minute: 30 }   # WR: 51.9%
+  - { day: 3, hour: 9, minute: 0 }    # WR: 47.8%
+  - { day: 3, hour: 9, minute: 30 }   # WR: 48.4%
+  - { day: 3, hour: 10, minute: 30 }  # WR: 52.8%
+  - { day: 3, hour: 11, minute: 0 }   # WR: 51.0%
+  - { day: 3, hour: 11, minute: 15 }  # WR: 52.4%
+  - { day: 3, hour: 12, minute: 30 }  # WR: 51.6%
+  - { day: 3, hour: 13, minute: 15 }  # WR: 52.3%
+  - { day: 3, hour: 13, minute: 30 }  # WR: 49.5%
+  - { day: 3, hour: 13, minute: 45 }  # WR: 52.4%
+  - { day: 3, hour: 14, minute: 30 }  # WR: 41.7%
+  - { day: 3, hour: 15, minute: 15 }  # WR: 45.5%
+  - { day: 3, hour: 15, minute: 30 }  # WR: 48.2%
+  - { day: 3, hour: 16, minute: 0 }   # WR: 43.0%
+  - { day: 3, hour: 16, minute: 30 }  # WR: 47.4%
+  - { day: 3, hour: 18, minute: 30 }  # WR: 45.8%
+  - { day: 3, hour: 19, minute: 30 }  # WR: 48.2%
+  - { day: 3, hour: 20, minute: 30 }  # WR: 43.4%
+  - { day: 3, hour: 21, minute: 0 }   # WR: 48.9%
+  - { day: 3, hour: 22, minute: 0 }   # WR: 43.1%
+  - { day: 3, hour: 22, minute: 15 }  # WR: 44.3%
+  - { day: 3, hour: 22, minute: 30 }  # WR: 51.9%
+  - { day: 3, hour: 23, minute: 15 }  # WR: 52.1%
+
+  # Vendredi (40 candles)
+  - { day: 4, hour: 0, minute: 30 }   # WR: 45.0%
+  - { day: 4, hour: 2, minute: 0 }    # WR: 37.0%
+  - { day: 4, hour: 2, minute: 15 }   # WR: 52.7%
+  - { day: 4, hour: 2, minute: 30 }   # WR: 48.7%
+  - { day: 4, hour: 3, minute: 0 }    # WR: 51.6%
+  - { day: 4, hour: 4, minute: 15 }   # WR: 49.4%
+  - { day: 4, hour: 4, minute: 30 }   # WR: 47.8%
+  - { day: 4, hour: 5, minute: 0 }    # WR: 51.4%
+  - { day: 4, hour: 5, minute: 15 }   # WR: 51.2%
+  - { day: 4, hour: 5, minute: 30 }   # WR: 46.8%
+  - { day: 4, hour: 6, minute: 0 }    # WR: 46.8%
+  - { day: 4, hour: 6, minute: 30 }   # WR: 47.7%
+  - { day: 4, hour: 7, minute: 0 }    # WR: 43.1%
+  - { day: 4, hour: 7, minute: 15 }   # WR: 51.5%
+  - { day: 4, hour: 7, minute: 30 }   # WR: 45.3%
+  - { day: 4, hour: 8, minute: 0 }    # WR: 51.9%
+  - { day: 4, hour: 8, minute: 45 }   # WR: 51.1%
+  - { day: 4, hour: 10, minute: 0 }   # WR: 51.5%
+  - { day: 4, hour: 10, minute: 30 }  # WR: 43.4%
+  - { day: 4, hour: 10, minute: 45 }  # WR: 51.9%
+  - { day: 4, hour: 11, minute: 0 }   # WR: 44.5%
+  - { day: 4, hour: 13, minute: 15 }  # WR: 50.0%
+  - { day: 4, hour: 14, minute: 15 }  # WR: 46.5%
+  - { day: 4, hour: 14, minute: 30 }  # WR: 39.7%
+  - { day: 4, hour: 14, minute: 45 }  # WR: 44.2%
+  - { day: 4, hour: 15, minute: 15 }  # WR: 50.8%
+  - { day: 4, hour: 15, minute: 30 }  # WR: 50.4%
+  - { day: 4, hour: 15, minute: 45 }  # WR: 52.2%
+  - { day: 4, hour: 16, minute: 15 }  # WR: 45.9%
+  - { day: 4, hour: 16, minute: 45 }  # WR: 44.9%
+  - { day: 4, hour: 17, minute: 0 }   # WR: 50.0%
+  - { day: 4, hour: 17, minute: 15 }  # WR: 48.6%
+  - { day: 4, hour: 17, minute: 30 }  # WR: 47.6%
+  - { day: 4, hour: 18, minute: 15 }  # WR: 36.9%
+  - { day: 4, hour: 19, minute: 0 }   # WR: 44.7%
+  - { day: 4, hour: 20, minute: 0 }   # WR: 47.6%
+  - { day: 4, hour: 22, minute: 0 }   # WR: 51.4%
+  - { day: 4, hour: 22, minute: 15 }  # WR: 52.4%
+  - { day: 4, hour: 23, minute: 0 }   # WR: 51.5%
+  - { day: 4, hour: 23, minute: 15 }  # WR: 51.0%
+
+  # Samedi (18 candles)
+  - { day: 5, hour: 0, minute: 0 }    # WR: 52.8%
+  - { day: 5, hour: 0, minute: 15 }   # WR: 51.7%
+  - { day: 5, hour: 1, minute: 15 }   # WR: 43.8%
+  - { day: 5, hour: 3, minute: 0 }    # WR: 46.2%
+  - { day: 5, hour: 3, minute: 15 }   # WR: 46.9%
+  - { day: 5, hour: 4, minute: 15 }   # WR: 44.9%
+  - { day: 5, hour: 6, minute: 0 }    # WR: 50.0%
+  - { day: 5, hour: 8, minute: 15 }   # WR: 51.7%
+  - { day: 5, hour: 8, minute: 30 }   # WR: 50.5%
+  - { day: 5, hour: 9, minute: 45 }   # WR: 50.5%
+  - { day: 5, hour: 10, minute: 30 }  # WR: 51.0%
+  - { day: 5, hour: 12, minute: 15 }  # WR: 42.5%
+  - { day: 5, hour: 13, minute: 0 }   # WR: 47.5%
+  - { day: 5, hour: 15, minute: 15 }  # WR: 50.0%
+  - { day: 5, hour: 19, minute: 15 }  # WR: 51.0%
+  - { day: 5, hour: 20, minute: 30 }  # WR: 52.3%
+  - { day: 5, hour: 22, minute: 30 }  # WR: 50.7%
+  - { day: 5, hour: 22, minute: 45 }  # WR: 50.0%
+
+  # Dimanche (27 candles)
+  - { day: 6, hour: 0, minute: 45 }   # WR: 51.8%
+  - { day: 6, hour: 1, minute: 30 }   # WR: 44.4%
+  - { day: 6, hour: 2, minute: 30 }   # WR: 39.4%
+  - { day: 6, hour: 4, minute: 0 }    # WR: 47.0%
+  - { day: 6, hour: 4, minute: 30 }   # WR: 50.5%
+  - { day: 6, hour: 5, minute: 30 }   # WR: 48.3%
+  - { day: 6, hour: 5, minute: 45 }   # WR: 52.8%
+  - { day: 6, hour: 6, minute: 30 }   # WR: 50.0%
+  - { day: 6, hour: 7, minute: 15 }   # WR: 51.0%
+  - { day: 6, hour: 8, minute: 30 }   # WR: 35.2%
+  - { day: 6, hour: 8, minute: 45 }   # WR: 44.3%
+  - { day: 6, hour: 11, minute: 15 }  # WR: 35.4%
+  - { day: 6, hour: 13, minute: 15 }  # WR: 38.6%
+  - { day: 6, hour: 13, minute: 30 }  # WR: 47.4%
+  - { day: 6, hour: 15, minute: 30 }  # WR: 51.7%
+  - { day: 6, hour: 16, minute: 30 }  # WR: 51.1%
+  - { day: 6, hour: 17, minute: 0 }   # WR: 52.8%
+  - { day: 6, hour: 17, minute: 15 }  # WR: 52.8%
+  - { day: 6, hour: 19, minute: 0 }   # WR: 47.9%
+  - { day: 6, hour: 19, minute: 45 }  # WR: 52.5%
+  - { day: 6, hour: 21, minute: 45 }  # WR: 51.0%
+  - { day: 6, hour: 22, minute: 0 }   # WR: 49.0%
+  - { day: 6, hour: 22, minute: 30 }  # WR: 49.1%
+  - { day: 6, hour: 22, minute: 45 }  # WR: 50.5%
+  - { day: 6, hour: 23, minute: 0 }   # WR: 52.2%
+  - { day: 6, hour: 23, minute: 15 }  # WR: 49.5%
+  - { day: 6, hour: 23, minute: 30 }  # WR: 50.5%
+
+# =======================================================
+# RESUME
+# =======================================================
+# Total: 235 candles bloquees
+#
+# Par jour:
+#   Lundi:    44 candles
+#   Mardi:    33 candles
+#   Mercredi: 31 candles
+#   Jeudi:    42 candles
+#   Vendredi: 40 candles
+#   Samedi:   18 candles
+#   Dimanche: 27 candles
+#
+# RESULTATS BACKTEST 2024-2025:
+#   Trades:     43,311 (59/jour)
+#   Win Rate:   59.2%
+#   PnL/mois:   +$22,891
+#   Pire mois:  +$14,761 (Jun 2025)
+#   PnL Total:  +$549,382
+#
+# COMPARAISON vs 44 heures:
+#   +$5,655/mois (+33%)
+#   +$135,707 sur 2 ans
+# =======================================================
