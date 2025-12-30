@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pipeline - Botayo Documentation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        nav {
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        nav .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        nav .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        nav ul { display: flex; list-style: none; gap: 30px; }
+        nav a { color: #fff; text-decoration: none; font-weight: 500; transition: color 0.3s; }
+        nav a:hover { color: #00d4ff; }
+        nav a.active { color: #00ff88; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        .hero { text-align: center; padding: 60px 20px; }
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p { color: #888; font-size: 1.1rem; }
+
+        .section {
+            background: rgba(255,255,255,0.03);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .section h2 {
+            color: #00d4ff;
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section h3 {
+            color: #00ff88;
+            font-size: 1.1rem;
+            margin: 25px 0 15px 0;
+        }
+        .section p {
+            color: #ccc;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .code-block {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            overflow-x: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .code-block code {
+            color: #e6edf3;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            white-space: pre;
+        }
+        .code-block .comment { color: #8b949e; }
+        .code-block .keyword { color: #ff7b72; }
+        .code-block .string { color: #a5d6ff; }
+        .code-block .number { color: #79c0ff; }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .card {
+            background: rgba(0,212,255,0.05);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(0,212,255,0.2);
+        }
+        .card h4 {
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+        .card p { color: #888; font-size: 0.95rem; }
+
+        .badge {
+            display: inline-block;
+            background: rgba(0,255,136,0.15);
+            color: #00ff88;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin: 5px 5px 5px 0;
+        }
+        .badge.blue { background: rgba(0,212,255,0.15); color: #00d4ff; }
+        .badge.yellow { background: rgba(255,215,0,0.15); color: #ffd700; }
+        .badge.purple { background: rgba(168,85,247,0.15); color: #a855f7; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        th {
+            background: rgba(0,212,255,0.1);
+            color: #00d4ff;
+            font-weight: 600;
+        }
+        td { color: #ccc; }
+        tr:hover { background: rgba(255,255,255,0.03); }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, #00d4ff, #00ff88);
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+            padding-left: 20px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -34px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #00d4ff;
+            border: 3px solid #1a1a2e;
+        }
+        .timeline-item h4 {
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        .timeline-item p {
+            color: #888;
+            font-size: 0.95rem;
+        }
+
+        .alert {
+            background: rgba(255,215,0,0.1);
+            border-left: 4px solid #ffd700;
+            padding: 15px 20px;
+            border-radius: 0 10px 10px 0;
+            margin: 20px 0;
+        }
+        .alert p { color: #ffd700; margin: 0; }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 60px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .section { padding: 25px; }
+            .hero h1 { font-size: 1.8rem; }
+            nav ul { gap: 15px; }
+            .code-block { padding: 15px; }
+            .code-block code { font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <div class="logo">Botayo</div>
+            <ul>
+                <li><a href="index.html">Accueil</a></li>
+                <li><a href="stats.html">Statistiques</a></li>
+                <li><a href="strategy.html">Strategie</a></li>
+                <li><a href="pipeline.html" class="active">Pipeline</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <h1>Documentation Pipeline</h1>
+        <p>Configuration complete VPS, monitoring, alertes et automatisation</p>
+    </div>
+
+    <div class="container">
+
+        <!-- Architecture Overview -->
+        <div class="section">
+            <h2>Architecture Globale</h2>
+            <p>Le systeme de trading est deploye sur un VPS Ubuntu avec une architecture robuste assurant haute disponibilite et monitoring continu.</p>
+
+            <div class="grid-2" style="margin-top: 25px;">
+                <div class="card">
+                    <h4>VPS Ubuntu</h4>
+                    <p>Serveur AWS EC2 avec Python 3.11, systemd pour gestion des services, et cron pour taches planifiees.</p>
+                </div>
+                <div class="card">
+                    <h4>3 Bots Independants</h4>
+                    <p>ETH (10 shares), BTC (7 shares), XRP (5 shares) - chacun dans son propre service systemd.</p>
+                </div>
+                <div class="card">
+                    <h4>Monitoring 24/7</h4>
+                    <p>Watchdog toutes les 5 min, heartbeat Telegram toutes les heures, alertes instantanees.</p>
+                </div>
+                <div class="card">
+                    <h4>Auto-Recovery</h4>
+                    <p>Redemarrage automatique des bots si crash, alerte Telegram si le VPS reboot.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Services Systemd -->
+        <div class="section">
+            <h2>Services Systemd</h2>
+            <p>Chaque bot est configure comme un service systemd independant pour assurer la persistance et le redemarrage automatique.</p>
+
+            <h3>Configuration des Services</h3>
+            <table>
+                <tr>
+                    <th>Service</th>
+                    <th>Symbol</th>
+                    <th>Shares</th>
+                    <th>Commande</th>
+                </tr>
+                <tr>
+                    <td><span class="badge blue">bot-eth.service</span></td>
+                    <td>ETH</td>
+                    <td>10</td>
+                    <td>python bot_simple.py --live --yes --shares 10 --symbols ETH</td>
+                </tr>
+                <tr>
+                    <td><span class="badge blue">bot-btc.service</span></td>
+                    <td>BTC</td>
+                    <td>7</td>
+                    <td>python bot_simple.py --live --yes --shares 7 --symbols BTC</td>
+                </tr>
+                <tr>
+                    <td><span class="badge blue">bot-xrp.service</span></td>
+                    <td>XRP</td>
+                    <td>5</td>
+                    <td>python bot_simple.py --live --yes --shares 5 --symbols XRP</td>
+                </tr>
+            </table>
+
+            <h3>Fichier Service Type</h3>
+            <div class="code-block">
+<code><span class="comment"># /etc/systemd/system/bot-eth.service</span>
+[Unit]
+Description=Polymarket Bot ETH
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/poly
+Environment=PATH=/home/ubuntu/poly/venv/bin:/usr/bin
+ExecStart=/home/ubuntu/poly/venv/bin/python bot_simple.py --live --yes --shares 10 --symbols ETH
+<span class="keyword">Restart=always</span>
+<span class="keyword">RestartSec=30</span>
+
+[Install]
+WantedBy=multi-user.target</code>
+            </div>
+
+            <div class="alert">
+                <p><strong>Important:</strong> Restart=always + RestartSec=30 = le bot redemarre automatiquement 30 secondes apres un crash.</p>
+            </div>
+
+            <h3>Commandes Utiles</h3>
+            <div class="code-block">
+<code><span class="comment"># Verifier le status d'un bot</span>
+sudo systemctl status bot-eth
+
+<span class="comment"># Redemarrer un bot</span>
+sudo systemctl restart bot-eth
+
+<span class="comment"># Voir les logs en temps reel</span>
+sudo journalctl -u bot-eth -f
+
+<span class="comment"># Activer le demarrage automatique</span>
+sudo systemctl enable bot-eth
+
+<span class="comment"># Desactiver le demarrage automatique</span>
+sudo systemctl disable bot-eth</code>
+            </div>
+        </div>
+
+        <!-- Scripts de Monitoring -->
+        <div class="section">
+            <h2>Scripts de Monitoring</h2>
+
+            <h3>1. Watchdog (watchdog.sh)</h3>
+            <p>Verifie toutes les 5 minutes que les bots sont en cours d'execution. Si un bot est down, il le redemarre et envoie une alerte Telegram.</p>
+
+            <div class="code-block">
+<code><span class="comment">#!/bin/bash</span>
+<span class="comment"># Verification des bots toutes les 5 minutes</span>
+
+POLY_DIR="/home/ubuntu/poly"
+declare -A SHARES
+SHARES[ETH]=10
+SHARES[BTC]=7
+SHARES[XRP]=5
+
+for symbol in ETH BTC XRP; do
+    if ! pgrep -f "bot_simple.py.*--symbols $symbol" > /dev/null; then
+        <span class="comment"># Bot down - redemarrage + alerte</span>
+        cd $POLY_DIR
+        nohup venv/bin/python bot_simple.py --live --yes \
+            --shares ${SHARES[$symbol]} --symbols $symbol &
+        <span class="comment"># Envoyer alerte Telegram...</span>
+    fi
+done</code>
+            </div>
+
+            <h3>2. Heartbeat (heartbeat.sh)</h3>
+            <p>Envoie un message "alive" a Telegram toutes les heures avec le status du systeme et des bots.</p>
+
+            <div class="code-block">
+<code><span class="comment"># Message envoye toutes les heures</span>
+MESSAGE="
+<span class="string">Heartbeat VPS</span>
+
+Status: ONLINE
+Uptime: $UPTIME
+RAM: $MEMORY
+Disque: $DISK
+Load: $LOAD
+
+<span class="string">Bots (3/3):</span>
+ETH BTC XRP
+"</code>
+            </div>
+
+            <h3>3. Alert Startup (alert_startup.sh)</h3>
+            <p>Envoie une notification Telegram quand le VPS demarre ou redemarre.</p>
+
+            <div class="code-block">
+<code><span class="comment"># Execute automatiquement au boot via systemd</span>
+MESSAGE="
+<span class="keyword">VPS REDEMARRE!</span>
+
+Le VPS vient de demarrer/redemarrer
+$TIMESTAMP
+IP: $IP
+
+Les bots vont demarrer automatiquement...
+"</code>
+            </div>
+
+            <h3>4. Cleanup Logs (cleanup_logs.sh)</h3>
+            <p>Nettoie les logs et fichiers temporaires tous les jours a minuit.</p>
+
+            <div class="code-block">
+<code><span class="comment"># Execute tous les jours a 00:00</span>
+
+<span class="comment"># Tronquer les logs > 10MB</span>
+find $POLY_DIR/logs -name "*.log" -size +10M -exec truncate -s 0 {} \;
+
+<span class="comment"># Supprimer les logs > 3 jours</span>
+find $POLY_DIR/logs -name "*.log.*" -mtime +3 -delete
+
+<span class="comment"># Nettoyer cache Python</span>
+find $POLY_DIR -type d -name "__pycache__" -exec rm -rf {} \;</code>
+            </div>
+        </div>
+
+        <!-- Cron Jobs -->
+        <div class="section">
+            <h2>Cron Jobs</h2>
+            <p>Taches planifiees pour le monitoring et la maintenance automatique.</p>
+
+            <table>
+                <tr>
+                    <th>Frequence</th>
+                    <th>Script</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td><span class="badge">*/5 * * * *</span></td>
+                    <td>watchdog.sh</td>
+                    <td>Verifie les bots toutes les 5 minutes</td>
+                </tr>
+                <tr>
+                    <td><span class="badge yellow">0 * * * *</span></td>
+                    <td>heartbeat.sh</td>
+                    <td>Envoie status Telegram toutes les heures</td>
+                </tr>
+                <tr>
+                    <td><span class="badge purple">0 0 * * *</span></td>
+                    <td>cleanup_logs.sh</td>
+                    <td>Nettoie les logs tous les jours a minuit</td>
+                </tr>
+            </table>
+
+            <h3>Configuration Crontab</h3>
+            <div class="code-block">
+<code><span class="comment"># Editer le crontab</span>
+crontab -e
+
+<span class="comment"># Ajouter les lignes suivantes:</span>
+*/5 * * * * /home/ubuntu/poly/watchdog.sh >> /home/ubuntu/poly/logs/watchdog.log 2>&1
+0 * * * * /home/ubuntu/poly/heartbeat.sh >> /home/ubuntu/poly/logs/heartbeat.log 2>&1
+0 0 * * * /home/ubuntu/poly/cleanup_logs.sh >> /home/ubuntu/poly/logs/cleanup.log 2>&1</code>
+            </div>
+        </div>
+
+        <!-- Alertes Telegram -->
+        <div class="section">
+            <h2>Alertes Telegram</h2>
+            <p>Systeme d'alertes en temps reel pour surveiller le VPS et les bots.</p>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h4>VPS Redemarre</h4>
+                    <p>Alerte instantanee quand le VPS boot. Inclut IP et timestamp.</p>
+                </div>
+                <div class="card">
+                    <h4>Heartbeat Horaire</h4>
+                    <p>Status systeme (RAM, disk, load) + status des 3 bots.</p>
+                </div>
+                <div class="card">
+                    <h4>Bot Crash</h4>
+                    <p>Alerte si un bot tombe + confirmation du redemarrage.</p>
+                </div>
+                <div class="card">
+                    <h4>Trades Executes</h4>
+                    <p>Notification pour chaque trade avec direction et montant.</p>
+                </div>
+            </div>
+
+            <h3>Configuration .env</h3>
+            <div class="code-block">
+<code><span class="comment"># /home/ubuntu/poly/.env</span>
+TELEGRAM_BOT_TOKEN=<span class="string">"votre_token_bot"</span>
+TELEGRAM_CHAT_ID=<span class="string">"votre_chat_id"</span></code>
+            </div>
+        </div>
+
+        <!-- Workflow Trading -->
+        <div class="section">
+            <h2>Workflow de Trading</h2>
+            <p>Cycle de vie complet d'un trade sur Polymarket.</p>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h4>1. Collecte des Donnees</h4>
+                    <p>Recuperation des 100 dernieres bougies 15min via Binance API pour chaque paire (BTC, ETH, XRP).</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>2. Calcul des Indicateurs</h4>
+                    <p>RSI(7) et Stochastic(5,3,3) calcules sur les donnees historiques.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>3. Verification des Filtres</h4>
+                    <p>Check si le combo jour+heure actuel n'est pas dans les 8 combos bloques.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>4. Generation du Signal</h4>
+                    <p>Signal UP si RSI &lt; 38 ET Stoch &lt; 30 | Signal DOWN si RSI &gt; 58 ET Stoch &gt; 80</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>5. Execution du Trade</h4>
+                    <p>Achat de shares sur Polymarket via CLOB API. Prix d'entree: 52.5c.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>6. Resolution</h4>
+                    <p>Le marche se resout a la fin de la bougie 15min. WIN: +$90.48 | LOSS: -$100</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Reference -->
+        <div class="section">
+            <h2>Quick Reference</h2>
+
+            <h3>Commandes SSH Essentielles</h3>
+            <div class="code-block">
+<code><span class="comment"># Connexion SSH</span>
+ssh -i ~/.ssh/poly-bot.pem ubuntu@IP_VPS
+
+<span class="comment"># Status de tous les bots</span>
+sudo systemctl status bot-eth bot-btc bot-xrp
+
+<span class="comment"># Logs en temps reel (tous les bots)</span>
+tail -f /home/ubuntu/poly/logs/*.log
+
+<span class="comment"># Redemarrer tous les bots</span>
+sudo systemctl restart bot-eth bot-btc bot-xrp
+
+<span class="comment"># Verifier les processus</span>
+ps aux | grep bot_simple.py
+
+<span class="comment"># Voir le crontab</span>
+crontab -l</code>
+            </div>
+
+            <h3>Structure des Fichiers</h3>
+            <div class="code-block">
+<code>/home/ubuntu/poly/
+├── bot_simple.py          <span class="comment"># Bot principal</span>
+├── .env                   <span class="comment"># Configuration (Telegram, Polymarket)</span>
+├── watchdog.sh            <span class="comment"># Monitoring toutes les 5 min</span>
+├── heartbeat.sh           <span class="comment"># Status Telegram horaire</span>
+├── alert_startup.sh       <span class="comment"># Alerte au reboot</span>
+├── cleanup_logs.sh        <span class="comment"># Nettoyage quotidien</span>
+├── setup_autostart.sh     <span class="comment"># Configuration systemd</span>
+├── setup_monitoring.sh    <span class="comment"># Configuration cron</span>
+└── logs/
+    ├── bot_eth.log
+    ├── bot_btc.log
+    ├── bot_xrp.log
+    ├── watchdog.log
+    └── heartbeat.log</code>
+            </div>
+        </div>
+
+        <!-- Troubleshooting -->
+        <div class="section">
+            <h2>Troubleshooting</h2>
+
+            <h3>Probleme: Bot ne demarre pas</h3>
+            <div class="code-block">
+<code><span class="comment"># Verifier les logs du service</span>
+sudo journalctl -u bot-eth -n 50
+
+<span class="comment"># Verifier que le venv est actif</span>
+source /home/ubuntu/poly/venv/bin/activate
+python --version
+
+<span class="comment"># Tester le bot manuellement</span>
+cd /home/ubuntu/poly
+python bot_simple.py --live --yes --shares 1 --symbols ETH</code>
+            </div>
+
+            <h3>Probleme: Pas de heartbeat Telegram</h3>
+            <div class="code-block">
+<code><span class="comment"># Verifier le cron</span>
+crontab -l | grep heartbeat
+
+<span class="comment"># Tester le script manuellement</span>
+/home/ubuntu/poly/heartbeat.sh
+
+<span class="comment"># Verifier les credentials Telegram</span>
+cat /home/ubuntu/poly/.env | grep TELEGRAM</code>
+            </div>
+
+            <h3>Probleme: VPS inaccessible</h3>
+            <div class="code-block">
+<code><span class="comment"># Ping le serveur</span>
+ping IP_VPS
+
+<span class="comment"># Verifier via AWS Console</span>
+<span class="comment"># Instance > Actions > Monitor > Check status</span>
+
+<span class="comment"># Si instance stoppee, la redemarrer</span>
+<span class="comment"># Les bots redemarreront automatiquement (systemd)</span></code>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>Botayo - Documentation Pipeline v1.0</p>
+        <p>Mis a jour le 30 Decembre 2025</p>
+    </footer>
+</body>
+</html>
