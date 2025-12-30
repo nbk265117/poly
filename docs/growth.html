@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan de Croissance - Botayo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        nav {
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        nav .container { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        nav .logo { font-size: 1.5rem; font-weight: bold; background: linear-gradient(90deg, #00d4ff, #00ff88); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        nav ul { display: flex; list-style: none; gap: 30px; }
+        nav a { color: #fff; text-decoration: none; font-weight: 500; transition: color 0.3s; }
+        nav a:hover { color: #00d4ff; }
+        nav a.active { color: #00ff88; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        h1 { text-align: center; font-size: 2.5rem; margin-bottom: 10px; background: linear-gradient(90deg, #00d4ff, #00ff88); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { text-align: center; color: #888; margin-bottom: 40px; }
+        .card { background: rgba(255,255,255,0.05); border-radius: 20px; padding: 30px; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.1); }
+        .card h2 { color: #00d4ff; margin-bottom: 20px; font-size: 1.5rem; }
+        .card h3 { color: #00ff88; margin: 20px 0 15px; font-size: 1.2rem; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        th { background: rgba(0,212,255,0.2); color: #00d4ff; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; }
+        tr:hover { background: rgba(255,255,255,0.05); }
+        .positive { color: #00ff88; }
+        .warning { color: #ffd700; }
+        .danger { color: #ff4757; }
+        .checkpoint { background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,255,136,0.2)); border: 2px solid #00d4ff; padding: 25px; border-radius: 15px; margin: 20px 0; }
+        .checkpoint h3 { color: #00d4ff; margin-bottom: 15px; }
+        .checkpoint.week3 { border-color: #ffd700; background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,165,0,0.1)); }
+        .checkpoint.week3 h3 { color: #ffd700; }
+        .checkpoint.month5 { border-color: #00ff88; background: linear-gradient(135deg, rgba(0,255,136,0.1), rgba(0,200,100,0.1)); }
+        .checkpoint.month5 h3 { color: #00ff88; }
+        .rule-box { background: rgba(168,85,247,0.1); border-left: 4px solid #a855f7; padding: 20px; margin: 15px 0; border-radius: 0 10px 10px 0; }
+        .rule-box h4 { color: #a855f7; margin-bottom: 10px; }
+        .formula { background: rgba(0,0,0,0.3); padding: 15px 25px; border-radius: 10px; font-family: monospace; font-size: 1.2rem; color: #00ff88; text-align: center; margin: 15px 0; }
+        .timeline { position: relative; padding-left: 30px; }
+        .timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, #00d4ff, #00ff88); }
+        .timeline-item { position: relative; margin-bottom: 25px; padding-left: 20px; }
+        .timeline-item::before { content: ''; position: absolute; left: -24px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: #00d4ff; border: 2px solid #0f0f1a; }
+        .timeline-item.current::before { background: #ffd700; box-shadow: 0 0 10px #ffd700; }
+        .timeline-item.future::before { background: #444; }
+        .badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-right: 10px; }
+        .badge-risk { background: rgba(255,71,87,0.2); color: #ff4757; }
+        .badge-safe { background: rgba(0,255,136,0.2); color: #00ff88; }
+        .badge-growth { background: rgba(0,212,255,0.2); color: #00d4ff; }
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0; }
+        .stat-mini { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px; text-align: center; }
+        .stat-mini .value { font-size: 1.8rem; font-weight: bold; color: #00ff88; }
+        .stat-mini .label { color: #888; font-size: 0.8rem; text-transform: uppercase; margin-top: 5px; }
+        footer { text-align: center; padding: 40px; color: #666; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 40px; }
+        footer a { color: #00d4ff; text-decoration: none; }
+        @media (max-width: 768px) {
+            h1 { font-size: 1.8rem; }
+            .card { padding: 20px; }
+            th, td { padding: 8px 10px; font-size: 0.85rem; }
+            nav ul { gap: 15px; font-size: 0.9rem; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 500px) {
+            nav .container { flex-direction: column; gap: 15px; }
+            .formula { font-size: 1rem; padding: 10px 15px; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <div class="logo">Botayo</div>
+            <ul>
+                <li><a href="index.html">Accueil</a></li>
+                <li><a href="stats.html">Statistiques</a></li>
+                <li><a href="strategy.html">Strategie</a></li>
+                <li><a href="growth.html" class="active">Croissance</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Plan de Croissance</h1>
+        <p class="subtitle">De $200 a $100,000 - Strategie v7.0 avec 44 filtres temporels</p>
+
+        <!-- Config actuelle -->
+        <div class="card">
+            <h2>Configuration Actuelle</h2>
+            <div class="stats-row">
+                <div class="stat-mini">
+                    <div class="value">$200</div>
+                    <div class="label">Capital Initial</div>
+                </div>
+                <div class="stat-mini">
+                    <div class="value">22</div>
+                    <div class="label">Shares Total</div>
+                </div>
+                <div class="stat-mini">
+                    <div class="value">+$679</div>
+                    <div class="label">PnL/Mois</div>
+                </div>
+                <div class="stat-mini">
+                    <div class="value">339%</div>
+                    <div class="label">ROI Mensuel</div>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr><th>Bot</th><th>Shares</th><th>Mise/Trade</th><th>WIN</th><th>LOSE</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>ETH</td><td>10</td><td>$5.25</td><td class="positive">+$4.75</td><td class="danger">-$5.25</td></tr>
+                    <tr><td>BTC</td><td>7</td><td>$3.68</td><td class="positive">+$3.32</td><td class="danger">-$3.68</td></tr>
+                    <tr><td>XRP</td><td>5</td><td>$2.62</td><td class="positive">+$2.38</td><td class="danger">-$2.62</td></tr>
+                    <tr style="background: rgba(0,255,136,0.1);"><td><strong>TOTAL</strong></td><td><strong>22</strong></td><td><strong>$11.55</strong></td><td class="positive"><strong>+$10.45</strong></td><td class="danger"><strong>-$11.55</strong></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- CHECKPOINT 3 SEMAINES -->
+        <div class="checkpoint week3">
+            <h3>CHECKPOINT 3 SEMAINES - A VERIFIER!</h3>
+            <p style="margin-bottom:15px;">Date estimee: <strong>20 Janvier 2025</strong></p>
+            <div class="stats-row">
+                <div class="stat-mini">
+                    <div class="value" style="color:#ffd700;">$709</div>
+                    <div class="label">Capital Attendu</div>
+                </div>
+                <div class="stat-mini">
+                    <div class="value" style="color:#ffd700;">+$509</div>
+                    <div class="label">Gain Total</div>
+                </div>
+                <div class="stat-mini">
+                    <div class="value" style="color:#ffd700;">51</div>
+                    <div class="label">Nouveaux Shares</div>
+                </div>
+            </div>
+            <h4 style="color:#ffd700; margin-top:20px;">Actions a faire:</h4>
+            <ul style="margin-left:20px; line-height:2;">
+                <li>Verifier le capital reel sur Polymarket</li>
+                <li>Si capital >= $500: Passer a 36 shares (E16/B12/X8)</li>
+                <li>Si capital >= $700: Passer a 51 shares (E23/B16/X12)</li>
+                <li>Mettre a jour la config VPS avec nouveaux shares</li>
+            </ul>
+        </div>
+
+        <!-- Phase 1 -->
+        <div class="card">
+            <h2>Phase 1: Demarrage ($200 - $879)</h2>
+            <span class="badge badge-risk">Mode Risque</span>
+            <span class="badge badge-safe">Objectif: Mode Safe</span>
+
+            <table>
+                <thead>
+                    <tr><th>Semaine</th><th>Capital</th><th>PnL</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Depart</td><td>$200</td><td>-</td><td class="warning">Risque (1.32x)</td></tr>
+                    <tr><td>Semaine 1</td><td>$370</td><td class="positive">+$170</td><td class="warning">Risque</td></tr>
+                    <tr><td>Semaine 2</td><td>$539</td><td class="positive">+$170</td><td class="positive">Safe! (2x)</td></tr>
+                    <tr><td>Semaine 3</td><td>$709</td><td class="positive">+$170</td><td class="positive">Safe</td></tr>
+                    <tr style="background: rgba(0,255,136,0.1);"><td><strong>Semaine 4</strong></td><td><strong>$879</strong></td><td class="positive"><strong>+$170</strong></td><td class="positive"><strong>Augmenter!</strong></td></tr>
+                </tbody>
+            </table>
+
+            <div class="rule-box">
+                <h4>Regle Phase 1</h4>
+                <p>Garder 22 shares jusqu'a $500+. Risque accepte pour croissance rapide.</p>
+            </div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div class="card">
+            <h2>Phase 2: Croissance ($879 - $2,000)</h2>
+            <span class="badge badge-growth">Croissance</span>
+
+            <table>
+                <thead>
+                    <tr><th>Capital</th><th>Shares</th><th>Allocation</th><th>PnL/Mois</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>$500</td><td>36</td><td>ETH=16, BTC=12, XRP=8</td><td class="positive">+$1,111</td></tr>
+                    <tr><td>$750</td><td>54</td><td>ETH=24, BTC=17, XRP=13</td><td class="positive">+$1,666</td></tr>
+                    <tr><td>$1,000</td><td>72</td><td>ETH=32, BTC=23, XRP=17</td><td class="positive">+$2,222</td></tr>
+                    <tr><td>$1,500</td><td>109</td><td>ETH=49, BTC=35, XRP=25</td><td class="positive">+$3,364</td></tr>
+                    <tr style="background: rgba(0,255,136,0.1);"><td><strong>$2,000</strong></td><td><strong>145</strong></td><td><strong>ETH=65, BTC=46, XRP=34</strong></td><td class="positive"><strong>+$4,474</strong></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Phase 3 -->
+        <div class="card">
+            <h2>Phase 3: Acceleration ($2,000 - $10,000)</h2>
+            <span class="badge badge-growth">Acceleration</span>
+
+            <table>
+                <thead>
+                    <tr><th>Capital</th><th>Shares</th><th>PnL/Mois</th><th>PnL/Jour</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>$2,000</td><td>145</td><td class="positive">+$4,474</td><td>+$149</td></tr>
+                    <tr><td>$3,000</td><td>218</td><td class="positive">+$6,727</td><td>+$224</td></tr>
+                    <tr><td>$5,000</td><td>363</td><td class="positive">+$11,202</td><td>+$373</td></tr>
+                    <tr><td>$7,500</td><td>545</td><td class="positive">+$16,818</td><td>+$561</td></tr>
+                    <tr style="background: rgba(0,255,136,0.1);"><td><strong>$10,000</strong></td><td><strong>727</strong></td><td class="positive"><strong>+$22,434</strong></td><td><strong>+$748</strong></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- CHECKPOINT 5 MOIS -->
+        <div class="checkpoint month5">
+            <h3>CHECKPOINT 5 MOIS - OBJECTIF FINAL!</h3>
+            <p style="margin-bottom:15px;">Date estimee: <strong>30 Mai 2025</strong></p>
+            <div class="stats-row">
+                <div class="stat-mini">
+                    <div class="value" style="color:#00ff88;">$97,288</div>
+                    <div class="label">Capital Attendu</div>
+                </div>
+                <div class="stat-mini">
+                    <div class="value" style="color:#00ff88;">7,077</div>
+                    <div class="label">Shares</div>
+                </div>
+                <div class="stat-mini">
+                    <div class="value" style="color:#00ff88;">+$218K</div>
+                    <div class="label">PnL/Mois</div>
+                </div>
+            </div>
+            <h4 style="color:#00ff88; margin-top:20px;">Actions a faire:</h4>
+            <ul style="margin-left:20px; line-height:2;">
+                <li>Verifier le capital reel - Objectif: $50,000+</li>
+                <li>Retirer 50% des gains ($25,000+) pour securiser</li>
+                <li>Continuer avec $50,000 de capital de trading</li>
+                <li>Celebrer! Tu as atteint la liberte financiere!</li>
+            </ul>
+        </div>
+
+        <!-- Timeline Resume -->
+        <div class="card">
+            <h2>Timeline Complete</h2>
+            <div class="timeline">
+                <div class="timeline-item current">
+                    <strong style="color:#ffd700;">Depart - 30 Dec 2024</strong><br>
+                    Capital: $200 | 22 shares | +$679/mois
+                </div>
+                <div class="timeline-item future">
+                    <strong>+1 mois - 30 Jan 2025</strong><br>
+                    Capital: $879 | 64 shares | +$1,975/mois
+                </div>
+                <div class="timeline-item future">
+                    <strong>+2 mois - 28 Fev 2025</strong><br>
+                    Capital: $2,854 | 207 shares | +$6,389/mois
+                </div>
+                <div class="timeline-item future">
+                    <strong>+3 mois - 30 Mar 2025</strong><br>
+                    Capital: $9,243 | 672 shares | +$20,739/mois
+                </div>
+                <div class="timeline-item future">
+                    <strong>+4 mois - 30 Avr 2025</strong><br>
+                    Capital: $29,982 | 2,181 shares | +$67,306/mois
+                </div>
+                <div class="timeline-item future">
+                    <strong style="color:#00ff88;">+5 mois - 30 Mai 2025</strong><br>
+                    Capital: $97,288 | 7,077 shares | +$218,422/mois
+                </div>
+            </div>
+        </div>
+
+        <!-- Regles d'Or -->
+        <div class="card">
+            <h2>Regles d'Or</h2>
+
+            <div class="rule-box">
+                <h4>1. Recalculer shares chaque semaine</h4>
+                <div class="formula">Shares = Capital / 14</div>
+                <p>Ratio 2x securite. Exemple: $700 / 14 = 50 shares</p>
+            </div>
+
+            <div class="rule-box">
+                <h4>2. Allocation fixe par paire</h4>
+                <div class="formula">ETH: 45% | BTC: 32% | XRP: 23%</div>
+                <p>Respecter ces ratios pour chaque mise a jour</p>
+            </div>
+
+            <div class="rule-box">
+                <h4>3. Ne jamais depasser ratio 1.5x</h4>
+                <p>Si Drawdown > 66% du capital = REDUIRE les shares immediatement</p>
+            </div>
+
+            <div class="rule-box">
+                <h4>4. Retirer 20% des gains chaque mois</h4>
+                <p>Securiser les profits. Ne jamais tout reinvestir!</p>
+            </div>
+
+            <div class="rule-box">
+                <h4>5. Reinvestir 80%</h4>
+                <p>Compound effect = croissance exponentielle</p>
+            </div>
+        </div>
+
+        <!-- Avertissement -->
+        <div class="card" style="border-color: rgba(255,71,87,0.5); background: rgba(255,71,87,0.05);">
+            <h2 style="color:#ff4757;">Avertissement</h2>
+            <p style="line-height:1.8;">
+                Ces projections sont basees sur les resultats de backtest historiques (2024-2025).
+                Les performances passees ne garantissent pas les resultats futurs.
+                Le trading comporte des risques de perte en capital.
+                N'investissez que ce que vous pouvez vous permettre de perdre.
+            </p>
+        </div>
+    </div>
+
+    <footer>
+        <p>Botayo - Plan de Croissance v7.0</p>
+        <p><a href="index.html">Accueil</a> | <a href="stats.html">Stats</a> | Mis a jour le 30 Decembre 2025</p>
+    </footer>
+</body>
+</html>
