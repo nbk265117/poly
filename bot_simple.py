@@ -25,6 +25,7 @@ except ImportError:
 from src.config import get_config
 from src.telegram_bot import TelegramNotifier
 from src.polymarket_client import PolymarketClient
+import trade_tracker
 
 # Logging - éviter les doublons
 logger = logging.getLogger(__name__)
@@ -174,6 +175,9 @@ class SimpleBot:
 
         Path('logs').mkdir(exist_ok=True)
 
+        # Initialiser le tracking des trades
+        trade_tracker.init_db()
+
     def get_candles(self, symbol: str) -> pd.DataFrame:
         """Récupère les bougies"""
         try:
@@ -314,6 +318,15 @@ class SimpleBot:
                     order_id = order.get('order_id', 'N/A')
                     actual_price = order.get('price', entry_price)
                     logger.info(f"✅ ORDRE PLACÉ | ID: {order_id} | Prix: {actual_price*100:.0f}¢")
+
+                    # Log trade pour tracking WIN/LOSS
+                    trade_tracker.log_trade(
+                        symbol=symbol,
+                        direction=signal,
+                        shares=self.shares,
+                        entry_price=actual_price * 100,
+                        order_id=order_id
+                    )
 
                     # Notification Telegram - Prix formaté selon le symbole
                     price_fmt = f"${current_price:,.0f}" if current_price > 100 else f"${current_price:.2f}"
