@@ -202,7 +202,8 @@ Path: /home/ubuntu/poly
     ├── bot_v10_eth.log
     ├── bot_v10_xrp.log
     ├── heartbeat.log
-    └── cleanup.log
+    ├── cleanup.log
+    └── trade_check.log
 ```
 
 ### Watchdog V10
@@ -226,10 +227,17 @@ RESTART_COOLDOWN = 60  # Attendre 60s avant restart
 
 ### Cron Jobs
 ```bash
-# Decales a :02 pour eviter conflit avec bougies 15min
-2 * * * * heartbeat_v10.sh   # Status horaire
-2 0 * * * cleanup_logs.sh    # Nettoyage quotidien
+# Decales pour eviter conflit avec bougies 15min (00, 15, 30, 45)
+2 * * * *       heartbeat_v10.sh              # Status horaire
+2 0 * * *       cleanup_logs.sh               # Nettoyage quotidien
+5,20,35,50 * * * *  python trade_tracker.py check  # Verif WIN/LOSS
 ```
+
+| Cron | Schedule | Description |
+|------|----------|-------------|
+| Heartbeat | :02 chaque heure | Status Telegram |
+| Cleanup | 00:02 chaque jour | Nettoie logs > 7 jours |
+| Trade Check | :05, :20, :35, :50 | Verifie PENDING → WIN/LOSS |
 
 ### Configuration Live
 | Pair | Shares | Mise/Trade |
@@ -359,3 +367,4 @@ Analyse:
 - **SC-010**: Triple confirmation (RSI + Stoch + FTFC) before every trade
 - **SC-011**: All trades logged to SQLite with indicators (RSI, Stoch, FTFC)
 - **SC-012**: Trade results (WIN/LOSS) auto-verified via Binance API
+- **SC-013**: Cron auto-check trades every 15min (:05, :20, :35, :50)
