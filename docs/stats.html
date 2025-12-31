@@ -327,6 +327,54 @@
             </div>
         </div>
 
+        <div class="chart-card" style="margin-bottom: 30px; border: 2px solid #00d4ff;">
+            <h3 style="color:#00d4ff;">Trade Tracker SQL</h3>
+            <p style="color:#888; margin-bottom:15px;">Base de donnees SQLite pour backtest et analyse des trades live</p>
+
+            <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin-bottom: 20px; font-family: monospace; font-size: 0.85rem; overflow-x: auto;">
+                <div style="color:#a855f7; margin-bottom:10px;">-- Schema trades.db</div>
+                <div style="color:#00d4ff;">CREATE TABLE</div> <span style="color:#00ff88;">trades</span> (<br>
+                &nbsp;&nbsp;id, timestamp, symbol, direction,<br>
+                &nbsp;&nbsp;shares, entry_price, order_id,<br>
+                &nbsp;&nbsp;candle_open, candle_close,<br>
+                &nbsp;&nbsp;result, pnl,<br>
+                &nbsp;&nbsp;<span style="color:#ffd700;">rsi, stochastic, ftfc_score,</span><br>
+                &nbsp;&nbsp;<span style="color:#ffd700;">btc_price, strategy_version</span><br>
+                );
+            </div>
+
+            <div class="table-wrapper"><table>
+                <thead><tr><th>Commande</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td style="font-family:monospace; color:#00ff88;">python trade_tracker.py</td><td>Check pending + afficher stats</td></tr>
+                    <tr><td style="font-family:monospace; color:#00ff88;">python trade_tracker.py stats</td><td>Statistiques 7 derniers jours</td></tr>
+                    <tr><td style="font-family:monospace; color:#00ff88;">python trade_tracker.py check</td><td>Verifier trades en attente (WIN/LOSS)</td></tr>
+                    <tr><td style="font-family:monospace; color:#00ff88;">python trade_tracker.py analysis</td><td>Analyse detaillee (par heure, indicateurs)</td></tr>
+                    <tr><td style="font-family:monospace; color:#00ff88;">python trade_tracker.py hourly</td><td>Performance par heure UTC</td></tr>
+                    <tr><td style="font-family:monospace; color:#00ff88;">python trade_tracker.py export</td><td>Export CSV pour analyse externe</td></tr>
+                </tbody>
+            </table></div>
+
+            <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+                <div style="background: rgba(0,255,136,0.1); padding: 15px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 1.2rem; color: #00ff88; font-weight: bold;">Indicateurs</div>
+                    <div style="color: #888; font-size: 0.8rem;">RSI, Stoch, FTFC enregistres</div>
+                </div>
+                <div style="background: rgba(0,212,255,0.1); padding: 15px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 1.2rem; color: #00d4ff; font-weight: bold;">Auto-check</div>
+                    <div style="color: #888; font-size: 0.8rem;">WIN/LOSS via Binance</div>
+                </div>
+                <div style="background: rgba(168,85,247,0.1); padding: 15px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 1.2rem; color: #a855f7; font-weight: bold;">Analyse</div>
+                    <div style="color: #888; font-size: 0.8rem;">Par heure, par RSI range</div>
+                </div>
+                <div style="background: rgba(255,215,0,0.1); padding: 15px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 1.2rem; color: #ffd700; font-weight: bold;">Export</div>
+                    <div style="color: #888; font-size: 0.8rem;">CSV pour backtesting</div>
+                </div>
+            </div>
+        </div>
+
         <div class="chart-card">
             <h3>Resume PnL V10 ($100/trade - RSI + Stoch + FTFC)</h3>
             <div class="table-wrapper"><table>

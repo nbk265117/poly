@@ -186,6 +186,8 @@ Path: /home/ubuntu/poly
 ├── bot_v10_btc.py         # Bot BTC (7 shares)
 ├── bot_v10_eth.py         # Bot ETH (10 shares)
 ├── bot_v10_xrp.py         # Bot XRP (5 shares)
+├── trade_tracker.py       # Tracking SQL des trades
+├── trades.db              # Base SQLite des trades
 ├── .env                   # Credentials
 ├── heartbeat_v10.sh       # Status horaire (:02)
 ├── alert_startup_v10.sh   # Alerte au boot
@@ -287,6 +289,62 @@ tail -f logs/watchdog_v10.log
 crontab -l
 ```
 
+## Trade Tracker SQL
+
+### Database Schema
+```sql
+-- trades.db (SQLite)
+CREATE TABLE trades (
+    id INTEGER PRIMARY KEY,
+    timestamp TEXT,
+    symbol TEXT,           -- BTC/USDT, ETH/USDT, XRP/USDT
+    direction TEXT,        -- UP, DOWN
+    shares INTEGER,
+    entry_price REAL,
+    order_id TEXT,         -- Polymarket order ID
+    candle_open REAL,
+    candle_close REAL,
+    result TEXT,           -- PENDING, WIN, LOSS
+    pnl REAL,
+    -- V2: Indicateurs techniques
+    rsi REAL,
+    stochastic REAL,
+    ftfc_score REAL,
+    btc_price REAL,
+    strategy_version TEXT  -- V10
+);
+```
+
+### Commands
+| Command | Description |
+|---------|-------------|
+| `python trade_tracker.py` | Check pending + stats |
+| `python trade_tracker.py stats` | Stats 7 derniers jours |
+| `python trade_tracker.py check` | Verifier WIN/LOSS via Binance |
+| `python trade_tracker.py analysis` | Analyse par heure, indicateurs |
+| `python trade_tracker.py hourly` | Performance par heure UTC |
+| `python trade_tracker.py export` | Export CSV |
+
+### Features
+```yaml
+Enregistrement:
+  - Tous les trades avec indicateurs (RSI, Stoch, FTFC)
+  - Prix BTC/ETH/XRP au moment du trade
+  - Order ID Polymarket pour tracabilite
+
+Verification:
+  - Check automatique WIN/LOSS via Binance API
+  - Compare direction predite vs direction reelle
+  - Calcul PnL automatique
+
+Analyse:
+  - Stats par symbole (BTC, ETH, XRP)
+  - Performance par heure UTC
+  - Win rate par plage RSI/Stoch/FTFC
+  - Series (max win streak, max loss streak)
+  - Export CSV pour analyse externe
+```
+
 ## Success Criteria
 
 - **SC-001**: 3 bots V10 running 24/7 via watchdog
@@ -299,3 +357,5 @@ crontab -l
 - **SC-008**: No interference with 15min candle analysis
 - **SC-009**: FTFC Score calculated correctly from 1H/4H data
 - **SC-010**: Triple confirmation (RSI + Stoch + FTFC) before every trade
+- **SC-011**: All trades logged to SQLite with indicators (RSI, Stoch, FTFC)
+- **SC-012**: Trade results (WIN/LOSS) auto-verified via Binance API

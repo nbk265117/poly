@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-TRADE TRACKER - Suivi WIN/LOSS des trades Polymarket
-Verifie les resultats apres resolution des candles 15min
+TRADE TRACKER V2 - Suivi complet des trades Polymarket
+Enregistre indicateurs, resultats et analyse performance
 """
 
 import sqlite3
@@ -21,6 +21,8 @@ def init_db():
     """Initialise la base de donnees SQLite"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+
+    # Table principale des trades
     c.execute('''
         CREATE TABLE IF NOT EXISTS trades (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,9 +36,17 @@ def init_db():
             candle_close REAL,
             result TEXT DEFAULT 'PENDING',
             pnl REAL DEFAULT 0,
-            checked_at TEXT
+            checked_at TEXT,
+            -- V2: Indicateurs techniques
+            rsi REAL,
+            stochastic REAL,
+            ftfc_score REAL,
+            btc_price REAL,
+            strategy_version TEXT DEFAULT 'V10'
         )
     ''')
+
+    # Table des stats journalieres
     c.execute('''
         CREATE TABLE IF NOT EXISTS daily_stats (
             date TEXT PRIMARY KEY,
@@ -48,27 +58,67 @@ def init_db():
             total_pnl REAL DEFAULT 0
         )
     ''')
+
+    # Table des sessions de trading
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            start_time TEXT NOT NULL,
+            end_time TEXT,
+            strategy_version TEXT,
+            config TEXT,
+            total_trades INTEGER DEFAULT 0,
+            total_pnl REAL DEFAULT 0,
+            notes TEXT
+        )
+    ''')
+
+    # Migrer anciennes colonnes si necessaire
+    try:
+        c.execute('ALTER TABLE trades ADD COLUMN rsi REAL')
+    except sqlite3.OperationalError:
+        pass
+    try:
+        c.execute('ALTER TABLE trades ADD COLUMN stochastic REAL')
+    except sqlite3.OperationalError:
+        pass
+    try:
+        c.execute('ALTER TABLE trades ADD COLUMN ftfc_score REAL')
+    except sqlite3.OperationalError:
+        pass
+    try:
+        c.execute('ALTER TABLE trades ADD COLUMN btc_price REAL')
+    except sqlite3.OperationalError:
+        pass
+    try:
+        c.execute('ALTER TABLE trades ADD COLUMN strategy_version TEXT DEFAULT "V10"')
+    except sqlite3.OperationalError:
+        pass
     conn.commit()
     conn.close()
     logger.info(f"Database initialized at {DB_PATH}")
 
-def log_trade(symbol: str, direction: str, shares: int, entry_price: float, order_id: str = None):
-    """Enregistre un nouveau trade"""
+def log_trade(symbol: str, direction: str, shares: int, entry_price: float,
+               order_id: str = None, rsi: float = None, stochastic: float = None,
+               ftfc_score: float = None, btc_price: float = None, strategy_version: str = 'V10'):
+    """Enregistre un nouveau trade avec indicateurs"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
     timestamp = datetime.now(timezone.utc).isoformat()
 
     c.execute('''
-        INSERT INTO trades (timestamp, symbol, direction, shares, entry_price, order_id)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (timestamp, symbol, direction, shares, entry_price, order_id))
+        INSERT INTO trades (timestamp, symbol, direction, shares, entry_price, order_id,
+                           rsi, stochastic, ftfc_score, btc_price, strategy_version)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (timestamp, symbol, direction, shares, entry_price, order_id,
+          rsi, stochastic, ftfc_score, btc_price, strategy_version))
 
     trade_id = c.lastrowid
     conn.commit()
     conn.close()
 
-    logger.info(f"Trade logged: #{trade_id} | {symbol} {direction} | {shares} shares @ {entry_price}c")
+    logger.info(f"Trade logged: #{trade_id} | {symbol} {direction} | {shares} shares @ {entry_price}c | RSI={rsi} Stoch={stochastic} FTFC={ftfc_score}")
     return trade_id
 
 def check_pending_trades():
@@ -311,6 +361,230 @@ def send_telegram_stats(telegram_notifier):
 
     telegram_notifier.send_message(msg)
 
+def get_hourly_performance():
+    """Analyse performance par heure de la journee"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+
+    c.execute('''
+        SELECT
+            CAST(strftime('%H', timestamp) AS INTEGER) as hour,
+            COUNT(*) as total,
+            SUM(CASE WHEN result = 'WIN' THEN 1 ELSE 0 END) as wins,
+            SUM(pnl) as pnl
+        FROM trades
+        WHERE result != 'PENDING'
+        GROUP BY hour
+        ORDER BY hour
+    ''')
+
+    results = {}
+    for row in c.fetchall():
+        hour, total, wins, pnl = row
+        results[hour] = {
+            'total': total,
+            'wins': wins,
+            'win_rate': (wins / total * 100) if total > 0 else 0,
+            'pnl': pnl or 0
+        }
+
+    conn.close()
+    return results
+
+
+def get_indicator_analysis():
+    """Analyse win rate par plages d'indicateurs"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+
+    analysis = {}
+
+    # RSI ranges
+    c.execute('''
+        SELECT
+            CASE
+                WHEN rsi < 30 THEN '< 30 (très survendu)'
+                WHEN rsi < 42 THEN '30-42 (survendu)'
+                WHEN rsi > 70 THEN '> 70 (très surachat)'
+                WHEN rsi > 62 THEN '62-70 (surachat)'
+                ELSE '42-62 (neutre)'
+            END as rsi_range,
+            COUNT(*) as total,
+            SUM(CASE WHEN result = 'WIN' THEN 1 ELSE 0 END) as wins,
+            SUM(pnl) as pnl
+        FROM trades
+        WHERE result != 'PENDING' AND rsi IS NOT NULL
+        GROUP BY rsi_range
+    ''')
+    analysis['rsi'] = {row[0]: {'total': row[1], 'wins': row[2], 'win_rate': (row[2]/row[1]*100) if row[1] > 0 else 0, 'pnl': row[3] or 0} for row in c.fetchall()}
+
+    # Stochastic ranges
+    c.execute('''
+        SELECT
+            CASE
+                WHEN stochastic < 20 THEN '< 20 (très survendu)'
+                WHEN stochastic < 38 THEN '20-38 (survendu)'
+                WHEN stochastic > 80 THEN '> 80 (très surachat)'
+                WHEN stochastic > 68 THEN '68-80 (surachat)'
+                ELSE '38-68 (neutre)'
+            END as stoch_range,
+            COUNT(*) as total,
+            SUM(CASE WHEN result = 'WIN' THEN 1 ELSE 0 END) as wins,
+            SUM(pnl) as pnl
+        FROM trades
+        WHERE result != 'PENDING' AND stochastic IS NOT NULL
+        GROUP BY stoch_range
+    ''')
+    analysis['stochastic'] = {row[0]: {'total': row[1], 'wins': row[2], 'win_rate': (row[2]/row[1]*100) if row[1] > 0 else 0, 'pnl': row[3] or 0} for row in c.fetchall()}
+
+    # FTFC ranges
+    c.execute('''
+        SELECT
+            CASE
+                WHEN ftfc_score <= -2 THEN '<= -2 (très bearish)'
+                WHEN ftfc_score < 0 THEN '-2 to 0 (bearish)'
+                WHEN ftfc_score >= 2 THEN '>= 2 (très bullish)'
+                WHEN ftfc_score > 0 THEN '0 to 2 (bullish)'
+                ELSE '0 (neutre)'
+            END as ftfc_range,
+            COUNT(*) as total,
+            SUM(CASE WHEN result = 'WIN' THEN 1 ELSE 0 END) as wins,
+            SUM(pnl) as pnl
+        FROM trades
+        WHERE result != 'PENDING' AND ftfc_score IS NOT NULL
+        GROUP BY ftfc_range
+    ''')
+    analysis['ftfc'] = {row[0]: {'total': row[1], 'wins': row[2], 'win_rate': (row[2]/row[1]*100) if row[1] > 0 else 0, 'pnl': row[3] or 0} for row in c.fetchall()}
+
+    conn.close()
+    return analysis
+
+
+def get_streak_analysis():
+    """Analyse des series de wins/losses"""
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+
+    c.execute('''
+        SELECT result FROM trades
+        WHERE result != 'PENDING'
+        ORDER BY timestamp
+    ''')
+
+    results = [row[0] for row in c.fetchall()]
+    conn.close()
+
+    if not results:
+        return {'max_win_streak': 0, 'max_loss_streak': 0, 'current_streak': 0, 'current_type': None}
+
+    max_win = max_loss = current = 0
+    prev = None
+
+    for r in results:
+        if r == prev:
+            current += 1
+        else:
+            current = 1
+            prev = r
+
+        if r == 'WIN':
+            max_win = max(max_win, current)
+        else:
+            max_loss = max(max_loss, current)
+
+    return {
+        'max_win_streak': max_win,
+        'max_loss_streak': max_loss,
+        'current_streak': current,
+        'current_type': prev
+    }
+
+
+def export_to_csv(filename: str = None):
+    """Exporte tous les trades en CSV"""
+    import csv
+
+    if filename is None:
+        filename = f"trades_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+
+    c.execute('''
+        SELECT id, timestamp, symbol, direction, shares, entry_price, order_id,
+               candle_open, candle_close, result, pnl, rsi, stochastic, ftfc_score,
+               btc_price, strategy_version, checked_at
+        FROM trades
+        ORDER BY timestamp
+    ''')
+
+    rows = c.fetchall()
+    columns = ['id', 'timestamp', 'symbol', 'direction', 'shares', 'entry_price', 'order_id',
+               'candle_open', 'candle_close', 'result', 'pnl', 'rsi', 'stochastic', 'ftfc_score',
+               'btc_price', 'strategy_version', 'checked_at']
+
+    with open(filename, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(columns)
+        writer.writerows(rows)
+
+    conn.close()
+    logger.info(f"Exported {len(rows)} trades to {filename}")
+    return filename
+
+
+def print_detailed_analysis():
+    """Affiche une analyse detaillee"""
+    print("\n" + "=" * 70)
+    print("📊 ANALYSE DÉTAILLÉE DES TRADES")
+    print("=" * 70)
+
+    # Stats de base
+    stats = get_stats(30)
+    print(f"\n📈 PERFORMANCE 30 JOURS:")
+    print(f"   Trades: {stats['total_trades']} | Wins: {stats['wins']} | Losses: {stats['losses']}")
+    print(f"   Win Rate: {stats['win_rate']:.1f}%")
+    print(f"   PnL Total: ${stats['total_pnl']:.2f}")
+
+    # Par symbole
+    if stats['by_symbol']:
+        print(f"\n📊 PAR SYMBOLE:")
+        for sym, data in stats['by_symbol'].items():
+            emoji = "🟢" if data['win_rate'] >= 58 else "🟡" if data['win_rate'] >= 55 else "🔴"
+            print(f"   {emoji} {sym}: {data['wins']}/{data['total']} ({data['win_rate']:.1f}%) | ${data['pnl']:.2f}")
+
+    # Par heure
+    hourly = get_hourly_performance()
+    if hourly:
+        print(f"\n⏰ PAR HEURE (UTC):")
+        best_hours = sorted(hourly.items(), key=lambda x: x[1]['win_rate'], reverse=True)[:3]
+        worst_hours = sorted(hourly.items(), key=lambda x: x[1]['win_rate'])[:3]
+        best_str = ', '.join([f"{h}h ({d['win_rate']:.0f}%)" for h, d in best_hours])
+        worst_str = ', '.join([f"{h}h ({d['win_rate']:.0f}%)" for h, d in worst_hours])
+        print(f"   Meilleures heures: {best_str}")
+        print(f"   Pires heures: {worst_str}")
+
+    # Indicateurs
+    ind_analysis = get_indicator_analysis()
+    if ind_analysis.get('rsi'):
+        print(f"\n📈 ANALYSE RSI:")
+        for range_name, data in sorted(ind_analysis['rsi'].items(), key=lambda x: x[1]['win_rate'], reverse=True):
+            if data['total'] >= 5:
+                emoji = "🟢" if data['win_rate'] >= 58 else "🟡" if data['win_rate'] >= 55 else "🔴"
+                print(f"   {emoji} {range_name}: {data['win_rate']:.1f}% ({data['total']} trades)")
+
+    # Streaks
+    streaks = get_streak_analysis()
+    print(f"\n🔥 SÉRIES:")
+    print(f"   Max Win Streak: {streaks['max_win_streak']}")
+    print(f"   Max Loss Streak: {streaks['max_loss_streak']}")
+    if streaks['current_type']:
+        emoji = "🟢" if streaks['current_type'] == 'WIN' else "🔴"
+        print(f"   Série actuelle: {emoji} {streaks['current_streak']} {streaks['current_type']}")
+
+    print("\n" + "=" * 70)
+
+
 if __name__ == "__main__":
     import sys
 
@@ -326,10 +600,27 @@ if __name__ == "__main__":
         elif cmd == "stats":
             print_stats_report()
 
+        elif cmd == "analysis" or cmd == "analyze":
+            print_detailed_analysis()
+
+        elif cmd == "export":
+            filename = export_to_csv()
+            print(f"Exported to {filename}")
+
+        elif cmd == "hourly":
+            hourly = get_hourly_performance()
+            print("\n⏰ Performance par heure (UTC):")
+            for h in range(24):
+                if h in hourly:
+                    d = hourly[h]
+                    bar = "█" * int(d['win_rate'] / 5)
+                    print(f"   {h:02d}h: {bar} {d['win_rate']:.1f}% ({d['total']} trades) ${d['pnl']:.2f}")
+
         elif cmd == "test":
-            # Test: ajouter un trade fictif
-            log_trade("BTC/USDT", "UP", 10, 52.5, "test_order_123")
-            print("Test trade logged")
+            # Test: ajouter un trade fictif avec indicateurs
+            log_trade("BTC/USDT", "DOWN", 7, 52.5, "test_order_123",
+                     rsi=85.5, stochastic=74.4, ftfc_score=-2.5, btc_price=87874)
+            print("Test trade logged with indicators")
 
     else:
         # Par defaut: check pending + afficher stats

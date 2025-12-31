@@ -257,7 +257,12 @@ class BotV10:
                         direction=signal,
                         shares=self.shares,
                         entry_price=actual_price * 100,
-                        order_id=order_id
+                        order_id=order_id,
+                        rsi=rsi,
+                        stochastic=stoch,
+                        ftfc_score=ftfc,
+                        btc_price=current_price,
+                        strategy_version='V10'
                     )
 
                     price_fmt = f"${current_price:,.0f}" if current_price > 100 else f"${current_price:.2f}"
@@ -291,7 +296,12 @@ class BotV10:
                 direction=signal,
                 shares=self.shares,
                 entry_price=52.5,
-                order_id=f"PAPER_{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
+                order_id=f"PAPER_{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}",
+                rsi=rsi,
+                stochastic=stoch,
+                ftfc_score=ftfc,
+                btc_price=current_price,
+                strategy_version='V10'
             )
 
             price_fmt = f"${current_price:,.0f}" if current_price > 100 else f"${current_price:.2f}"
