@@ -387,18 +387,19 @@ class SimpleBot:
         logger.info("=" * 60)
 
         # Notification demarrage
+        mode_emoji = "🔴" if self.is_live else "🔵"
         self.telegram.send_message(f"""
-<b>BOT V8.1 HYBRIDE</b> - {mode}
+{mode_emoji} <b>BOT V8.1 HYBRIDE</b> - {mode}
 
-Symboles: {', '.join([s.split('/')[0] for s in self.symbols])}
-Mise: {self.shares} shares (~${self.shares * 0.525:.2f})
+🪙 <b>Symboles:</b> {', '.join([s.split('/')[0] for s in self.symbols])}
+💰 <b>Mise:</b> {self.shares} shares (~${self.shares * 0.525:.2f})
 
-<b>Config V8.1 (~{total_tpd}/jour, 59% WR):</b>
-- RSI(7) 38/58 + Stoch(5) 30/80
-- {len(BLOCKED_CANDLES)} SKIP + {len(REVERSE_CANDLES)} REVERSE
-- PnL attendu: +$23,750/mois
+⚙️ <b>Config V8.1 (~{total_tpd}/jour, 59% WR):</b>
+📊 RSI(7) 38/58 + Stoch(5) 30/80
+🚫 {len(BLOCKED_CANDLES)} SKIP + 🔄 {len(REVERSE_CANDLES)} REVERSE
+💵 PnL attendu: +$23,750/mois
 
-{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 """)
 
         try:
