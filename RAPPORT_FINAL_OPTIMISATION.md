@@ -324,3 +324,4 @@ Les objectifs **20 trades/jour + 50% win rate** sont **extrêmement difficiles**
 
 
 
+

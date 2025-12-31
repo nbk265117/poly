@@ -149,3 +149,4 @@ Une stratégie simple ne peut pas s'adapter à tous les contextes.
 
 
 
+
