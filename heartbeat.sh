@@ -33,7 +33,7 @@ BOTS_RUNNING=0
 BOTS_STATUS=""
 
 for symbol in ETH BTC XRP; do
-    if pgrep -f "bot_simple.py.*--symbols $symbol" > /dev/null; then
+    if pgrep -f "bot_simple.py.*--symbols ${symbol}/USDT" > /dev/null; then
         BOTS_STATUS+="✅ $symbol "
         ((BOTS_RUNNING++))
     else
