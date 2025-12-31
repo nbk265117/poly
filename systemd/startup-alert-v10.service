@@ -1,0 +1,14 @@
+[Unit]
+Description=Polymarket Startup Alert V10
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/poly
+ExecStart=/bin/bash /home/ubuntu/poly/alert_startup_v10.sh
+RemainAfterExit=no
+
+[Install]
+WantedBy=multi-user.target

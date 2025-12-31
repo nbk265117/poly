@@ -1,0 +1,18 @@
+[Unit]
+Description=Polymarket Watchdog V10 - BTC/ETH/XRP
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/poly
+Environment=PATH=/home/ubuntu/poly/venv/bin:/usr/bin:/bin
+ExecStart=/home/ubuntu/poly/venv/bin/python /home/ubuntu/poly/watchdog_v10.py --live --yes
+Restart=always
+RestartSec=30
+StandardOutput=append:/home/ubuntu/poly/logs/watchdog_v10.log
+StandardError=append:/home/ubuntu/poly/logs/watchdog_v10.log
+
+[Install]
+WantedBy=multi-user.target
