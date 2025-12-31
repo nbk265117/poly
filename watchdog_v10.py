@@ -29,7 +29,7 @@ BOTS = [
     {'name': 'XRP', 'script': 'bot_v10_xrp.py', 'shares': 5, 'process': None},
 ]
 
-CHECK_INTERVAL = 30  # Verification toutes les 30 secondes
+CHECK_INTERVAL = 32  # Verification toutes les 32 secondes (evite :00, :15, :30, :45)
 MAX_RESTARTS = 5     # Max restarts avant alerte critique
 RESTART_COOLDOWN = 60  # Attendre 60s avant restart
 
