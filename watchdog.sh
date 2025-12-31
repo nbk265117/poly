@@ -26,7 +26,7 @@ log() {
 # Verifier si un bot tourne
 check_bot() {
     local symbol=$1
-    pgrep -f "bot_simple.py.*--symbols $symbol" > /dev/null
+    pgrep -f "bot_simple.py.*--symbols ${symbol}/USDT" > /dev/null
     return $?
 }
 
@@ -44,7 +44,7 @@ restart_bot() {
     sleep 3
 
     if check_bot $symbol; then
-        log "Bot $symbol relance avec succes (PID: $(pgrep -f "bot_simple.py.*--symbols $symbol"))"
+        log "Bot $symbol relance avec succes (PID: $(pgrep -f "bot_simple.py.*--symbols ${symbol}/USDT"))"
         return 0
     else
         log "Echec du relancement du bot $symbol"
