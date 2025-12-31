@@ -153,9 +153,12 @@ def check_pending_trades():
             # Parser le timestamp du trade
             trade_time = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
 
-            # Calculer le debut et fin de la candle 15min
+            # Le trade predit la PROCHAINE bougie 15min, pas la bougie actuelle
+            # Ex: trade a 18:45 -> predit bougie 19:00-19:15
             minute = (trade_time.minute // 15) * 15
-            candle_start = trade_time.replace(minute=minute, second=0, microsecond=0)
+            current_candle_start = trade_time.replace(minute=minute, second=0, microsecond=0)
+            # La bougie tradee est la SUIVANTE
+            candle_start = current_candle_start + timedelta(minutes=15)
             candle_end = candle_start + timedelta(minutes=15)
 
             # Recuperer la candle depuis Binance
