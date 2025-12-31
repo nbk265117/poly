@@ -171,76 +171,131 @@ ROI par trade: 11.62%
 
 ## VPS Configuration
 
+### Server Info
+```
+IP: 99.79.36.81
+OS: Ubuntu
+User: ubuntu
+Path: /home/ubuntu/poly
+```
+
 ### Directory Structure
 ```
 /home/ubuntu/poly/
-├── bot_v10_btc.py         # Bot BTC V10
-├── bot_v10_eth.py         # Bot ETH V10
-├── bot_v10_xrp.py         # Bot XRP V10
-├── watchdog_v10.py        # Process monitor V10
-├── config.yaml            # Strategy config
+├── watchdog_v10.py        # Superviseur principal (systemd)
+├── bot_v10_btc.py         # Bot BTC (7 shares)
+├── bot_v10_eth.py         # Bot ETH (10 shares)
+├── bot_v10_xrp.py         # Bot XRP (5 shares)
+├── .env                   # Credentials
+├── heartbeat_v10.sh       # Status horaire (:02)
+├── alert_startup_v10.sh   # Alerte au boot
+├── cleanup_logs.sh        # Nettoyage (00:02)
+├── systemd/
+│   ├── watchdog-v10.service
+│   └── startup-alert-v10.service
 ├── venv/                  # Python environment
 └── logs/
-    ├── bot_v10_btc.log    # BTC trade logs
-    ├── bot_v10_eth.log    # ETH trade logs
-    ├── bot_v10_xrp.log    # XRP trade logs
-    └── watchdog_v10.log   # Monitor logs
+    ├── watchdog_v10.log
+    ├── bot_v10_btc.log
+    ├── bot_v10_eth.log
+    ├── bot_v10_xrp.log
+    ├── heartbeat.log
+    └── cleanup.log
 ```
 
 ### Watchdog V10
 ```python
 BOTS = [
-    {'name': 'BTC', 'script': 'bot_v10_btc.py', 'process': None},
-    {'name': 'ETH', 'script': 'bot_v10_eth.py', 'process': None},
-    {'name': 'XRP', 'script': 'bot_v10_xrp.py', 'process': None},
+    {'name': 'BTC', 'script': 'bot_v10_btc.py', 'shares': 7},
+    {'name': 'ETH', 'script': 'bot_v10_eth.py', 'shares': 10},
+    {'name': 'XRP', 'script': 'bot_v10_xrp.py', 'shares': 5},
 ]
 
-CHECK_INTERVAL = 30  # Verification toutes les 30 secondes
+CHECK_INTERVAL = 32  # Evite :00, :15, :30, :45 (bougies 15min)
 MAX_RESTARTS = 5     # Max restarts avant alerte critique
 RESTART_COOLDOWN = 60  # Attendre 60s avant restart
 ```
+
+### Systemd Services
+| Service | Description | Status |
+|---------|-------------|--------|
+| watchdog-v10.service | Superviseur + 3 bots | enabled, auto-start |
+| startup-alert-v10.service | Alerte Telegram au boot | enabled |
+
+### Cron Jobs
+```bash
+# Decales a :02 pour eviter conflit avec bougies 15min
+2 * * * * heartbeat_v10.sh   # Status horaire
+2 0 * * * cleanup_logs.sh    # Nettoyage quotidien
+```
+
+### Configuration Live
+| Pair | Shares | Mise/Trade |
+|------|--------|------------|
+| BTC | 7 | ~$3.68 |
+| ETH | 10 | ~$5.25 |
+| XRP | 5 | ~$2.63 |
+| **Total** | **22** | **~$11.55** |
 
 ## Environment Variables (.env)
 
 ```bash
 # Polymarket
 POLYMARKET_PRIVATE_KEY=0x...
+POLYMARKET_CHAIN_ID=137
 
 # Telegram
-TELEGRAM_TOKEN=...
+TELEGRAM_BOT_TOKEN=...
 TELEGRAM_CHAT_ID=...
 
 # Mode
-ENVIRONMENT=production  # or development
+ENVIRONMENT=production
 ```
 
 ## Common Commands
 
-### Start Bots
+### Start/Stop
 ```bash
-# Paper Trading
-python watchdog_v10.py
+# Demarrer (via systemd)
+sudo systemctl start watchdog-v10
 
-# Live Trading
-python watchdog_v10.py --live --yes
+# Arreter
+sudo systemctl stop watchdog-v10
+
+# Redemarrer
+sudo systemctl restart watchdog-v10
 ```
 
-### Check Bot Status
+### Check Status
 ```bash
+# Status systemd
+sudo systemctl status watchdog-v10
+
+# Processus actifs
 ps aux | grep bot_v10 | grep -v grep
+
+# Logs temps reel
+tail -f logs/watchdog_v10.log
 ```
 
-### View Recent Trades
+### Manual Commands
 ```bash
-tail -50 logs/bot_v10_btc.log | grep TRADE
+# Heartbeat manuel
+./heartbeat_v10.sh
+
+# Verifier crontab
+crontab -l
 ```
 
 ## Success Criteria
 
-- **SC-001**: 3 bots V10 running 24/7 without duplicates
+- **SC-001**: 3 bots V10 running 24/7 via watchdog
 - **SC-002**: Win Rate >= 58% on monthly basis
 - **SC-003**: 0 months below $10,000 PnL
 - **SC-004**: Telegram notifications within 5 seconds of trade
-- **SC-005**: Auto-recovery within 30 seconds of crash
-- **SC-006**: FTFC Score calculated correctly from 1H/4H data
-- **SC-007**: Triple confirmation (RSI + Stoch + FTFC) before every trade
+- **SC-005**: Auto-recovery within 32 seconds of crash (watchdog)
+- **SC-006**: Systemd auto-start at VPS boot
+- **SC-007**: Heartbeat Telegram every hour at :02
+- **SC-008**: No interference with 15min candle analysis
+- **SC-009**: FTFC Score calculated correctly from 1H/4H data
+- **SC-010**: Triple confirmation (RSI + Stoch + FTFC) before every trade

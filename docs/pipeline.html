@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pipeline - Botayo Documentation</title>
+    <title>Pipeline V10 - Botayo Documentation</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -57,6 +57,10 @@
             margin-bottom: 30px;
             border: 1px solid rgba(255,255,255,0.08);
         }
+        .section.highlight {
+            border: 2px solid #00ff88;
+            background: rgba(0,255,136,0.03);
+        }
         .section h2 {
             color: #00d4ff;
             font-size: 1.5rem;
@@ -101,16 +105,26 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 20px;
         }
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
         .card {
             background: rgba(0,212,255,0.05);
             border-radius: 15px;
             padding: 25px;
             border: 1px solid rgba(0,212,255,0.2);
         }
+        .card.green {
+            background: rgba(0,255,136,0.05);
+            border-color: rgba(0,255,136,0.3);
+        }
         .card h4 {
             color: #00d4ff;
             margin-bottom: 10px;
         }
+        .card.green h4 { color: #00ff88; }
         .card p { color: #888; font-size: 0.95rem; }
 
         .badge {
@@ -125,6 +139,7 @@
         .badge.blue { background: rgba(0,212,255,0.15); color: #00d4ff; }
         .badge.yellow { background: rgba(255,215,0,0.15); color: #ffd700; }
         .badge.purple { background: rgba(168,85,247,0.15); color: #a855f7; }
+        .badge.red { background: rgba(255,71,87,0.15); color: #ff4757; }
 
         table {
             width: 100%;
@@ -190,6 +205,23 @@
             margin: 20px 0;
         }
         .alert p { color: #ffd700; margin: 0; }
+        .alert.green {
+            background: rgba(0,255,136,0.1);
+            border-color: #00ff88;
+        }
+        .alert.green p { color: #00ff88; }
+
+        .architecture-diagram {
+            background: #0d1117;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            border: 1px solid rgba(0,255,136,0.3);
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            overflow-x: auto;
+        }
 
         footer {
             text-align: center;
@@ -200,7 +232,7 @@
         }
 
         @media (max-width: 768px) {
-            .grid-2 { grid-template-columns: 1fr; }
+            .grid-2, .grid-4 { grid-template-columns: 1fr; }
             .section { padding: 25px; }
             .hero h1 { font-size: 1.8rem; }
             nav ul { gap: 15px; }
@@ -242,187 +274,285 @@
     </script>
 
     <div class="hero">
-        <h1>Documentation Pipeline</h1>
-        <p>Configuration complete VPS, monitoring, alertes et automatisation</p>
+        <h1>Pipeline V10 - Infrastructure</h1>
+        <p>Architecture complete: Watchdog, Monitoring, Systemd, Cron, Alertes Telegram</p>
     </div>
 
     <div class="container">
 
         <!-- Architecture Overview -->
-        <div class="section">
-            <h2>Architecture Globale</h2>
-            <p>Le systeme de trading est deploye sur un VPS Ubuntu avec une architecture robuste assurant haute disponibilite et monitoring continu.</p>
+        <div class="section highlight">
+            <h2>Architecture V10</h2>
+            <p>Systeme de trading deploye sur VPS Ubuntu avec watchdog central gerant 3 bots independants.</p>
 
-            <div class="grid-2" style="margin-top: 25px;">
-                <div class="card">
-                    <h4>VPS Ubuntu</h4>
-                    <p>Serveur AWS EC2 avec Python 3.11, systemd pour gestion des services, et cron pour taches planifiees.</p>
+            <div class="architecture-diagram">
+<pre style="color:#e6edf3; margin:0;">
+┌─────────────────────────────────────────────────────────────────┐
+│                      <span style="color:#00ff88;">VPS Ubuntu (99.79.36.81)</span>                     │
+│                                                                 │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │                  <span style="color:#00d4ff;">WATCHDOG V10</span> (systemd)                   │  │
+│  │                   Check: 32 secondes                      │  │
+│  │                   Auto-restart on crash                   │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│         │                    │                    │             │
+│         ▼                    ▼                    ▼             │
+│  ┌────────────┐      ┌────────────┐      ┌────────────┐        │
+│  │ <span style="color:#f7931a;">Bot BTC</span>    │      │ <span style="color:#627eea;">Bot ETH</span>    │      │ <span style="color:#888;">Bot XRP</span>    │        │
+│  │ 7 shares   │      │ 10 shares  │      │ 5 shares   │        │
+│  │ ~$3.68     │      │ ~$5.25     │      │ ~$2.63     │        │
+│  └────────────┘      └────────────┘      └────────────┘        │
+│                                                                 │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │                     <span style="color:#ffd700;">CRON JOBS</span>                             │  │
+│  │  • Heartbeat: toutes les heures a :02                    │  │
+│  │  • Cleanup: tous les jours a 00:02                       │  │
+│  └──────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+         │                              │
+         ▼                              ▼
+┌─────────────────┐            ┌─────────────────┐
+│  <span style="color:#a855f7;">Polymarket</span>      │            │   <span style="color:#00d4ff;">Telegram</span>      │
+│  CLOB API       │            │   Alertes       │
+└─────────────────┘            └─────────────────┘
+         ▲
+         │
+┌─────────────────┐
+│  <span style="color:#ffd700;">Binance API</span>    │
+│  HTF: 1H / 4H   │
+└─────────────────┘
+</pre>
+            </div>
+
+            <div class="grid-4" style="margin-top: 25px;">
+                <div class="card green">
+                    <h4>Watchdog V10</h4>
+                    <p>Check toutes les 32s, auto-restart, max 5 restarts</p>
                 </div>
                 <div class="card">
-                    <h4>3 Bots Independants</h4>
-                    <p>ETH (10 shares), BTC (7 shares), XRP (5 shares) - chacun dans son propre service systemd.</p>
+                    <h4>3 Bots V10</h4>
+                    <p>BTC (7), ETH (10), XRP (5) shares</p>
                 </div>
                 <div class="card">
-                    <h4>Monitoring 24/7</h4>
-                    <p>Watchdog toutes les 5 min, heartbeat Telegram toutes les heures, alertes instantanees.</p>
+                    <h4>Systemd</h4>
+                    <p>Auto-start au boot, restart on failure</p>
                 </div>
                 <div class="card">
-                    <h4>Auto-Recovery</h4>
-                    <p>Redemarrage automatique des bots si crash, alerte Telegram si le VPS reboot.</p>
+                    <h4>Telegram</h4>
+                    <p>Trades, heartbeat, alertes crash</p>
                 </div>
+            </div>
+        </div>
+
+        <!-- Watchdog V10 -->
+        <div class="section">
+            <h2>Watchdog V10</h2>
+            <p>Processus central qui supervise les 3 bots et assure leur disponibilite 24/7.</p>
+
+            <h3>Configuration</h3>
+            <table>
+                <tr>
+                    <th>Parametre</th>
+                    <th>Valeur</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td><span class="badge blue">CHECK_INTERVAL</span></td>
+                    <td>32 secondes</td>
+                    <td>Evite les :00, :15, :30, :45 (bougies 15min)</td>
+                </tr>
+                <tr>
+                    <td><span class="badge yellow">MAX_RESTARTS</span></td>
+                    <td>5</td>
+                    <td>Alerte critique apres 5 crashes</td>
+                </tr>
+                <tr>
+                    <td><span class="badge purple">RESTART_COOLDOWN</span></td>
+                    <td>60 secondes</td>
+                    <td>Attente avant nouveau restart</td>
+                </tr>
+            </table>
+
+            <h3>Bots Geres</h3>
+            <table>
+                <tr>
+                    <th>Bot</th>
+                    <th>Script</th>
+                    <th>Shares</th>
+                    <th>Mise/Trade</th>
+                </tr>
+                <tr>
+                    <td><span class="badge" style="background:#f7931a20;color:#f7931a;">BTC</span></td>
+                    <td>bot_v10_btc.py</td>
+                    <td>7</td>
+                    <td>~$3.68</td>
+                </tr>
+                <tr>
+                    <td><span class="badge" style="background:#627eea20;color:#627eea;">ETH</span></td>
+                    <td>bot_v10_eth.py</td>
+                    <td>10</td>
+                    <td>~$5.25</td>
+                </tr>
+                <tr>
+                    <td><span class="badge" style="background:#23292f20;color:#888;">XRP</span></td>
+                    <td>bot_v10_xrp.py</td>
+                    <td>5</td>
+                    <td>~$2.63</td>
+                </tr>
+            </table>
+
+            <h3>Code Source</h3>
+            <div class="code-block">
+<code><span class="comment"># watchdog_v10.py - Configuration</span>
+BOTS = [
+    {<span class="string">'name'</span>: <span class="string">'BTC'</span>, <span class="string">'script'</span>: <span class="string">'bot_v10_btc.py'</span>, <span class="string">'shares'</span>: <span class="number">7</span>},
+    {<span class="string">'name'</span>: <span class="string">'ETH'</span>, <span class="string">'script'</span>: <span class="string">'bot_v10_eth.py'</span>, <span class="string">'shares'</span>: <span class="number">10</span>},
+    {<span class="string">'name'</span>: <span class="string">'XRP'</span>, <span class="string">'script'</span>: <span class="string">'bot_v10_xrp.py'</span>, <span class="string">'shares'</span>: <span class="number">5</span>},
+]
+
+<span class="keyword">CHECK_INTERVAL</span> = <span class="number">32</span>  <span class="comment"># Evite :00, :15, :30, :45</span>
+<span class="keyword">MAX_RESTARTS</span> = <span class="number">5</span>
+<span class="keyword">RESTART_COOLDOWN</span> = <span class="number">60</span></code>
             </div>
         </div>
 
         <!-- Services Systemd -->
         <div class="section">
-            <h2>Services Systemd</h2>
-            <p>Chaque bot est configure comme un service systemd independant pour assurer la persistance et le redemarrage automatique.</p>
+            <h2>Service Systemd</h2>
+            <p>Le watchdog est configure comme service systemd pour demarrage automatique au boot.</p>
 
-            <h3>Configuration des Services</h3>
-            <table>
-                <tr>
-                    <th>Service</th>
-                    <th>Symbol</th>
-                    <th>Shares</th>
-                    <th>Commande</th>
-                </tr>
-                <tr>
-                    <td><span class="badge blue">bot-eth.service</span></td>
-                    <td>ETH</td>
-                    <td>10</td>
-                    <td>python bot_simple.py --live --yes --shares 10 --symbols ETH</td>
-                </tr>
-                <tr>
-                    <td><span class="badge blue">bot-btc.service</span></td>
-                    <td>BTC</td>
-                    <td>7</td>
-                    <td>python bot_simple.py --live --yes --shares 7 --symbols BTC</td>
-                </tr>
-                <tr>
-                    <td><span class="badge blue">bot-xrp.service</span></td>
-                    <td>XRP</td>
-                    <td>5</td>
-                    <td>python bot_simple.py --live --yes --shares 5 --symbols XRP</td>
-                </tr>
-            </table>
-
-            <h3>Fichier Service Type</h3>
+            <h3>watchdog-v10.service</h3>
             <div class="code-block">
-<code><span class="comment"># /etc/systemd/system/bot-eth.service</span>
+<code><span class="comment"># /etc/systemd/system/watchdog-v10.service</span>
 [Unit]
-Description=Polymarket Bot ETH
+Description=Polymarket Watchdog V10 - BTC/ETH/XRP
 After=network.target
+Wants=network-online.target
 
 [Service]
 Type=simple
 User=ubuntu
 WorkingDirectory=/home/ubuntu/poly
-Environment=PATH=/home/ubuntu/poly/venv/bin:/usr/bin
-ExecStart=/home/ubuntu/poly/venv/bin/python bot_simple.py --live --yes --shares 10 --symbols ETH
+Environment=PATH=/home/ubuntu/poly/venv/bin:/usr/bin:/bin
+ExecStart=/home/ubuntu/poly/venv/bin/python watchdog_v10.py <span class="keyword">--live --yes</span>
 <span class="keyword">Restart=always</span>
 <span class="keyword">RestartSec=30</span>
+StandardOutput=append:/home/ubuntu/poly/logs/watchdog_v10.log
+StandardError=append:/home/ubuntu/poly/logs/watchdog_v10.log
 
 [Install]
 WantedBy=multi-user.target</code>
             </div>
 
-            <div class="alert">
-                <p><strong>Important:</strong> Restart=always + RestartSec=30 = le bot redemarre automatiquement 30 secondes apres un crash.</p>
+            <h3>startup-alert-v10.service</h3>
+            <div class="code-block">
+<code><span class="comment"># Envoie alerte Telegram au demarrage du VPS</span>
+[Unit]
+Description=Polymarket Startup Alert V10
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /home/ubuntu/poly/alert_startup_v10.sh
+
+[Install]
+WantedBy=multi-user.target</code>
             </div>
 
-            <h3>Commandes Utiles</h3>
+            <div class="alert green">
+                <p><strong>Auto-Recovery:</strong> Si le watchdog crash, systemd le redemarre apres 30s. Le watchdog redemarre ensuite les bots.</p>
+            </div>
+
+            <h3>Commandes Systemd</h3>
             <div class="code-block">
-<code><span class="comment"># Verifier le status d'un bot</span>
-sudo systemctl status bot-eth
+<code><span class="comment"># Status du watchdog</span>
+sudo systemctl status watchdog-v10
 
-<span class="comment"># Redemarrer un bot</span>
-sudo systemctl restart bot-eth
+<span class="comment"># Redemarrer le watchdog (et tous les bots)</span>
+sudo systemctl restart watchdog-v10
 
-<span class="comment"># Voir les logs en temps reel</span>
-sudo journalctl -u bot-eth -f
+<span class="comment"># Logs en temps reel</span>
+sudo journalctl -u watchdog-v10 -f
 
-<span class="comment"># Activer le demarrage automatique</span>
-sudo systemctl enable bot-eth
-
-<span class="comment"># Desactiver le demarrage automatique</span>
-sudo systemctl disable bot-eth</code>
+<span class="comment"># Verifier si enabled au boot</span>
+sudo systemctl is-enabled watchdog-v10</code>
             </div>
         </div>
 
         <!-- Scripts de Monitoring -->
         <div class="section">
-            <h2>Scripts de Monitoring</h2>
+            <h2>Scripts de Monitoring V10</h2>
 
-            <h3>1. Watchdog (watchdog.sh)</h3>
-            <p>Verifie toutes les 5 minutes que les bots sont en cours d'execution. Si un bot est down, il le redemarre et envoie une alerte Telegram.</p>
+            <h3>1. heartbeat_v10.sh</h3>
+            <p>Envoie un status complet a Telegram toutes les heures.</p>
 
             <div class="code-block">
 <code><span class="comment">#!/bin/bash</span>
-<span class="comment"># Verification des bots toutes les 5 minutes</span>
+<span class="comment"># Cron: 2 * * * * (toutes les heures a :02)</span>
 
-POLY_DIR="/home/ubuntu/poly"
-declare -A SHARES
-SHARES[ETH]=10
-SHARES[BTC]=7
-SHARES[XRP]=5
-
-for symbol in ETH BTC XRP; do
-    if ! pgrep -f "bot_simple.py.*--symbols $symbol" > /dev/null; then
-        <span class="comment"># Bot down - redemarrage + alerte</span>
-        cd $POLY_DIR
-        nohup venv/bin/python bot_simple.py --live --yes \
-            --shares ${SHARES[$symbol]} --symbols $symbol &
-        <span class="comment"># Envoyer alerte Telegram...</span>
+<span class="comment"># Verifier les bots V10</span>
+for symbol in BTC ETH XRP; do
+    if pgrep -f "bot_v10_${symbol,,}.py" > /dev/null; then
+        BOTS_STATUS+="<span class="string">✅ $symbol</span> "
+    else
+        BOTS_STATUS+="<span class="keyword">❌ $symbol</span> "
     fi
-done</code>
+done
+
+MESSAGE="<span class="string">💓 HEARTBEAT V10
+
+🖥️ Status: ONLINE
+⏰ $TIMESTAMP
+
+Systeme:
+• Uptime: $UPTIME
+• RAM: $MEMORY
+• Disque: $DISK
+
+Bots V10 (3/3):
+$BOTS_STATUS
+
+✅ Systeme operationnel!</span>"</code>
             </div>
 
-            <h3>2. Heartbeat (heartbeat.sh)</h3>
-            <p>Envoie un message "alive" a Telegram toutes les heures avec le status du systeme et des bots.</p>
-
-            <div class="code-block">
-<code><span class="comment"># Message envoye toutes les heures</span>
-MESSAGE="
-<span class="string">Heartbeat VPS</span>
-
-Status: ONLINE
-Uptime: $UPTIME
-RAM: $MEMORY
-Disque: $DISK
-Load: $LOAD
-
-<span class="string">Bots (3/3):</span>
-ETH BTC XRP
-"</code>
-            </div>
-
-            <h3>3. Alert Startup (alert_startup.sh)</h3>
-            <p>Envoie une notification Telegram quand le VPS demarre ou redemarre.</p>
+            <h3>2. alert_startup_v10.sh</h3>
+            <p>Notification au demarrage/redemarrage du VPS.</p>
 
             <div class="code-block">
 <code><span class="comment"># Execute automatiquement au boot via systemd</span>
-MESSAGE="
-<span class="keyword">VPS REDEMARRE!</span>
 
-Le VPS vient de demarrer/redemarrer
-$TIMESTAMP
-IP: $IP
+MESSAGE="<span class="keyword">🔄 VPS REDEMARRE - V10</span>
 
-Les bots vont demarrer automatiquement...
-"</code>
+⚠️ Le VPS vient de demarrer
+
+🤖 Bots V10 en demarrage:
+  - BTC: 7 shares (~<span class="number">$3.68</span>)
+  - ETH: 10 shares (~<span class="number">$5.25</span>)
+  - XRP: 5 shares (~<span class="number">$2.63</span>)
+
+📊 Strategie V10:
+  - RSI(7): 42/62
+  - Stoch(5): 38/68
+  - FTFC: 2.0"</code>
             </div>
 
-            <h3>4. Cleanup Logs (cleanup_logs.sh)</h3>
-            <p>Nettoie les logs et fichiers temporaires tous les jours a minuit.</p>
+            <h3>3. cleanup_logs.sh</h3>
+            <p>Nettoyage des logs et cache.</p>
 
             <div class="code-block">
-<code><span class="comment"># Execute tous les jours a 00:00</span>
+<code><span class="comment"># Cron: 2 0 * * * (tous les jours a 00:02)</span>
 
-<span class="comment"># Tronquer les logs > 10MB</span>
-find $POLY_DIR/logs -name "*.log" -size +10M -exec truncate -s 0 {} \;
+<span class="comment"># Tronquer les logs > 10MB (garder 1000 lignes)</span>
+for logfile in $LOG_DIR/*.log; do
+    SIZE=$(du -m "$logfile" | cut -f1)
+    if [ "$SIZE" -gt 10 ]; then
+        tail -1000 "$logfile" > "$logfile.tmp"
+        mv "$logfile.tmp" "$logfile"
+    fi
+done
 
-<span class="comment"># Supprimer les logs > 3 jours</span>
-find $POLY_DIR/logs -name "*.log.*" -mtime +3 -delete
+<span class="comment"># Supprimer logs > 3 jours</span>
+find $LOG_DIR -name "*.log.*" -mtime +3 -delete
 
 <span class="comment"># Nettoyer cache Python</span>
 find $POLY_DIR -type d -name "__pycache__" -exec rm -rf {} \;</code>
@@ -432,200 +562,190 @@ find $POLY_DIR -type d -name "__pycache__" -exec rm -rf {} \;</code>
         <!-- Cron Jobs -->
         <div class="section">
             <h2>Cron Jobs</h2>
-            <p>Taches planifiees pour le monitoring et la maintenance automatique.</p>
+            <p>Taches planifiees decalees a :02 pour eviter conflit avec les bougies 15min.</p>
+
+            <div class="alert">
+                <p><strong>Important:</strong> Les crons sont a :02 (pas :00) pour ne pas interferer avec l'analyse des bougies a :00, :15, :30, :45</p>
+            </div>
 
             <table>
                 <tr>
-                    <th>Frequence</th>
+                    <th>Schedule</th>
                     <th>Script</th>
                     <th>Description</th>
                 </tr>
                 <tr>
-                    <td><span class="badge">*/5 * * * *</span></td>
-                    <td>watchdog.sh</td>
-                    <td>Verifie les bots toutes les 5 minutes</td>
+                    <td><span class="badge">2 * * * *</span></td>
+                    <td>heartbeat_v10.sh</td>
+                    <td>Status Telegram toutes les heures a :02</td>
                 </tr>
                 <tr>
-                    <td><span class="badge yellow">0 * * * *</span></td>
-                    <td>heartbeat.sh</td>
-                    <td>Envoie status Telegram toutes les heures</td>
-                </tr>
-                <tr>
-                    <td><span class="badge purple">0 0 * * *</span></td>
+                    <td><span class="badge purple">2 0 * * *</span></td>
                     <td>cleanup_logs.sh</td>
-                    <td>Nettoie les logs tous les jours a minuit</td>
+                    <td>Nettoyage quotidien a 00:02</td>
                 </tr>
             </table>
 
+            <h3>Timeline sans Conflit</h3>
+            <div class="code-block">
+<code><span class="comment"># Bougies 15min (analyse des bots)</span>
+:00 ─── Bougie + Analyse (~10-30s)
+:02 ─── <span class="string">Cron Heartbeat ✓</span> (safe zone)
+...
+:15 ─── Bougie + Analyse
+:17 ─── Watchdog check (32s interval)
+...
+:30 ─── Bougie + Analyse
+:32 ─── Watchdog check
+...
+:45 ─── Bougie + Analyse
+:47 ─── Watchdog check</code>
+            </div>
+
             <h3>Configuration Crontab</h3>
             <div class="code-block">
-<code><span class="comment"># Editer le crontab</span>
-crontab -e
+<code><span class="comment"># Voir le crontab actuel</span>
+crontab -l
 
-<span class="comment"># Ajouter les lignes suivantes:</span>
-*/5 * * * * /home/ubuntu/poly/watchdog.sh >> /home/ubuntu/poly/logs/watchdog.log 2>&1
-0 * * * * /home/ubuntu/poly/heartbeat.sh >> /home/ubuntu/poly/logs/heartbeat.log 2>&1
-0 0 * * * /home/ubuntu/poly/cleanup_logs.sh >> /home/ubuntu/poly/logs/cleanup.log 2>&1</code>
+<span class="comment"># Contenu:</span>
+# Polymarket V10 Monitoring
+# Decale a :02 pour eviter conflit avec bougies 15min
+
+2 * * * * /home/ubuntu/poly/heartbeat_v10.sh >> /home/ubuntu/poly/logs/heartbeat.log 2>&1
+2 0 * * * /home/ubuntu/poly/cleanup_logs.sh >> /home/ubuntu/poly/logs/cleanup.log 2>&1</code>
             </div>
         </div>
 
         <!-- Alertes Telegram -->
         <div class="section">
             <h2>Alertes Telegram</h2>
-            <p>Systeme d'alertes en temps reel pour surveiller le VPS et les bots.</p>
+            <p>Notifications en temps reel pour tous les evenements importants.</p>
 
             <div class="grid-2">
-                <div class="card">
-                    <h4>VPS Redemarre</h4>
-                    <p>Alerte instantanee quand le VPS boot. Inclut IP et timestamp.</p>
+                <div class="card green">
+                    <h4>💓 Heartbeat Horaire</h4>
+                    <p>Status systeme + status des 3 bots V10. Envoye a :02 chaque heure.</p>
                 </div>
                 <div class="card">
-                    <h4>Heartbeat Horaire</h4>
-                    <p>Status systeme (RAM, disk, load) + status des 3 bots.</p>
+                    <h4>🔄 VPS Redemarre</h4>
+                    <p>Alerte au boot avec IP et configuration des bots.</p>
+                </div>
+                <div class="card" style="border-color:#ff4757;">
+                    <h4 style="color:#ff4757;">⚠️ Bot Crash</h4>
+                    <p>Notification si un bot tombe + confirmation du redemarrage auto.</p>
                 </div>
                 <div class="card">
-                    <h4>Bot Crash</h4>
-                    <p>Alerte si un bot tombe + confirmation du redemarrage.</p>
-                </div>
-                <div class="card">
-                    <h4>Trades Executes</h4>
-                    <p>Notification pour chaque trade avec direction et montant.</p>
+                    <h4>📈 Trades</h4>
+                    <p>Chaque trade: direction (UP/DOWN), pair, shares, indicateurs.</p>
                 </div>
             </div>
 
             <h3>Configuration .env</h3>
             <div class="code-block">
 <code><span class="comment"># /home/ubuntu/poly/.env</span>
-TELEGRAM_BOT_TOKEN=<span class="string">"votre_token_bot"</span>
-TELEGRAM_CHAT_ID=<span class="string">"votre_chat_id"</span></code>
+TELEGRAM_BOT_TOKEN=<span class="string">"8269823726:AAEItg..."</span>
+TELEGRAM_CHAT_ID=<span class="string">"7205038378"</span>
+
+POLYMARKET_PRIVATE_KEY=<span class="string">"0x..."</span>
+POLYMARKET_CHAIN_ID=<span class="number">137</span></code>
             </div>
         </div>
 
         <!-- Workflow Trading -->
         <div class="section">
-            <h2>Workflow de Trading</h2>
-            <p>Cycle de vie complet d'un trade sur Polymarket.</p>
+            <h2>Workflow de Trading V10</h2>
+            <p>Cycle complet d'un trade avec triple confirmation RSI + Stoch + FTFC.</p>
 
             <div class="timeline">
                 <div class="timeline-item">
-                    <h4>1. Collecte des Donnees</h4>
-                    <p>Recuperation des 100 dernieres bougies 15min via Binance API pour chaque paire (BTC, ETH, XRP).</p>
+                    <h4>1. Collecte des Donnees (Binance)</h4>
+                    <p>15min: 100 bougies | 1H: 50 bougies | 4H: 50 bougies pour chaque paire.</p>
                 </div>
                 <div class="timeline-item">
-                    <h4>2. Calcul des Indicateurs</h4>
-                    <p>RSI(7) et Stochastic(5) calcules sur les donnees 15min.</p>
+                    <h4>2. Calcul RSI(7) + Stochastic(5)</h4>
+                    <p>Indicateurs sur timeframe 15min.</p>
                 </div>
                 <div class="timeline-item">
                     <h4>3. Calcul FTFC Score</h4>
-                    <p>Analyse multi-timeframe (1H/4H) pour calculer le FTFC Score (-3.0 to +3.0).</p>
+                    <p>Analyse 1H + 4H trends et RSI. Score de -3.0 a +3.0.</p>
                 </div>
                 <div class="timeline-item">
-                    <h4>4. Generation du Signal</h4>
-                    <p>Signal UP si RSI &lt; 42 ET Stoch &lt; 38 ET FTFC &gt; -2.0 | Signal DOWN si RSI &gt; 62 ET Stoch &gt; 68 ET FTFC &lt; 2.0</p>
+                    <h4>4. Triple Confirmation</h4>
+                    <p><strong>UP:</strong> RSI &lt; 42 ET Stoch &lt; 38 ET FTFC &gt; -2.0<br>
+                    <strong>DOWN:</strong> RSI &gt; 62 ET Stoch &gt; 68 ET FTFC &lt; 2.0</p>
                 </div>
                 <div class="timeline-item">
-                    <h4>5. Execution du Trade</h4>
-                    <p>Achat de shares sur Polymarket via CLOB API. Prix d'entree: 52.5c.</p>
+                    <h4>5. Execution (Polymarket CLOB)</h4>
+                    <p>Achat de shares a 52.5c. BTC: 7 | ETH: 10 | XRP: 5</p>
                 </div>
                 <div class="timeline-item">
-                    <h4>6. Resolution</h4>
-                    <p>Le marche se resout a la fin de la bougie 15min. WIN: +$90.48 | LOSS: -$100</p>
+                    <h4>6. Resolution (15min)</h4>
+                    <p>WIN: +$0.475/share | LOSS: -$0.525/share</p>
                 </div>
+            </div>
+        </div>
+
+        <!-- Structure des Fichiers -->
+        <div class="section">
+            <h2>Structure des Fichiers V10</h2>
+
+            <div class="code-block">
+<code>/home/ubuntu/poly/
+├── <span class="keyword">watchdog_v10.py</span>       <span class="comment"># Superviseur principal</span>
+├── <span class="keyword">bot_v10_btc.py</span>        <span class="comment"># Bot BTC (7 shares)</span>
+├── <span class="keyword">bot_v10_eth.py</span>        <span class="comment"># Bot ETH (10 shares)</span>
+├── <span class="keyword">bot_v10_xrp.py</span>        <span class="comment"># Bot XRP (5 shares)</span>
+├── .env                   <span class="comment"># Credentials</span>
+│
+├── <span class="string">heartbeat_v10.sh</span>      <span class="comment"># Status horaire (:02)</span>
+├── <span class="string">alert_startup_v10.sh</span>  <span class="comment"># Alerte au boot</span>
+├── <span class="string">cleanup_logs.sh</span>       <span class="comment"># Nettoyage (00:02)</span>
+│
+├── systemd/
+│   ├── <span class="keyword">watchdog-v10.service</span>
+│   └── <span class="keyword">startup-alert-v10.service</span>
+│
+└── logs/
+    ├── watchdog_v10.log
+    ├── bot_v10_btc.log
+    ├── bot_v10_eth.log
+    ├── bot_v10_xrp.log
+    ├── heartbeat.log
+    └── cleanup.log</code>
             </div>
         </div>
 
         <!-- Quick Reference -->
         <div class="section">
-            <h2>Quick Reference</h2>
+            <h2>Commandes Essentielles</h2>
 
-            <h3>Commandes SSH Essentielles</h3>
             <div class="code-block">
 <code><span class="comment"># Connexion SSH</span>
-ssh -i ~/.ssh/poly-bot.pem ubuntu@IP_VPS
+ssh -i ~/.ssh/key.pem ubuntu@99.79.36.81
 
-<span class="comment"># Status de tous les bots</span>
-sudo systemctl status bot-eth bot-btc bot-xrp
+<span class="comment"># Status watchdog + bots</span>
+sudo systemctl status watchdog-v10
+ps aux | grep bot_v10
 
-<span class="comment"># Logs en temps reel (tous les bots)</span>
-tail -f /home/ubuntu/poly/logs/*.log
+<span class="comment"># Logs en temps reel</span>
+tail -f /home/ubuntu/poly/logs/watchdog_v10.log
+tail -f /home/ubuntu/poly/logs/bot_v10_*.log
 
-<span class="comment"># Redemarrer tous les bots</span>
-sudo systemctl restart bot-eth bot-btc bot-xrp
+<span class="comment"># Redemarrer tout</span>
+sudo systemctl restart watchdog-v10
 
-<span class="comment"># Verifier les processus</span>
-ps aux | grep bot_simple.py
+<span class="comment"># Lancer heartbeat manuellement</span>
+/home/ubuntu/poly/heartbeat_v10.sh
 
-<span class="comment"># Voir le crontab</span>
+<span class="comment"># Verifier crontab</span>
 crontab -l</code>
-            </div>
-
-            <h3>Structure des Fichiers</h3>
-            <div class="code-block">
-<code>/home/ubuntu/poly/
-├── bot_simple.py          <span class="comment"># Bot principal</span>
-├── .env                   <span class="comment"># Configuration (Telegram, Polymarket)</span>
-├── watchdog.sh            <span class="comment"># Monitoring toutes les 5 min</span>
-├── heartbeat.sh           <span class="comment"># Status Telegram horaire</span>
-├── alert_startup.sh       <span class="comment"># Alerte au reboot</span>
-├── cleanup_logs.sh        <span class="comment"># Nettoyage quotidien</span>
-├── setup_autostart.sh     <span class="comment"># Configuration systemd</span>
-├── setup_monitoring.sh    <span class="comment"># Configuration cron</span>
-└── logs/
-    ├── bot_eth.log
-    ├── bot_btc.log
-    ├── bot_xrp.log
-    ├── watchdog.log
-    └── heartbeat.log</code>
-            </div>
-        </div>
-
-        <!-- Troubleshooting -->
-        <div class="section">
-            <h2>Troubleshooting</h2>
-
-            <h3>Probleme: Bot ne demarre pas</h3>
-            <div class="code-block">
-<code><span class="comment"># Verifier les logs du service</span>
-sudo journalctl -u bot-eth -n 50
-
-<span class="comment"># Verifier que le venv est actif</span>
-source /home/ubuntu/poly/venv/bin/activate
-python --version
-
-<span class="comment"># Tester le bot manuellement</span>
-cd /home/ubuntu/poly
-python bot_simple.py --live --yes --shares 1 --symbols ETH</code>
-            </div>
-
-            <h3>Probleme: Pas de heartbeat Telegram</h3>
-            <div class="code-block">
-<code><span class="comment"># Verifier le cron</span>
-crontab -l | grep heartbeat
-
-<span class="comment"># Tester le script manuellement</span>
-/home/ubuntu/poly/heartbeat.sh
-
-<span class="comment"># Verifier les credentials Telegram</span>
-cat /home/ubuntu/poly/.env | grep TELEGRAM</code>
-            </div>
-
-            <h3>Probleme: VPS inaccessible</h3>
-            <div class="code-block">
-<code><span class="comment"># Ping le serveur</span>
-ping IP_VPS
-
-<span class="comment"># Verifier via AWS Console</span>
-<span class="comment"># Instance > Actions > Monitor > Check status</span>
-
-<span class="comment"># Si instance stoppee, la redemarrer</span>
-<span class="comment"># Les bots redemarreront automatiquement (systemd)</span></code>
             </div>
         </div>
 
     </div>
 
     <footer>
-        <p>Botayo - Documentation Pipeline V10 (RSI + Stoch + FTFC)</p>
+        <p>Botayo - Pipeline V10 (Watchdog + Systemd + Cron)</p>
         <p>Mis a jour le 31 Decembre 2025</p>
     </footer>
 </body>
