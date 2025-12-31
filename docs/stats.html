@@ -333,7 +333,7 @@
                 labels: ['BTC', 'ETH', 'XRP'],
                 datasets: [{
                     label: 'PnL ($/mois)',
-                    data: [8250, 9350, 5291],
+                    data: [7200, 7100, 7013],
                     backgroundColor: ['#f7931a', '#627eea', '#666'],
                     borderColor: ['#f7931a', '#627eea', '#888'],
                     borderWidth: 2, borderRadius: 5
@@ -345,8 +345,8 @@
         new Chart(document.getElementById('winRateChart'), {
             type: 'doughnut',
             data: {
-                labels: ['ETH (59.4%) 🥇', 'BTC (59.2%) 🥈', 'XRP (59.0%) 🥉'],
-                datasets: [{ data: [59.4, 59.2, 59.0], backgroundColor: ['#627eea', '#f7931a', '#666'], borderWidth: 2 }]
+                labels: ['BTC (55.5%) 🥇', 'ETH (55.3%) 🥈', 'XRP (54.8%) 🥉'],
+                datasets: [{ data: [55.5, 55.3, 54.8], backgroundColor: ['#f7931a', '#627eea', '#666'], borderWidth: 2 }]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 15 } } } }
         });
@@ -354,8 +354,8 @@
         new Chart(document.getElementById('tradesDistChart'), {
             type: 'pie',
             data: {
-                labels: ['BTC (20/j)', 'ETH (20/j)', 'XRP (19/j)'],
-                datasets: [{ data: [20, 20, 19], backgroundColor: ['rgba(247,147,26,0.8)', 'rgba(98,126,234,0.8)', 'rgba(100,100,100,0.8)'], borderWidth: 2 }]
+                labels: ['BTC (38/j)', 'ETH (38/j)', 'XRP (38/j)'],
+                datasets: [{ data: [38, 38, 38], backgroundColor: ['rgba(247,147,26,0.8)', 'rgba(98,126,234,0.8)', 'rgba(100,100,100,0.8)'], borderWidth: 2 }]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 15 } } } }
         });
@@ -365,8 +365,8 @@
             data: {
                 labels: ['Trades/jour', 'Win Rate (%)', 'PnL/mois ($K)'],
                 datasets: [
-                    { label: '2024', data: [58, 59.5, 23.5], backgroundColor: 'rgba(0,212,255,0.7)', borderColor: '#00d4ff', borderWidth: 2 },
-                    { label: '2025', data: [61, 58.8, 22.3], backgroundColor: 'rgba(0,255,136,0.7)', borderColor: '#00ff88', borderWidth: 2 }
+                    { label: '2024', data: [110, 55.7, 23.8], backgroundColor: 'rgba(0,212,255,0.7)', borderColor: '#00d4ff', borderWidth: 2 },
+                    { label: '2025', data: [116, 54.8, 18.9], backgroundColor: 'rgba(0,255,136,0.7)', borderColor: '#00ff88', borderWidth: 2 }
                 ]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }
