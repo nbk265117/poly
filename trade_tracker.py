@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-TRADE TRACKER V2 - Suivi complet des trades Polymarket
-Enregistre indicateurs, resultats et analyse performance
+TRADE TRACKER V3 - Suivi complet des trades Polymarket
+Utilise l'API Polymarket (Gamma) pour vérifier les résultats réels
 """
 
 import sqlite3
 import json
+import requests
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
-import ccxt
 import logging
 
 # Setup logging
@@ -16,6 +16,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(levelname)s | %(
 logger = logging.getLogger(__name__)
 
 DB_PATH = Path(__file__).parent / 'trades.db'
+GAMMA_API_HOST = "https://gamma-api.polymarket.com"
 
 def init_db():
     """Initialise la base de donnees SQLite"""
@@ -121,12 +122,91 @@ def log_trade(symbol: str, direction: str, shares: int, entry_price: float,
     logger.info(f"Trade logged: #{trade_id} | {symbol} {direction} | {shares} shares @ {entry_price}c | RSI={rsi} Stoch={stochastic} FTFC={ftfc_score}")
     return trade_id
 
+def get_polymarket_result(symbol: str, market_start: datetime) -> dict:
+    """
+    Récupère le résultat d'un marché Polymarket via l'API Gamma
+
+    Args:
+        symbol: BTC/USDT, ETH/USDT, XRP/USDT
+        market_start: Datetime UTC du début du marché
+
+    Returns:
+        Dict avec 'resolved', 'outcome' (UP/DOWN), 'prices'
+    """
+    # Mapper le symbole vers le format Polymarket
+    symbol_map = {
+        'BTC/USDT': 'btc',
+        'ETH/USDT': 'eth',
+        'XRP/USDT': 'xrp',
+        'BTC': 'btc',
+        'ETH': 'eth',
+        'XRP': 'xrp'
+    }
+
+    poly_symbol = symbol_map.get(symbol, symbol.split('/')[0].lower())
+
+    # Construire le slug avec le timestamp Unix
+    timestamp = int(market_start.timestamp())
+    slug = f"{poly_symbol}-updown-15m-{timestamp}"
+
+    try:
+        url = f"{GAMMA_API_HOST}/events?slug={slug}"
+        resp = requests.get(url, timeout=10)
+
+        if resp.status_code == 200:
+            data = resp.json()
+
+            if isinstance(data, list) and len(data) > 0:
+                event = data[0]
+                markets = event.get('markets', [])
+
+                if markets and len(markets) > 0:
+                    market = markets[0]
+
+                    # Parser outcomePrices: ["1", "0"] = UP, ["0", "1"] = DOWN
+                    prices_str = market.get('outcomePrices', '["0.5", "0.5"]')
+                    if isinstance(prices_str, str):
+                        prices = json.loads(prices_str)
+                    else:
+                        prices = prices_str
+
+                    # Vérifier si le marché est résolu
+                    is_closed = market.get('closed', False) or event.get('closed', False)
+
+                    if is_closed and len(prices) >= 2:
+                        up_price = float(prices[0])
+                        down_price = float(prices[1])
+
+                        # Si un prix = 1, c'est le gagnant
+                        if up_price >= 0.99:
+                            outcome = 'UP'
+                        elif down_price >= 0.99:
+                            outcome = 'DOWN'
+                        else:
+                            outcome = None  # Pas encore résolu
+
+                        return {
+                            'resolved': outcome is not None,
+                            'outcome': outcome,
+                            'up_price': up_price,
+                            'down_price': down_price,
+                            'slug': slug
+                        }
+
+        logger.warning(f"Market not found or not resolved: {slug}")
+        return {'resolved': False, 'outcome': None, 'slug': slug}
+
+    except Exception as e:
+        logger.error(f"Error fetching Polymarket result for {slug}: {e}")
+        return {'resolved': False, 'outcome': None, 'error': str(e)}
+
+
 def check_pending_trades():
-    """Verifie les trades en attente et determine WIN/LOSS"""
+    """Verifie les trades en attente via l'API Polymarket"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
-    # Recuperer les trades PENDING de plus de 15 minutes
+    # Recuperer les trades PENDING de plus de 16 minutes
     cutoff = (datetime.now(timezone.utc) - timedelta(minutes=16)).isoformat()
 
     c.execute('''
@@ -142,8 +222,6 @@ def check_pending_trades():
         conn.close()
         return []
 
-    # Connexion Binance pour verifier les prix
-    exchange = ccxt.binance({'enableRateLimit': True})
     results = []
 
     for trade in pending:
@@ -153,31 +231,39 @@ def check_pending_trades():
             # Parser le timestamp du trade
             trade_time = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
 
-            # Le bot trade à :00:05 pour le marché qui COMMENCE à :00
-            # Donc on vérifie la bougie ACTUELLE (pas la suivante)
-            # Ex: trade à 20:00:05 -> marché 20:00-20:15 -> vérifier bougie 20:00
-            minute = (trade_time.minute // 15) * 15
-            candle_start = trade_time.replace(minute=minute, second=0, microsecond=0)
-            candle_end = candle_start + timedelta(minutes=15)
+            # CORRECTION TIMING: Déterminer quel marché vérifier
+            # - Si trade fait dans les 2 premières minutes d'un slot (:00-:01:59) -> ce slot
+            # - Sinon (ex: :45) -> le slot SUIVANT (car on achète le marché futur)
+            minute = trade_time.minute
+            second = trade_time.second
+            minute_in_slot = minute % 15
+            total_seconds_in_slot = minute_in_slot * 60 + second
 
-            # Recuperer la candle depuis Binance
-            binance_symbol = symbol if '/' in symbol else f"{symbol}/USDT"
-            since = int(candle_start.timestamp() * 1000)
+            if total_seconds_in_slot < 120:  # Premières 2 minutes du slot
+                slot_minute = (minute // 15) * 15
+                market_start = trade_time.replace(minute=slot_minute, second=0, microsecond=0)
+            else:
+                next_slot_minute = ((minute // 15) + 1) * 15
+                if next_slot_minute >= 60:
+                    market_start = trade_time.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+                else:
+                    market_start = trade_time.replace(minute=next_slot_minute, second=0, microsecond=0)
 
-            ohlcv = exchange.fetch_ohlcv(binance_symbol, '15m', since=since, limit=1)
+            market_end = market_start + timedelta(minutes=15)
 
-            if ohlcv:
-                candle_open = ohlcv[0][1]
-                candle_close = ohlcv[0][4]
+            logger.info(f"Trade #{trade_id} at {trade_time.strftime('%H:%M:%S')} -> checking Polymarket {market_start.strftime('%H:%M')}-{market_end.strftime('%H:%M')}")
 
-                # Determiner si UP ou DOWN
-                actual_direction = 'UP' if candle_close > candle_open else 'DOWN'
+            # Récupérer le résultat via l'API Polymarket
+            poly_result = get_polymarket_result(symbol, market_start)
 
-                # Comparer avec notre prediction
+            if poly_result['resolved']:
+                actual_direction = poly_result['outcome']
+
+                # Comparer avec notre prédiction
                 is_win = (direction == actual_direction)
                 result = 'WIN' if is_win else 'LOSS'
 
-                # Calculer PnL (approximatif basé sur 50c entry)
+                # Calculer PnL basé sur le prix d'entrée réel
                 bet_amount = shares * (entry_price / 100)
                 if is_win:
                     pnl = shares * (1 - entry_price / 100)  # Gain = shares * (1 - entry)
@@ -189,7 +275,8 @@ def check_pending_trades():
                     UPDATE trades
                     SET candle_open = ?, candle_close = ?, result = ?, pnl = ?, checked_at = ?
                     WHERE id = ?
-                ''', (candle_open, candle_close, result, pnl, datetime.now(timezone.utc).isoformat(), trade_id))
+                ''', (poly_result.get('up_price', 0), poly_result.get('down_price', 0),
+                      result, pnl, datetime.now(timezone.utc).isoformat(), trade_id))
 
                 results.append({
                     'id': trade_id,
@@ -198,11 +285,13 @@ def check_pending_trades():
                     'actual': actual_direction,
                     'result': result,
                     'pnl': pnl,
-                    'candle': f"{candle_open:.2f} -> {candle_close:.2f}"
+                    'polymarket_slug': poly_result.get('slug', '')
                 })
 
                 emoji = "✅" if is_win else "❌"
-                logger.info(f"{emoji} Trade #{trade_id} | {symbol} {direction} | Actual: {actual_direction} | {result} | PnL: ${pnl:.2f}")
+                logger.info(f"{emoji} Trade #{trade_id} | {symbol} {direction} | Polymarket: {actual_direction} | {result} | PnL: ${pnl:.2f}")
+            else:
+                logger.warning(f"Trade #{trade_id} | Market not resolved yet: {poly_result.get('slug', 'unknown')}")
 
         except Exception as e:
             logger.error(f"Error checking trade #{trade_id}: {e}")
