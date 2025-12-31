@@ -136,9 +136,12 @@ class BotV2Simple:
         if self.is_live:
             try:
                 # Trade réel sur Polymarket
+                # direction = BUY (on achète toujours)
+                # outcome = UP ou DOWN (le signal)
                 order = self.polymarket.place_order(
                     symbol=base,
-                    direction=signal,
+                    direction="BUY",
+                    outcome=signal,  # UP ou DOWN
                     amount=self.shares,
                     price=MAX_PRICE
                 )
