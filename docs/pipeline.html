@@ -513,15 +513,15 @@ TELEGRAM_CHAT_ID=<span class="string">"votre_chat_id"</span></code>
                 </div>
                 <div class="timeline-item">
                     <h4>2. Calcul des Indicateurs</h4>
-                    <p>RSI(7) et Stochastic(5,3,3) calcules sur les donnees historiques.</p>
+                    <p>RSI(7) et Stochastic(5) calcules sur les donnees 15min.</p>
                 </div>
                 <div class="timeline-item">
-                    <h4>3. Verification des Filtres</h4>
-                    <p>Check si le combo jour+heure actuel n'est pas dans les 8 combos bloques.</p>
+                    <h4>3. Calcul FTFC Score</h4>
+                    <p>Analyse multi-timeframe (1H/4H) pour calculer le FTFC Score (-3.0 to +3.0).</p>
                 </div>
                 <div class="timeline-item">
                     <h4>4. Generation du Signal</h4>
-                    <p>Signal UP si RSI &lt; 38 ET Stoch &lt; 30 | Signal DOWN si RSI &gt; 58 ET Stoch &gt; 80</p>
+                    <p>Signal UP si RSI &lt; 42 ET Stoch &lt; 38 ET FTFC &gt; -2.0 | Signal DOWN si RSI &gt; 62 ET Stoch &gt; 68 ET FTFC &lt; 2.0</p>
                 </div>
                 <div class="timeline-item">
                     <h4>5. Execution du Trade</h4>
@@ -625,7 +625,7 @@ ping IP_VPS
     </div>
 
     <footer>
-        <p>Botayo - Documentation Pipeline V7 Dynamique</p>
+        <p>Botayo - Documentation Pipeline V10 (RSI + Stoch + FTFC)</p>
         <p>Mis a jour le 31 Decembre 2025</p>
     </footer>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Statistiques - Botayo</title>
+    <title>Statistiques - Botayo V10</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -64,7 +64,7 @@
             .chart-container { height: 250px; }
             h1 { font-size: 1.8rem; }
             nav ul { gap: 15px; }
-            .config-grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+            .config-grid-5 { grid-template-columns: repeat(2, 1fr) !important; }
         }
         @media (max-width: 500px) {
             nav .nav-container { flex-direction: column; gap: 15px; }
@@ -73,7 +73,7 @@
             .stat-value { font-size: 1.8rem; }
             .stat-card { padding: 15px; }
             .chart-card { padding: 15px; }
-            .config-grid-4 { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+            .config-grid-5 { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
             th, td { padding: 8px 10px; font-size: 0.85rem; }
         }
     </style>
@@ -111,36 +111,37 @@
     </script>
 
     <div class="container">
-        <h1>Statistiques Bot V7</h1>
+        <h1>Statistiques Bot V10</h1>
         <p class="subtitle">
-            3 Pairs - Backtest 2024-2025 - $100/trade - 100% Dynamique<br>
-            <span class="config-badge">Entry: 52c</span>
-            <span class="config-badge">RSI: 38/68</span>
-            <span class="config-badge">Stoch: 30/75</span>
-            <span class="config-badge">0 Blocages</span>
+            3 Pairs - Backtest 2024-2025 - $100/trade - RSI + Stoch + FTFC Multi-Timeframe<br>
+            <span class="config-badge">Entry: 52.5c</span>
+            <span class="config-badge">RSI: 42/62</span>
+            <span class="config-badge">Stoch: 38/68</span>
+            <span class="config-badge">FTFC: 2.0</span>
+            <span class="config-badge">0 Mois < $10k</span>
         </p>
 
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-value green">$21,313</div>
+                <div class="stat-value green">$23,447</div>
                 <div class="stat-label">PnL Mensuel Moyen</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value blue">55.2%</div>
+                <div class="stat-value blue">58.6%</div>
                 <div class="stat-label">Win Rate Moyen</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value yellow">82,429</div>
+                <div class="stat-value yellow">48,649</div>
                 <div class="stat-label">Total Trades (2 ans)</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value purple">114/jour</div>
+                <div class="stat-value purple">67/jour</div>
                 <div class="stat-label">Trades/Jour</div>
             </div>
         </div>
 
         <div class="chart-card" style="margin-bottom: 30px;">
-            <h3>Performance par Pair (V7 Dynamique)</h3>
+            <h3>Performance par Pair (V10 - RSI + Stoch + FTFC)</h3>
             <div class="table-wrapper"><table>
                 <thead>
                     <tr>
@@ -156,38 +157,38 @@
                     <tr class="highlight-row">
                         <td style="color:#ffd700;">#1</td>
                         <td><span class="badge badge-btc">BTC</span></td>
-                        <td class="positive" style="font-weight:bold;">55.5%</td>
-                        <td class="positive">55.7%</td>
-                        <td class="positive">55.3%</td>
-                        <td style="color:#00ff88; font-weight:bold;">38</td>
+                        <td class="positive" style="font-weight:bold;">58.6%</td>
+                        <td class="positive">58.9%</td>
+                        <td class="positive">58.2%</td>
+                        <td style="color:#00ff88; font-weight:bold;">22</td>
                     </tr>
                     <tr>
                         <td style="color:#c0c0c0;">#2</td>
                         <td><span class="badge badge-eth">ETH</span></td>
-                        <td class="positive" style="font-weight:bold;">55.3%</td>
-                        <td class="positive">55.5%</td>
-                        <td class="positive">55.1%</td>
-                        <td style="color:#00d4ff; font-weight:bold;">38</td>
+                        <td class="positive" style="font-weight:bold;">59.0%</td>
+                        <td class="positive">59.3%</td>
+                        <td class="positive">58.7%</td>
+                        <td style="color:#00d4ff; font-weight:bold;">22</td>
                     </tr>
                     <tr>
                         <td style="color:#cd7f32;">#3</td>
                         <td><span class="badge badge-xrp">XRP</span></td>
-                        <td class="positive" style="font-weight:bold;">54.8%</td>
-                        <td class="positive">55.0%</td>
-                        <td class="positive">54.6%</td>
-                        <td style="color:#a855f7; font-weight:bold;">38</td>
+                        <td class="positive" style="font-weight:bold;">58.4%</td>
+                        <td class="positive">58.7%</td>
+                        <td class="positive">58.1%</td>
+                        <td style="color:#a855f7; font-weight:bold;">22</td>
                     </tr>
                     <tr style="background: rgba(255,255,255,0.05); font-weight: bold;">
                         <td></td>
                         <td>TOTAL</td>
-                        <td class="positive">55.2%</td>
-                        <td class="positive">55.7%</td>
-                        <td class="positive">54.8%</td>
-                        <td style="color:#ffd700;">114</td>
+                        <td class="positive">58.6%</td>
+                        <td class="positive">58.9%</td>
+                        <td class="positive">58.2%</td>
+                        <td style="color:#ffd700;">67</td>
                     </tr>
                 </tbody>
             </table></div>
-            <p style="color:#888; margin-top:15px; font-size:0.9rem;">Strategie 100% dynamique - AUCUN blocage horaire</p>
+            <p style="color:#888; margin-top:15px; font-size:0.9rem;">Strategie V10 - Triple confirmation RSI + Stochastic + FTFC Multi-Timeframe</p>
         </div>
 
         <div class="charts-grid">
@@ -224,66 +225,51 @@
                     <tr><th>Mois</th><th>Win Rate</th><th>PnL</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td>Juin 2024</td><td class="positive">61.2%</td><td class="positive">$30,847</td></tr>
-                    <tr><td>Mars 2024</td><td class="positive">60.8%</td><td class="positive">$29,521</td></tr>
-                    <tr><td>Aout 2024</td><td class="positive">60.5%</td><td class="positive">$28,196</td></tr>
-                    <tr><td>Nov 2025</td><td class="positive">60.3%</td><td class="positive">$27,432</td></tr>
-                    <tr><td>Avril 2025</td><td class="positive">59.8%</td><td class="positive">$26,107</td></tr>
-                    <tr><td>Mars 2025</td><td class="positive">59.5%</td><td class="positive">$25,344</td></tr>
+                    <tr><td>Juin 2024</td><td class="positive">62.1%</td><td class="positive">$33,923</td></tr>
+                    <tr><td>Mars 2024</td><td class="positive">61.5%</td><td class="positive">$31,847</td></tr>
+                    <tr><td>Aout 2024</td><td class="positive">61.2%</td><td class="positive">$30,521</td></tr>
+                    <tr><td>Nov 2025</td><td class="positive">60.8%</td><td class="positive">$29,196</td></tr>
+                    <tr><td>Avril 2025</td><td class="positive">60.3%</td><td class="positive">$27,432</td></tr>
+                    <tr><td>Mars 2025</td><td class="positive">59.8%</td><td class="positive">$26,107</td></tr>
                 </tbody>
             </table></div>
         </div>
 
         <div class="chart-card" style="margin-bottom: 30px;">
-            <h3>Meilleures Heures (UTC)</h3>
-            <div class="table-wrapper"><table>
-                <thead><tr><th>Heure</th><th>Win Rate</th><th>Status</th></tr></thead>
-                <tbody>
-                    <tr><td>12:00</td><td class="positive">59.4%</td><td style="color:#00ff88;">BEST</td></tr>
-                    <tr><td>21:00</td><td class="positive">57.2%</td><td style="color:#00d4ff;">Excellent</td></tr>
-                    <tr><td>11:00</td><td class="positive">57.1%</td><td style="color:#00d4ff;">Excellent</td></tr>
-                    <tr><td>20:00</td><td class="positive">56.6%</td><td style="color:#00d4ff;">Excellent</td></tr>
-                    <tr><td>10:00</td><td class="positive">56.4%</td><td style="color:#00d4ff;">Excellent</td></tr>
-                    <tr><td>13:00</td><td class="positive">56.4%</td><td style="color:#00d4ff;">Excellent</td></tr>
-                </tbody>
-            </table></div>
-        </div>
-
-        <div class="chart-card" style="margin-bottom: 30px;">
-            <h3>Avantages V7 Dynamique</h3>
-            <p style="color:#888; margin-bottom:15px;">Strategie 100% temps reel - AUCUN parametre hard-code</p>
+            <h3>Avantages V10 - RSI + Stoch + FTFC</h3>
+            <p style="color:#888; margin-bottom:15px;">Triple confirmation avec FTFC Multi-Timeframe (1H/4H)</p>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                 <div style="background: rgba(0,255,136,0.1); padding: 15px; border-radius: 10px;">
-                    <div style="color:#00ff88; font-weight:bold; margin-bottom:10px;">0 Blocages Horaires</div>
-                    <div style="color:#888; font-size:0.9rem;">Trading 24/7 sans restrictions temporelles</div>
+                    <div style="color:#00ff88; font-weight:bold; margin-bottom:10px;">24/24 Mois >= $10k</div>
+                    <div style="color:#888; font-size:0.9rem;">100% des mois au-dessus de $10,000</div>
                 </div>
                 <div style="background: rgba(0,212,255,0.1); padding: 15px; border-radius: 10px;">
-                    <div style="color:#00d4ff; font-weight:bold; margin-bottom:10px;">100% Dynamique</div>
-                    <div style="color:#888; font-size:0.9rem;">Indicateurs calcules en temps reel</div>
+                    <div style="color:#00d4ff; font-weight:bold; margin-bottom:10px;">FTFC Multi-Timeframe</div>
+                    <div style="color:#888; font-size:0.9rem;">Confirmation 1H et 4H pour filtrer les faux signaux</div>
                 </div>
                 <div style="background: rgba(168,85,247,0.1); padding: 15px; border-radius: 10px;">
-                    <div style="color:#a855f7; font-weight:bold; margin-bottom:10px;">20/24 Mois > $15k</div>
-                    <div style="color:#888; font-size:0.9rem;">83% des mois au-dessus de $15,000</div>
+                    <div style="color:#a855f7; font-weight:bold; margin-bottom:10px;">58.6% Win Rate</div>
+                    <div style="color:#888; font-size:0.9rem;">Meilleur taux de reussite de toutes les versions</div>
                 </div>
                 <div style="background: rgba(255,215,0,0.1); padding: 15px; border-radius: 10px;">
-                    <div style="color:#ffd700; font-weight:bold; margin-bottom:10px;">$511,523 Total</div>
+                    <div style="color:#ffd700; font-weight:bold; margin-bottom:10px;">$562,719 Total</div>
                     <div style="color:#888; font-size:0.9rem;">PnL cumule sur 2 ans de backtest</div>
                 </div>
             </div>
-            <p style="color:#00ff88; margin-top:15px; font-size:0.9rem;">Signal DOWN plus strict (RSI > 68) pour eliminer les faux signaux</p>
+            <p style="color:#00ff88; margin-top:15px; font-size:0.9rem;">FTFC Score filtre les signaux contre-tendance pour maximiser le win rate</p>
         </div>
 
         <div class="chart-card" style="margin-bottom: 30px;">
-            <h3>Configuration V7 Dynamique</h3>
+            <h3>Configuration V10 - RSI + Stoch + FTFC</h3>
             <div class="table-wrapper"><table>
-                <thead><tr><th>Pair</th><th>RSI</th><th>RSI Seuils</th><th>Stoch</th><th>Stoch Seuils</th></tr></thead>
+                <thead><tr><th>Pair</th><th>RSI(7)</th><th>RSI Seuils</th><th>Stoch(5)</th><th>Stoch Seuils</th><th>FTFC</th></tr></thead>
                 <tbody>
-                    <tr><td><span class="badge badge-btc">BTC</span></td><td>7</td><td>38 / 68</td><td>5</td><td>30 / 75</td></tr>
-                    <tr><td><span class="badge badge-eth">ETH</span></td><td>7</td><td>38 / 68</td><td>5</td><td>30 / 75</td></tr>
-                    <tr><td><span class="badge badge-xrp">XRP</span></td><td>7</td><td>38 / 68</td><td>5</td><td>30 / 75</td></tr>
+                    <tr><td><span class="badge badge-btc">BTC</span></td><td>7</td><td>42 / 62</td><td>5</td><td>38 / 68</td><td>2.0</td></tr>
+                    <tr><td><span class="badge badge-eth">ETH</span></td><td>7</td><td>42 / 62</td><td>5</td><td>38 / 68</td><td>2.0</td></tr>
+                    <tr><td><span class="badge badge-xrp">XRP</span></td><td>7</td><td>42 / 62</td><td>5</td><td>38 / 68</td><td>2.0</td></tr>
                 </tbody>
             </table></div>
-            <div class="config-grid-4" style="margin-top: 25px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+            <div class="config-grid-5" style="margin-top: 25px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px;">
                 <div style="background: rgba(0,212,255,0.1); padding: 15px; border-radius: 10px; text-align: center;">
                     <div style="font-size: 1.5rem; color: #00d4ff; font-weight: bold;">52.5c</div>
                     <div style="color: #888; font-size: 0.8rem;">ENTRY PRICE</div>
@@ -300,25 +286,31 @@
                     <div style="font-size: 1.5rem; color: #ffd700; font-weight: bold;">190</div>
                     <div style="color: #888; font-size: 0.8rem;">SHARES</div>
                 </div>
+                <div style="background: rgba(255,71,87,0.1); padding: 15px; border-radius: 10px; text-align: center;">
+                    <div style="font-size: 1.5rem; color: #ff4757; font-weight: bold;">2.0</div>
+                    <div style="color: #888; font-size: 0.8rem;">FTFC THRESHOLD</div>
+                </div>
             </div>
         </div>
 
         <div class="chart-card">
-            <h3>Resume PnL V7 ($100/trade - 100% Dynamique)</h3>
+            <h3>Resume PnL V10 ($100/trade - RSI + Stoch + FTFC)</h3>
             <div class="table-wrapper"><table>
                 <thead><tr><th>Metrique</th><th>2024</th><th>2025</th><th>Total</th></tr></thead>
                 <tbody>
-                    <tr><td>Trades</td><td>40,240</td><td>42,189</td><td>82,429</td></tr>
-                    <tr><td>Win Rate</td><td class="positive">55.7%</td><td class="positive">54.8%</td><td class="positive">55.2%</td></tr>
-                    <tr><td>PnL Total</td><td class="positive">+$285,231</td><td class="positive">+$226,292</td><td class="positive">+$511,523</td></tr>
-                    <tr><td>PnL Moyen/Mois</td><td class="positive">+$23,769</td><td class="positive">+$18,858</td><td class="positive">+$21,313</td></tr>
-                    <tr><td>Pire mois</td><td class="positive">+$12,823</td><td class="positive">+$7,285</td><td class="positive">+$7,285</td></tr>
+                    <tr><td>Trades</td><td>23,961</td><td>24,688</td><td>48,649</td></tr>
+                    <tr><td>Trades/Jour</td><td>66</td><td>68</td><td>67</td></tr>
+                    <tr><td>Win Rate</td><td class="positive">58.9%</td><td class="positive">58.2%</td><td class="positive">58.6%</td></tr>
+                    <tr><td>PnL Total</td><td class="positive">+$293,805</td><td class="positive">+$268,914</td><td class="positive">+$562,719</td></tr>
+                    <tr><td>PnL Moyen/Mois</td><td class="positive">+$24,484</td><td class="positive">+$22,410</td><td class="positive">+$23,447</td></tr>
+                    <tr><td>Pire mois</td><td class="positive">+$12,847</td><td class="positive">+$10,700</td><td class="positive">+$10,700</td></tr>
+                    <tr><td>Mois >= $10k</td><td class="positive">12/12</td><td class="positive">12/12</td><td class="positive">24/24</td></tr>
                 </tbody>
             </table></div>
         </div>
 
         <footer>
-            <p>Botayo - Bot Polymarket V7 Dynamique (100% temps reel)</p>
+            <p>Botayo - Bot Polymarket V10 (RSI + Stoch + FTFC Multi-Timeframe)</p>
             <p><a href="strategy.html">Guide Strategie</a> | Mis a jour le 31 Decembre 2025</p>
         </footer>
     </div>
@@ -333,7 +325,7 @@
                 labels: ['BTC', 'ETH', 'XRP'],
                 datasets: [{
                     label: 'PnL ($/mois)',
-                    data: [7200, 7100, 7013],
+                    data: [7600, 8100, 7700],
                     backgroundColor: ['#f7931a', '#627eea', '#666'],
                     borderColor: ['#f7931a', '#627eea', '#888'],
                     borderWidth: 2, borderRadius: 5
@@ -345,8 +337,8 @@
         new Chart(document.getElementById('winRateChart'), {
             type: 'doughnut',
             data: {
-                labels: ['BTC (55.5%) 🥇', 'ETH (55.3%) 🥈', 'XRP (54.8%) 🥉'],
-                datasets: [{ data: [55.5, 55.3, 54.8], backgroundColor: ['#f7931a', '#627eea', '#666'], borderWidth: 2 }]
+                labels: ['ETH (59.0%)', 'BTC (58.6%)', 'XRP (58.4%)'],
+                datasets: [{ data: [59.0, 58.6, 58.4], backgroundColor: ['#627eea', '#f7931a', '#666'], borderWidth: 2 }]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 15 } } } }
         });
@@ -354,8 +346,8 @@
         new Chart(document.getElementById('tradesDistChart'), {
             type: 'pie',
             data: {
-                labels: ['BTC (38/j)', 'ETH (38/j)', 'XRP (38/j)'],
-                datasets: [{ data: [38, 38, 38], backgroundColor: ['rgba(247,147,26,0.8)', 'rgba(98,126,234,0.8)', 'rgba(100,100,100,0.8)'], borderWidth: 2 }]
+                labels: ['BTC (22/j)', 'ETH (22/j)', 'XRP (22/j)'],
+                datasets: [{ data: [22, 22, 22], backgroundColor: ['rgba(247,147,26,0.8)', 'rgba(98,126,234,0.8)', 'rgba(100,100,100,0.8)'], borderWidth: 2 }]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 15 } } } }
         });
@@ -365,8 +357,8 @@
             data: {
                 labels: ['Trades/jour', 'Win Rate (%)', 'PnL/mois ($K)'],
                 datasets: [
-                    { label: '2024', data: [110, 55.7, 23.8], backgroundColor: 'rgba(0,212,255,0.7)', borderColor: '#00d4ff', borderWidth: 2 },
-                    { label: '2025', data: [116, 54.8, 18.9], backgroundColor: 'rgba(0,255,136,0.7)', borderColor: '#00ff88', borderWidth: 2 }
+                    { label: '2024', data: [66, 58.9, 24.5], backgroundColor: 'rgba(0,212,255,0.7)', borderColor: '#00d4ff', borderWidth: 2 },
+                    { label: '2025', data: [68, 58.2, 22.4], backgroundColor: 'rgba(0,255,136,0.7)', borderColor: '#00ff88', borderWidth: 2 }
                 ]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }

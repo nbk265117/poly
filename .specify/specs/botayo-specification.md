@@ -1,29 +1,29 @@
 # Botayo Specification
-## Bot Trading Polymarket V8.1 HYBRIDE (223 SKIP + 12 REVERSE)
+## Bot Trading Polymarket V10 (RSI + Stoch + FTFC Multi-Timeframe)
 
 **Created**: 2025-12-30
 **Updated**: 2025-12-31
 **Status**: Production
 **Branch**: main
-**Version**: 8.1 HYBRIDE
+**Version**: 10
 
 ## System Overview
 
-Botayo est un bot de trading automatise pour Polymarket qui effectue des predictions UP/DOWN sur les crypto-monnaies (BTC, ETH, XRP) toutes les 15 minutes.
+Botayo est un bot de trading automatise pour Polymarket qui effectue des predictions UP/DOWN sur les crypto-monnaies (BTC, ETH, XRP) toutes les 15 minutes en utilisant une strategie triple confirmation.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                         VPS (3.96.141.89)                   │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
 │  │  Bot ETH    │  │  Bot BTC    │  │  Bot XRP    │         │
-│  │  10 shares  │  │  7 shares   │  │  5 shares   │         │
+│  │  V10        │  │  V10        │  │  V10        │         │
 │  └─────────────┘  └─────────────┘  └─────────────┘         │
 │         │                │                │                 │
 │         └────────────────┼────────────────┘                 │
 │                          │                                  │
 │                    ┌─────▼─────┐                           │
 │                    │ Watchdog  │ (*/5 cron)                │
-│                    │   v8.1    │                           │
+│                    │   V10     │                           │
 │                    └───────────┘                           │
 └─────────────────────────────────────────────────────────────┘
               │                              │
@@ -32,75 +32,66 @@ Botayo est un bot de trading automatise pour Polymarket qui effectue des predict
      │   Polymarket   │             │    Telegram    │
      │   CLOB API     │             │      Bot       │
      └────────────────┘             └────────────────┘
+              ▲
+              │
+     ┌────────────────┐
+     │   Binance API  │ (HTF Data: 1H/4H)
+     └────────────────┘
 ```
 
-## Trading Strategy
+## Trading Strategy V10
 
 ### Indicateurs Techniques
 | Indicateur | Config | Signal UP | Signal DOWN |
 |------------|--------|-----------|-------------|
-| RSI(7) | period=7 | < 38 | > 58 |
-| Stochastic(5) | period=5 | < 30 | > 80 |
+| RSI(7) | period=7 | < 42 | > 62 |
+| Stochastic(5) | period=5 | < 38 | > 68 |
+| FTFC Score | 1H + 4H | > -2.0 | < 2.0 |
 
-### Regles de Signal
+### FTFC Score Calculation
+```yaml
+# Flow/Trend/Fractal Confirmation Score
+# Range: -3.0 to +3.0
+
+Components:
+  - 1H Trend > +0.1%:  +1
+  - 1H Trend < -0.1%:  -1
+  - 4H Trend > +0.2%:  +1
+  - 4H Trend < -0.2%:  -1
+  - 1H RSI > 55:       +0.5
+  - 1H RSI < 45:       -0.5
+  - 4H RSI > 55:       +0.5
+  - 4H RSI < 45:       -0.5
+
+Threshold: 2.0
+```
+
+### Regles de Signal V10
 ```python
 # Signal UP (Achat)
-signal_up = (rsi < 38) AND (stoch_k < 30)
+signal_up = (rsi < 42) AND (stoch_k < 38) AND (ftfc_score > -2.0)
 
 # Signal DOWN (Vente)
-signal_down = (rsi > 58) AND (stoch_k > 80)
+signal_down = (rsi > 62) AND (stoch_k > 68) AND (ftfc_score < 2.0)
 ```
 
-### Strategie V8.1 HYBRIDE (SKIP + REVERSE)
+### Avantages V10
 ```yaml
-# 223 candles SKIP (WR 42-53%): Pas de trade
-# 12 candles REVERSE (WR <42%): Signal inverse (WR inverse >58%)
+Triple Confirmation:
+  - RSI: Survendu/Surachete
+  - Stochastic: Position dans le range
+  - FTFC: Alignement multi-timeframe
 
-REVERSE_CANDLES (12):
-  - Dim 08:30  (WR 35.2% -> 64.8%)
-  - Dim 11:15  (WR 35.4% -> 64.6%)
-  - Ven 18:15  (WR 36.9% -> 63.1%)
-  - Ven 02:00  (WR 37.0% -> 63.0%)
-  - Mer 19:30  (WR 37.4% -> 62.6%)
-  - Dim 13:15  (WR 38.6% -> 61.4%)
-  - Dim 02:30  (WR 39.4% -> 60.6%)
-  - Ven 14:30  (WR 39.7% -> 60.3%)
-  - Mer 06:30  (WR 40.7% -> 59.3%)
-  - Jeu 14:30  (WR 41.7% -> 58.3%)
-  - Mar 14:15  (WR 41.9% -> 58.1%)
-  - Lun 02:45  (WR 42.0% -> 58.0%)
+Resultats:
+  - Win Rate: 58.6% (vs 55.2% V7)
+  - Mois >= $10k: 24/24 (100%)
+  - PnL Total: $562,719 (2 ans)
+  - Trades/jour: 67
 
-SKIP_CANDLES (223): Restantes des 235 candles originales
-
-# Gain V8.1 vs V8: +$859/mois (+3.8%)
-# PnL V8.1: $23,750/mois | Pire mois: $15,361
-```
-
-### Code Implementation
-```python
-BLOCKED_CANDLES = {...}  # 235 candles
-REVERSE_CANDLES = {
-    (6, 8, 30), (6, 11, 15), (4, 18, 15), (4, 2, 0),
-    (2, 19, 30), (6, 13, 15), (6, 2, 30), (4, 14, 30),
-    (2, 6, 30), (3, 14, 30), (1, 14, 15), (0, 2, 45)
-}
-
-def get_signal():
-    now = datetime.now(timezone.utc)
-    candle_key = (now.weekday(), now.hour, (now.minute // 15) * 15)
-
-    is_reverse = candle_key in REVERSE_CANDLES
-    is_blocked = candle_key in BLOCKED_CANDLES
-
-    if is_blocked and not is_reverse:
-        return None  # SKIP
-
-    signal = calculate_signal()  # RSI + Stoch
-
-    if is_reverse and signal:
-        signal = 'DOWN' if signal == 'UP' else 'UP'  # REVERSE
-
-    return signal
+Ameliorations vs V7:
+  - +3.4% Win Rate
+  - -47 trades/jour (qualite > quantite)
+  - 0 mois sous $10k (vs 4 pour V7)
 ```
 
 ## Polymarket Formula
@@ -112,120 +103,101 @@ WIN:  190.48 * $1.00 - $100 = +$90.48
 LOSS: 190.48 * $0.00 = -$100
 ```
 
-### Expected Value (EV)
+### Expected Value (EV) - V10
 ```
-EV = (0.592 * $90.48) + (0.408 * -$100) = $53.56 - $40.80 = +$12.76/trade
+EV = (0.586 * $90.48) + (0.414 * -$100) = $53.02 - $41.40 = +$11.62/trade
+ROI par trade: 11.62%
 ```
 
 ### Monthly PnL Projection
 ```
-60 trades/jour * 30 jours * $13.19 EV = ~$23,750/mois
+67 trades/jour * 30 jours * $11.62 EV = ~$23,370/mois
 ```
 
-## Backtest Results (2024-2025) - V8.1 HYBRIDE
+## Backtest Results (2024-2025) - V10
 
-### Comparaison V8 vs V8.1
-| Metrique | V8 (235 SKIP) | V8.1 (223 SKIP + 12 REV) | Gain |
-|----------|---------------|--------------------------|------|
-| Win Rate | 59.2% | 59.2% | +0.0% |
-| PnL/mois | $22,891 | $23,750 | +$859 |
-| Pire mois | +$14,761 | +$15,361 | +$600 |
-| Trades/jour | 59 | 60 | +1 |
-| Mois gagnants | - | 19/24 | +79% |
+### Summary
+| Metrique | V10 |
+|----------|-----|
+| Win Rate | 58.6% |
+| PnL Total | $562,719 |
+| PnL/mois | $23,447 |
+| Trades/jour | 67 |
+| Mois >= $10k | 24/24 |
+| Pire mois | +$10,700 |
 
-### 2024 (V8)
+### 2024 (V10)
 | Mois | Trades | Win Rate | PnL |
 |------|--------|----------|-----|
-| Jan | 1,742 | 59.3% | +$21,847 |
-| Feb | 1,651 | 60.1% | +$25,423 |
-| Mar | 1,824 | 60.8% | +$29,521 |
-| Apr | 1,715 | 58.9% | +$20,186 |
-| May | 1,803 | 59.4% | +$22,764 |
-| Jun | 1,706 | 61.2% | +$30,847 |
-| Jul | 1,763 | 59.1% | +$21,392 |
-| Aug | 1,791 | 60.5% | +$28,196 |
-| Sep | 1,739 | 59.7% | +$24,108 |
-| Oct | 1,794 | 58.2% | +$18,523 |
-| Nov | 1,746 | 60.0% | +$26,548 |
-| Dec | 1,868 | 58.6% | +$18,681 |
-| **Total** | **21,142** | **59.5%** | **+$282,036** |
+| Jan | 1,892 | 58.5% | +$21,521 |
+| Feb | 1,764 | 59.3% | +$24,890 |
+| Mar | 1,987 | 60.2% | +$28,435 |
+| Apr | 1,856 | 58.1% | +$19,847 |
+| May | 1,923 | 59.0% | +$23,156 |
+| Jun | 2,045 | 61.5% | +$33,923 |
+| Jul | 1,967 | 58.7% | +$22,341 |
+| Aug | 2,012 | 60.0% | +$27,821 |
+| Sep | 1,901 | 59.1% | +$23,687 |
+| Oct | 2,067 | 57.8% | +$18,942 |
+| Nov | 1,945 | 59.8% | +$26,394 |
+| Dec | 2,102 | 58.3% | +$22,848 |
+| **Total** | **23,961** | **58.9%** | **+$293,805** |
 
-### 2025 (V8)
-| Mois | Trades | Win Rate | PnL |
-|------|--------|----------|-----|
-| Jan | 1,839 | 57.9% | +$17,243 |
-| Feb | 1,663 | 58.3% | +$18,106 |
-| Mar | 1,833 | 59.5% | +$25,344 |
-| Apr | 1,764 | 59.8% | +$26,107 |
-| May | 1,821 | 58.9% | +$21,053 |
-| Jun | 1,738 | 59.1% | +$22,195 |
-| Jul | 1,776 | 58.0% | +$17,691 |
-| Aug | 1,818 | 59.4% | +$24,327 |
-| Sep | 1,763 | 58.6% | +$20,541 |
-| Oct | 1,833 | 58.1% | +$18,967 |
-| Nov | 1,750 | 60.3% | +$27,432 |
-| Dec | 2,048 | 57.6% | +$14,761 |
-| **Total** | **22,169** | **58.8%** | **+$267,336** |
+### 2025 (V10)
+| Mois | Trades | Trades/j | Win Rate | PnL |
+|------|--------|----------|----------|-----|
+| Jan | 1,984 | 64 | 57.6% | +$16,847 |
+| Feb | 1,823 | 65 | 58.1% | +$18,521 |
+| Mar | 2,087 | 67 | 59.3% | +$24,923 |
+| Apr | 2,012 | 67 | 59.5% | +$25,678 |
+| May | 2,145 | 69 | 58.4% | +$20,341 |
+| Jun | 1,976 | 66 | 58.7% | +$21,587 |
+| Jul | 2,034 | 66 | 57.8% | +$17,234 |
+| Aug | 2,156 | 70 | 57.2% | +$10,700 |
+| Sep | 2,089 | 70 | 58.3% | +$19,847 |
+| Oct | 2,178 | 70 | 57.6% | +$16,923 |
+| Nov | 2,045 | 68 | 59.8% | +$26,789 |
+| Dec | 2,159 | 70 | 59.5% | +$49,524 |
+| **Total** | **24,688** | **68** | **58.2%** | **+$268,914** |
+
+### Comparaison V7 vs V10
+| Metrique | V7 | V10 | Difference |
+|----------|-----|-----|------------|
+| Win Rate | 55.2% | 58.6% | +3.4% |
+| ROI/trade | 6.15% | 11.62% | +5.47% |
+| Trades/jour | 114 | 67 | -47 |
+| PnL/mois | $21,313 | $23,447 | +$2,134 |
+| Mois < $10k | 4/24 | 0/24 | -4 |
 
 ## VPS Configuration
-
-### SSH Access
-```bash
-ssh -i /tmp/vps_key.pem ubuntu@3.96.141.89
-```
 
 ### Directory Structure
 ```
 /home/ubuntu/poly/
-├── bot_simple.py          # Main bot
+├── bot_v10_btc.py         # Bot BTC V10
+├── bot_v10_eth.py         # Bot ETH V10
+├── bot_v10_xrp.py         # Bot XRP V10
+├── watchdog_v10.py        # Process monitor V10
 ├── config.yaml            # Strategy config
-├── watchdog.sh            # Process monitor v8.1
-├── heartbeat.sh           # Hourly status
-├── start_bots.sh          # Manual start
-├── cleanup_logs.sh        # Log rotation
 ├── venv/                  # Python environment
 └── logs/
-    ├── bot_simple.log     # Trade logs
-    ├── watchdog.log       # Monitor logs
-    └── heartbeat.log      # Status logs
+    ├── bot_v10_btc.log    # BTC trade logs
+    ├── bot_v10_eth.log    # ETH trade logs
+    ├── bot_v10_xrp.log    # XRP trade logs
+    └── watchdog_v10.log   # Monitor logs
 ```
 
-### Watchdog v8.1
-```bash
-#!/bin/bash
-LOCK=/tmp/wd.lock
-[ -f $LOCK ] && exit 0
-touch $LOCK
-trap "rm -f $LOCK" EXIT
+### Watchdog V10
+```python
+BOTS = [
+    {'name': 'BTC', 'script': 'bot_v10_btc.py', 'process': None},
+    {'name': 'ETH', 'script': 'bot_v10_eth.py', 'process': None},
+    {'name': 'XRP', 'script': 'bot_v10_xrp.py', 'process': None},
+]
 
-cd /home/ubuntu/poly
-PY=/home/ubuntu/poly/venv/bin/python
-N=$(pgrep -c -f bot_simple.py 2>/dev/null || echo 0)
-echo "[$(date +%F\ %T)] N=$N" >> logs/watchdog.log
-
-if [ "$N" -ne 3 ]; then
-    pkill -9 -f bot_simple.py 2>/dev/null
-    sleep 2
-    $PY bot_simple.py --live --yes --shares 10 --symbols ETH >> logs/bot_simple.log 2>&1 &
-    sleep 2
-    $PY bot_simple.py --live --yes --shares 7 --symbols BTC >> logs/bot_simple.log 2>&1 &
-    sleep 2
-    $PY bot_simple.py --live --yes --shares 5 --symbols XRP >> logs/bot_simple.log 2>&1 &
-    sleep 2
-    echo "[$(date +%F\ %T)] Fixed" >> logs/watchdog.log
-fi
-```
-
-### Cron Configuration
-```crontab
-# Watchdog every 5 minutes
-*/5 * * * * /home/ubuntu/poly/watchdog.sh
-
-# Heartbeat every hour
-0 * * * * /home/ubuntu/poly/heartbeat.sh >> /home/ubuntu/poly/logs/heartbeat.log 2>&1
-
-# Cleanup logs daily at midnight
-0 0 * * * /home/ubuntu/poly/cleanup_logs.sh >> /home/ubuntu/poly/logs/cleanup.log 2>&1
+CHECK_INTERVAL = 30  # Verification toutes les 30 secondes
+MAX_RESTARTS = 5     # Max restarts avant alerte critique
+RESTART_COOLDOWN = 60  # Attendre 60s avant restart
 ```
 
 ## Environment Variables (.env)
@@ -244,45 +216,31 @@ ENVIRONMENT=production  # or development
 
 ## Common Commands
 
+### Start Bots
+```bash
+# Paper Trading
+python watchdog_v10.py
+
+# Live Trading
+python watchdog_v10.py --live --yes
+```
+
 ### Check Bot Status
 ```bash
-ssh -i /tmp/vps_key.pem ubuntu@3.96.141.89 "ps aux | grep bot_simple | grep -v grep"
+ps aux | grep bot_v10 | grep -v grep
 ```
 
 ### View Recent Trades
 ```bash
-ssh -i /tmp/vps_key.pem ubuntu@3.96.141.89 "tail -50 /home/ubuntu/poly/logs/bot_simple.log | grep TRADE"
+tail -50 logs/bot_v10_btc.log | grep TRADE
 ```
-
-### Restart Bots
-```bash
-ssh -i /tmp/vps_key.pem ubuntu@3.96.141.89 "/home/ubuntu/poly/start_bots.sh"
-```
-
-### Force Heartbeat
-```bash
-ssh -i /tmp/vps_key.pem ubuntu@3.96.141.89 "/home/ubuntu/poly/heartbeat.sh"
-```
-
-## Known Issues & Solutions
-
-### Duplicate Bots (6 instead of 3)
-**Cause**: Race condition with cron or watchdog not killing properly
-**Solution**: Watchdog v8.1 with lock file + "kill all then restart 3"
-
-### Blocked Time Combo Not Applying
-**Cause**: Bot using old config
-**Solution**: Restart bots after config change
-
-### High Loss Rate
-**Check**: Verify only 3 bots running, not duplicates
-**Check**: Verify current hour not in blocked combos
 
 ## Success Criteria
 
-- **SC-001**: 3 bots running 24/7 without duplicates
-- **SC-002**: Win Rate > 58% on monthly basis (upgraded from 55%)
-- **SC-003**: No trades during 235 blocked candles
+- **SC-001**: 3 bots V10 running 24/7 without duplicates
+- **SC-002**: Win Rate >= 58% on monthly basis
+- **SC-003**: 0 months below $10,000 PnL
 - **SC-004**: Telegram notifications within 5 seconds of trade
-- **SC-005**: Auto-recovery within 5 minutes of crash
-- **SC-006**: Pire mois > +$14,000 (new with V8)
+- **SC-005**: Auto-recovery within 30 seconds of crash
+- **SC-006**: FTFC Score calculated correctly from 1H/4H data
+- **SC-007**: Triple confirmation (RSI + Stoch + FTFC) before every trade

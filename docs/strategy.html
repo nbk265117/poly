@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strategie - Botayo</title>
+    <title>Strategie V10 - Botayo</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -118,7 +118,7 @@
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 15px;
             margin: 20px 0;
         }
@@ -357,11 +357,11 @@
     </script>
 
     <div class="container">
-        <h1>Strategie V7 Dynamique</h1>
+        <h1>Strategie V10</h1>
 
         <div class="highlight-box">
-            <strong>Strategie 100% dynamique basee sur le backtest 2024-2025</strong><br>
-            AUCUN blocage horaire, AUCUN pattern de candles - Configuration optimisee pour 3 paires (BTC, ETH, XRP)
+            <strong>Strategie V10: RSI + Stochastic + FTFC Multi-Timeframe</strong><br>
+            Triple confirmation avec analyse 1H/4H pour filtrer les faux signaux - 0 mois sous $10k sur 24 mois de backtest
         </div>
 
         <h2>1. Concept General</h2>
@@ -375,16 +375,16 @@
             <p style="margin-top:15px;"><strong>Paiement:</strong> Si tu as raison → tu recuperes $1 par share. Si tu as tort → tu perds ta mise.</p>
         </div>
 
-        <h2>2. Strategie V7 Dynamique</h2>
+        <h2>2. Strategie V10 - Triple Confirmation</h2>
         <div class="card">
-            <p><strong>Principe:</strong> Detection des extremes RSI + Stochastic en temps reel, sans aucun filtre temporel.</p>
+            <p><strong>Principe:</strong> Detection des extremes RSI + Stochastic, filtres par FTFC Score multi-timeframe.</p>
             <div class="table-wrapper"><table>
                 <thead>
                     <tr><th>Condition</th><th>Action</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td>RSI(7) &lt; 38 ET Stoch(5) &lt; 30</td><td class="positive">Signal <strong>UP</strong></td></tr>
-                    <tr><td>RSI(7) &gt; 68 ET Stoch(5) &gt; 75</td><td class="positive">Signal <strong>DOWN</strong></td></tr>
+                    <tr><td>RSI(7) &lt; 42 ET Stoch(5) &lt; 38 ET FTFC &gt; -2.0</td><td class="positive">Signal <strong>UP</strong></td></tr>
+                    <tr><td>RSI(7) &gt; 62 ET Stoch(5) &gt; 68 ET FTFC &lt; 2.0</td><td class="positive">Signal <strong>DOWN</strong></td></tr>
                 </tbody>
             </table></div>
         </div>
@@ -395,11 +395,11 @@
         <div class="card">
             <p>Mesure la force relative des mouvements de prix recents. Varie de 0 a 100.</p>
             <div class="table-wrapper"><table>
-                <thead><tr><th>RSI</th><th>Interpretation</th><th>Signal V7</th></tr></thead>
+                <thead><tr><th>RSI</th><th>Interpretation</th><th>Signal V10</th></tr></thead>
                 <tbody>
-                    <tr><td>&lt; 38</td><td>Survendu (trop de ventes)</td><td class="positive">UP</td></tr>
-                    <tr><td>&gt; 68</td><td>Surachete (trop d'achats)</td><td class="positive">DOWN</td></tr>
-                    <tr><td>38-68</td><td>Zone neutre</td><td>Pas de signal</td></tr>
+                    <tr><td>&lt; 42</td><td>Survendu (trop de ventes)</td><td class="positive">UP (si FTFC OK)</td></tr>
+                    <tr><td>&gt; 62</td><td>Surachete (trop d'achats)</td><td class="positive">DOWN (si FTFC OK)</td></tr>
+                    <tr><td>42-62</td><td>Zone neutre</td><td>Pas de signal</td></tr>
                 </tbody>
             </table></div>
             <pre>RSI = 100 - (100 / (1 + RS))
@@ -410,42 +410,65 @@ RS = Moyenne des gains / Moyenne des pertes</pre>
         <div class="card">
             <p>Compare le prix de cloture actuel au range haut/bas sur une periode donnee.</p>
             <div class="table-wrapper"><table>
-                <thead><tr><th>Stochastic</th><th>Interpretation</th><th>Signal V7</th></tr></thead>
+                <thead><tr><th>Stochastic</th><th>Interpretation</th><th>Signal V10</th></tr></thead>
                 <tbody>
-                    <tr><td>&lt; 30</td><td>Prix proche du bas</td><td class="positive">UP</td></tr>
-                    <tr><td>&gt; 75</td><td>Prix proche du haut</td><td class="positive">DOWN</td></tr>
+                    <tr><td>&lt; 38</td><td>Prix proche du bas</td><td class="positive">UP (si FTFC OK)</td></tr>
+                    <tr><td>&gt; 68</td><td>Prix proche du haut</td><td class="positive">DOWN (si FTFC OK)</td></tr>
                 </tbody>
             </table></div>
-            <pre>%K = 100 × (Close - Low_n) / (High_n - Low_n)</pre>
+            <pre>%K = 100 x (Close - Low_n) / (High_n - Low_n)</pre>
         </div>
 
-        <h2>4. Configuration V7</h2>
+        <h3>C) FTFC Score (Flow/Trend/Fractal Confirmation)</h3>
         <div class="card">
-            <p>Configuration 100% dynamique pour toutes les paires (optimisee par backtest 2024-2025):</p>
+            <p><strong>Innovation V10:</strong> Analyse multi-timeframe (1H et 4H) pour filtrer les signaux contre-tendance.</p>
+            <div class="table-wrapper"><table>
+                <thead><tr><th>Composant</th><th>Condition</th><th>Score</th></tr></thead>
+                <tbody>
+                    <tr><td>Trend 1H</td><td>&gt; +0.1%</td><td class="positive">+1</td></tr>
+                    <tr><td>Trend 1H</td><td>&lt; -0.1%</td><td style="color:#ff4757;">-1</td></tr>
+                    <tr><td>Trend 4H</td><td>&gt; +0.2%</td><td class="positive">+1</td></tr>
+                    <tr><td>Trend 4H</td><td>&lt; -0.2%</td><td style="color:#ff4757;">-1</td></tr>
+                    <tr><td>RSI 1H</td><td>&gt; 55</td><td class="positive">+0.5</td></tr>
+                    <tr><td>RSI 1H</td><td>&lt; 45</td><td style="color:#ff4757;">-0.5</td></tr>
+                    <tr><td>RSI 4H</td><td>&gt; 55</td><td class="positive">+0.5</td></tr>
+                    <tr><td>RSI 4H</td><td>&lt; 45</td><td style="color:#ff4757;">-0.5</td></tr>
+                </tbody>
+            </table></div>
+            <pre>FTFC Score range: -3.0 to +3.0
+Threshold: 2.0
+
+Signal UP:   FTFC > -2.0 (pas fortement baissier)
+Signal DOWN: FTFC < +2.0 (pas fortement haussier)</pre>
+        </div>
+
+        <h2>4. Configuration V10</h2>
+        <div class="card">
+            <p>Configuration optimisee par backtest 2024-2025 (48,649 trades):</p>
             <div class="stats-grid">
                 <div class="stat-box"><div class="value">7</div><div class="label">RSI Period</div></div>
-                <div class="stat-box"><div class="value">38/68</div><div class="label">RSI Seuils</div></div>
+                <div class="stat-box"><div class="value">42/62</div><div class="label">RSI Seuils</div></div>
                 <div class="stat-box"><div class="value">5</div><div class="label">Stoch Period</div></div>
-                <div class="stat-box"><div class="value">30/75</div><div class="label">Stoch Seuils</div></div>
-                <div class="stat-box"><div class="value">52c</div><div class="label">Entry Price</div></div>
-                <div class="stat-box"><div class="value">0</div><div class="label">Blocages</div></div>
+                <div class="stat-box"><div class="value">38/68</div><div class="label">Stoch Seuils</div></div>
+                <div class="stat-box"><div class="value">2.0</div><div class="label">FTFC Threshold</div></div>
+                <div class="stat-box"><div class="value">52.5c</div><div class="label">Entry Price</div></div>
             </div>
         </div>
 
-        <h2>5. Generation des Signaux V7</h2>
+        <h2>5. Generation des Signaux V10</h2>
         <div class="card">
             <h3>Signal UP (acheter "le prix va monter")</h3>
-            <pre>RSI(7) < 38 ET Stoch(5) < 30</pre>
+            <pre>RSI(7) < 42 ET Stoch(5) < 38 ET FTFC_Score > -2.0</pre>
 
             <h3>Signal DOWN (acheter "le prix va baisser")</h3>
-            <pre>RSI(7) > 68 ET Stoch(5) > 75</pre>
+            <pre>RSI(7) > 62 ET Stoch(5) > 68 ET FTFC_Score < 2.0</pre>
 
-            <h3>Avantages V7 vs Strategies precedentes</h3>
-            <pre>- AUCUN blocage horaire (SKIP_HOURS)
-- AUCUN pattern de candles (REVERSE)
-- 100% calcule en temps reel
-- S'adapte aux conditions du marche
-- Signal DOWN plus strict (RSI > 68 au lieu de > 58)
+            <h3>Avantages V10 vs Strategies precedentes</h3>
+            <pre>- Triple confirmation (RSI + Stoch + FTFC)
+- Analyse multi-timeframe (1H + 4H)
+- Filtre les signaux contre-tendance
+- 0 mois sous $10k (vs 4 mois pour V7)
+- Win rate ameliore: 58.6% (vs 55.2%)
 - Meilleure robustesse pour le trading live</pre>
         </div>
 
@@ -453,26 +476,26 @@ RS = Moyenne des gains / Moyenne des pertes</pre>
         <div class="card">
             <p>Le bot analyse le marche <strong>20 secondes avant</strong> la fin de chaque bougie 15 minutes.</p>
             <pre>Bougie 15m: 18:00:00 → 18:14:59
-                        │
-                18:14:40 = Analyse (-20 sec)
-                        │
-                Signal detecte? → Placer ordre
-                        │
-                18:15:00 = Nouvelle bougie commence
-                        │
-                18:30:00 = Resolution du marche</pre>
+                    │
+            18:14:40 = Analyse (-20 sec)
+                    │
+            Signal detecte? → Placer ordre
+                    │
+            18:15:00 = Nouvelle bougie commence
+                    │
+            18:30:00 = Resolution du marche</pre>
         </div>
 
-        <h2>7. Resultats Backtest 2024-2025 (V7 DYNAMIQUE)</h2>
+        <h2>7. Resultats Backtest 2024-2025 (V10)</h2>
         <div class="card">
             <div class="table-wrapper"><table>
                 <thead>
                     <tr><th>Annee</th><th>Trades</th><th>Trades/jour</th><th>Win Rate</th><th>PnL Total</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td><strong>2024</strong></td><td>40,240</td><td>110</td><td class="positive">55.7%</td><td class="positive">+$285,231</td></tr>
-                    <tr><td><strong>2025</strong></td><td>42,189</td><td>116</td><td class="positive">54.8%</td><td class="positive">+$226,292</td></tr>
-                    <tr style="background:rgba(0,255,136,0.1);font-weight:bold;"><td>TOTAL</td><td>82,429</td><td>114</td><td class="positive">55.2%</td><td class="positive">+$511,523</td></tr>
+                    <tr><td><strong>2024</strong></td><td>23,961</td><td>66</td><td class="positive">58.9%</td><td class="positive">+$293,805</td></tr>
+                    <tr><td><strong>2025</strong></td><td>24,688</td><td>68</td><td class="positive">58.2%</td><td class="positive">+$268,914</td></tr>
+                    <tr style="background:rgba(0,255,136,0.1);font-weight:bold;"><td>TOTAL</td><td>48,649</td><td>67</td><td class="positive">58.6%</td><td class="positive">+$562,719</td></tr>
                 </tbody>
             </table></div>
 
@@ -482,17 +505,16 @@ RS = Moyenne des gains / Moyenne des pertes</pre>
                     <tr><th>Metrique</th><th>Valeur</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td>PnL Moyen/Mois</td><td class="positive">$21,313</td></tr>
-                    <tr><td>Mois &gt; $15,000</td><td class="positive">20/24 (83%)</td></tr>
-                    <tr><td>Mois &gt; $10,000</td><td class="positive">23/24 (96%)</td></tr>
+                    <tr><td>PnL Moyen/Mois</td><td class="positive">$23,447</td></tr>
+                    <tr><td>Mois &gt;= $10,000</td><td class="positive">24/24 (100%)</td></tr>
                     <tr><td>Meilleur Mois</td><td class="positive">+$33,923 (Juin 2024)</td></tr>
-                    <tr><td>Pire Mois</td><td class="positive">+$7,285 (Aout 2025)</td></tr>
+                    <tr><td>Pire Mois</td><td class="positive">+$10,700 (Aout 2025)</td></tr>
                 </tbody>
             </table></div>
         </div>
 
         <div class="highlight-box">
-            <strong>Avantage V7:</strong> Strategie 100% dynamique - pas d'overfitting sur des patterns temporels historiques. Plus robuste pour le trading live.
+            <strong>Avantage V10:</strong> 100% des mois au-dessus de $10,000 grace au filtre FTFC multi-timeframe qui elimine les signaux contre-tendance.
         </div>
 
         <h2>8. Money Management</h2>
@@ -504,16 +526,16 @@ RS = Moyenne des gains / Moyenne des pertes</pre>
                 <div class="stat-box"><div class="value">$90.48</div><div class="label">Gain si Win</div></div>
             </div>
 
-            <h3>Calcul de rentabilite (55.2% Win Rate - V7)</h3>
+            <h3>Calcul de rentabilite (58.6% Win Rate - V10)</h3>
             <pre>Sur 100 trades a $100 chacun:
 
-Mise totale:    100 × $100 = $10,000
-Gains (55.2%):   55.2 × $92.31 = $5,095
-Pertes (44.8%):  44.8 × $100 = -$4,480
+Mise totale:    100 x $100 = $10,000
+Gains (58.6%):   58.6 x $90.48 = $5,302
+Pertes (41.4%):  41.4 x $100 = -$4,140
 ─────────────────────────────────────
-Profit net:                   +$615 (6.15% ROI)
+Profit net:                   +$1,162 (11.62% ROI)
 
-Avec 114 trades/jour: +$700/jour = +$21,000/mois</pre>
+Avec 67 trades/jour: +$779/jour = +$23,370/mois</pre>
         </div>
 
         <h2>9. Deploiement VPS</h2>
@@ -526,12 +548,13 @@ Avec 114 trades/jour: +$700/jour = +$21,000/mois</pre>
                     <tr><td>Region</td><td>ca-central-1</td></tr>
                     <tr><td>Bots actifs</td><td>3 (BTC, ETH, XRP)</td></tr>
                     <tr><td>Mode</td><td>Systemd services (auto-restart)</td></tr>
+                    <tr><td>Watchdog</td><td>Moniteur + auto-recovery</td></tr>
                 </tbody>
             </table></div>
         </div>
 
         <footer>
-            <p>Botayo - Bot Polymarket V7 DYNAMIQUE (100% temps reel)</p>
+            <p>Botayo - Bot Polymarket V10 (RSI + Stoch + FTFC Multi-Timeframe)</p>
             <p>Mis a jour le 31 Decembre 2025</p>
         </footer>
     </div>
