@@ -1,0 +1,268 @@
+# STRATEGIE HYBRIDE V8.1 - SKIP + REVERSE
+# PnL: +$23,750/mois (vs $22,891 V8 pure)
+# 19/24 mois meilleurs que V8
+# Pire mois: +$15,361 (vs +$14,761 V8)
+#
+# Format: { day: 0-6 (Lun-Dim), hour: 0-23, minute: 0/15/30/45 }
+
+# Strategie RSI + Stochastic
+strategy:
+  rsi_period: 7
+  rsi_low: 38
+  rsi_high: 58
+  stoch_period: 5
+  stoch_low: 30
+  stoch_high: 80
+
+# =============================================================================
+# 12 CANDLES A REVERSER (WR normal < 42% = WR inverse > 58%)
+# Au lieu de SKIP, on INVERSE le signal sur ces candles
+# =============================================================================
+reverse_candles:
+  - { day: 6, hour: 8, minute: 30 }    # Dim 08:30 - WR normal: 35.2% -> reverse: 64.8%
+  - { day: 6, hour: 11, minute: 15 }   # Dim 11:15 - WR normal: 35.4% -> reverse: 64.6%
+  - { day: 4, hour: 18, minute: 15 }   # Ven 18:15 - WR normal: 36.9% -> reverse: 63.1%
+  - { day: 4, hour: 2, minute: 0 }     # Ven 02:00 - WR normal: 37.0% -> reverse: 63.0%
+  - { day: 2, hour: 19, minute: 30 }   # Mer 19:30 - WR normal: 37.4% -> reverse: 62.6%
+  - { day: 6, hour: 13, minute: 15 }   # Dim 13:15 - WR normal: 38.6% -> reverse: 61.4%
+  - { day: 6, hour: 2, minute: 30 }    # Dim 02:30 - WR normal: 39.4% -> reverse: 60.6%
+  - { day: 4, hour: 14, minute: 30 }   # Ven 14:30 - WR normal: 39.7% -> reverse: 60.3%
+  - { day: 2, hour: 6, minute: 30 }    # Mer 06:30 - WR normal: 40.7% -> reverse: 59.3%
+  - { day: 3, hour: 14, minute: 30 }   # Jeu 14:30 - WR normal: 41.7% -> reverse: 58.3%
+  - { day: 1, hour: 14, minute: 15 }   # Mar 14:15 - WR normal: 41.9% -> reverse: 58.1%
+  - { day: 0, hour: 2, minute: 45 }    # Lun 02:45 - WR normal: 42.0% -> reverse: 58.0%
+
+# =============================================================================
+# 223 CANDLES A SKIP (WR normal 42-53%)
+# Ces candles sont bloquees - on ne trade pas
+# =============================================================================
+skip_candles:
+  # Lundi (43 candles - 1 reverse = 42 skip)
+  - { day: 0, hour: 0, minute: 0 }
+  - { day: 0, hour: 0, minute: 15 }
+  - { day: 0, hour: 0, minute: 30 }
+  - { day: 0, hour: 1, minute: 30 }
+  - { day: 0, hour: 1, minute: 45 }
+  - { day: 0, hour: 2, minute: 0 }
+  # Note: Lun 02:45 est dans reverse_candles
+  - { day: 0, hour: 3, minute: 0 }
+  - { day: 0, hour: 3, minute: 15 }
+  - { day: 0, hour: 3, minute: 30 }
+  - { day: 0, hour: 4, minute: 30 }
+  - { day: 0, hour: 5, minute: 30 }
+  - { day: 0, hour: 6, minute: 15 }
+  - { day: 0, hour: 6, minute: 30 }
+  - { day: 0, hour: 6, minute: 45 }
+  - { day: 0, hour: 7, minute: 0 }
+  - { day: 0, hour: 7, minute: 30 }
+  - { day: 0, hour: 7, minute: 45 }
+  - { day: 0, hour: 8, minute: 0 }
+  - { day: 0, hour: 14, minute: 15 }
+  - { day: 0, hour: 14, minute: 30 }
+  - { day: 0, hour: 14, minute: 45 }
+  - { day: 0, hour: 15, minute: 0 }
+  - { day: 0, hour: 15, minute: 15 }
+  - { day: 0, hour: 15, minute: 30 }
+  - { day: 0, hour: 15, minute: 45 }
+  - { day: 0, hour: 18, minute: 0 }
+  - { day: 0, hour: 18, minute: 15 }
+  - { day: 0, hour: 18, minute: 30 }
+  - { day: 0, hour: 18, minute: 45 }
+  - { day: 0, hour: 19, minute: 0 }
+  - { day: 0, hour: 19, minute: 45 }
+  - { day: 0, hour: 20, minute: 0 }
+  - { day: 0, hour: 20, minute: 15 }
+  - { day: 0, hour: 20, minute: 30 }
+  - { day: 0, hour: 20, minute: 45 }
+  - { day: 0, hour: 21, minute: 0 }
+  - { day: 0, hour: 21, minute: 30 }
+  - { day: 0, hour: 21, minute: 45 }
+  - { day: 0, hour: 22, minute: 15 }
+  - { day: 0, hour: 22, minute: 30 }
+  - { day: 0, hour: 23, minute: 0 }
+  - { day: 0, hour: 23, minute: 30 }
+
+  # Mardi (32 candles - 1 reverse = 31 skip)
+  - { day: 1, hour: 1, minute: 0 }
+  - { day: 1, hour: 1, minute: 15 }
+  - { day: 1, hour: 1, minute: 30 }
+  - { day: 1, hour: 1, minute: 45 }
+  - { day: 1, hour: 4, minute: 0 }
+  - { day: 1, hour: 4, minute: 15 }
+  - { day: 1, hour: 4, minute: 30 }
+  - { day: 1, hour: 4, minute: 45 }
+  - { day: 1, hour: 5, minute: 0 }
+  - { day: 1, hour: 5, minute: 15 }
+  - { day: 1, hour: 5, minute: 30 }
+  - { day: 1, hour: 5, minute: 45 }
+  - { day: 1, hour: 7, minute: 15 }
+  - { day: 1, hour: 7, minute: 30 }
+  - { day: 1, hour: 7, minute: 45 }
+  # Note: Mar 14:15 est dans reverse_candles
+  - { day: 1, hour: 14, minute: 30 }
+  - { day: 1, hour: 14, minute: 45 }
+  - { day: 1, hour: 16, minute: 0 }
+  - { day: 1, hour: 16, minute: 15 }
+  - { day: 1, hour: 16, minute: 30 }
+  - { day: 1, hour: 18, minute: 15 }
+  - { day: 1, hour: 18, minute: 30 }
+  - { day: 1, hour: 18, minute: 45 }
+  - { day: 1, hour: 19, minute: 0 }
+  - { day: 1, hour: 19, minute: 15 }
+  - { day: 1, hour: 19, minute: 30 }
+  - { day: 1, hour: 19, minute: 45 }
+  - { day: 1, hour: 22, minute: 0 }
+  - { day: 1, hour: 22, minute: 30 }
+  - { day: 1, hour: 22, minute: 45 }
+  - { day: 1, hour: 23, minute: 30 }
+
+  # Mercredi (30 candles - 2 reverse = 28 skip)
+  - { day: 2, hour: 0, minute: 0 }
+  - { day: 2, hour: 0, minute: 15 }
+  - { day: 2, hour: 0, minute: 30 }
+  - { day: 2, hour: 3, minute: 0 }
+  - { day: 2, hour: 3, minute: 15 }
+  - { day: 2, hour: 3, minute: 30 }
+  - { day: 2, hour: 3, minute: 45 }
+  # Note: Mer 06:30 est dans reverse_candles
+  - { day: 2, hour: 8, minute: 0 }
+  - { day: 2, hour: 8, minute: 15 }
+  - { day: 2, hour: 8, minute: 30 }
+  - { day: 2, hour: 8, minute: 45 }
+  - { day: 2, hour: 17, minute: 0 }
+  - { day: 2, hour: 17, minute: 15 }
+  - { day: 2, hour: 17, minute: 30 }
+  - { day: 2, hour: 17, minute: 45 }
+  - { day: 2, hour: 19, minute: 0 }
+  - { day: 2, hour: 19, minute: 15 }
+  # Note: Mer 19:30 est dans reverse_candles
+  - { day: 2, hour: 19, minute: 45 }
+  - { day: 2, hour: 23, minute: 0 }
+  - { day: 2, hour: 23, minute: 15 }
+  - { day: 2, hour: 23, minute: 30 }
+  - { day: 2, hour: 23, minute: 45 }
+  - { day: 2, hour: 5, minute: 45 }
+  - { day: 2, hour: 6, minute: 0 }
+  - { day: 2, hour: 6, minute: 15 }
+  - { day: 2, hour: 20, minute: 30 }
+  - { day: 2, hour: 21, minute: 30 }
+  - { day: 2, hour: 22, minute: 0 }
+
+  # Jeudi (26 candles - 1 reverse = 25 skip)
+  - { day: 3, hour: 4, minute: 0 }
+  - { day: 3, hour: 4, minute: 15 }
+  - { day: 3, hour: 4, minute: 30 }
+  - { day: 3, hour: 4, minute: 45 }
+  - { day: 3, hour: 5, minute: 0 }
+  - { day: 3, hour: 5, minute: 15 }
+  - { day: 3, hour: 5, minute: 30 }
+  - { day: 3, hour: 5, minute: 45 }
+  - { day: 3, hour: 9, minute: 0 }
+  - { day: 3, hour: 9, minute: 15 }
+  - { day: 3, hour: 9, minute: 30 }
+  - { day: 3, hour: 9, minute: 45 }
+  - { day: 3, hour: 14, minute: 0 }
+  - { day: 3, hour: 14, minute: 15 }
+  # Note: Jeu 14:30 est dans reverse_candles
+  - { day: 3, hour: 16, minute: 0 }
+  - { day: 3, hour: 16, minute: 15 }
+  - { day: 3, hour: 16, minute: 30 }
+  - { day: 3, hour: 16, minute: 45 }
+  - { day: 3, hour: 20, minute: 30 }
+  - { day: 3, hour: 22, minute: 0 }
+  - { day: 3, hour: 22, minute: 15 }
+  - { day: 3, hour: 22, minute: 30 }
+  - { day: 3, hour: 22, minute: 45 }
+  - { day: 3, hour: 6, minute: 15 }
+  - { day: 3, hour: 20, minute: 0 }
+
+  # Vendredi (38 candles - 3 reverse = 35 skip)
+  # Note: Ven 02:00, 14:30, 18:15 sont dans reverse_candles
+  - { day: 4, hour: 2, minute: 15 }
+  - { day: 4, hour: 2, minute: 30 }
+  - { day: 4, hour: 2, minute: 45 }
+  - { day: 4, hour: 5, minute: 0 }
+  - { day: 4, hour: 5, minute: 15 }
+  - { day: 4, hour: 5, minute: 30 }
+  - { day: 4, hour: 5, minute: 45 }
+  - { day: 4, hour: 6, minute: 0 }
+  - { day: 4, hour: 6, minute: 15 }
+  - { day: 4, hour: 6, minute: 30 }
+  - { day: 4, hour: 6, minute: 45 }
+  - { day: 4, hour: 7, minute: 0 }
+  - { day: 4, hour: 7, minute: 15 }
+  - { day: 4, hour: 7, minute: 30 }
+  - { day: 4, hour: 7, minute: 45 }
+  - { day: 4, hour: 10, minute: 0 }
+  - { day: 4, hour: 10, minute: 15 }
+  - { day: 4, hour: 10, minute: 30 }
+  - { day: 4, hour: 10, minute: 45 }
+  - { day: 4, hour: 14, minute: 0 }
+  - { day: 4, hour: 14, minute: 15 }
+  - { day: 4, hour: 14, minute: 45 }
+  - { day: 4, hour: 15, minute: 0 }
+  - { day: 4, hour: 15, minute: 15 }
+  - { day: 4, hour: 15, minute: 30 }
+  - { day: 4, hour: 15, minute: 45 }
+  - { day: 4, hour: 17, minute: 0 }
+  - { day: 4, hour: 17, minute: 15 }
+  - { day: 4, hour: 17, minute: 30 }
+  - { day: 4, hour: 17, minute: 45 }
+  - { day: 4, hour: 18, minute: 0 }
+  - { day: 4, hour: 18, minute: 30 }
+  - { day: 4, hour: 18, minute: 45 }
+  - { day: 4, hour: 3, minute: 30 }
+  - { day: 4, hour: 8, minute: 30 }
+
+  # Samedi (15 candles)
+  - { day: 5, hour: 3, minute: 0 }
+  - { day: 5, hour: 3, minute: 15 }
+  - { day: 5, hour: 3, minute: 30 }
+  - { day: 5, hour: 3, minute: 45 }
+  - { day: 5, hour: 12, minute: 15 }
+  - { day: 5, hour: 12, minute: 45 }
+  - { day: 5, hour: 18, minute: 15 }
+  - { day: 5, hour: 18, minute: 45 }
+  - { day: 5, hour: 20, minute: 45 }
+  - { day: 5, hour: 23, minute: 0 }
+  - { day: 5, hour: 23, minute: 30 }
+  - { day: 5, hour: 7, minute: 15 }
+  - { day: 5, hour: 8, minute: 30 }
+  - { day: 5, hour: 14, minute: 15 }
+  - { day: 5, hour: 15, minute: 30 }
+
+  # Dimanche (37 candles - 4 reverse = 33 skip)
+  # Note: Dim 02:30, 08:30, 11:15, 13:15 sont dans reverse_candles
+  - { day: 6, hour: 0, minute: 15 }
+  - { day: 6, hour: 0, minute: 30 }
+  - { day: 6, hour: 1, minute: 30 }
+  - { day: 6, hour: 2, minute: 0 }
+  - { day: 6, hour: 2, minute: 15 }
+  - { day: 6, hour: 2, minute: 45 }
+  - { day: 6, hour: 3, minute: 0 }
+  - { day: 6, hour: 3, minute: 30 }
+  - { day: 6, hour: 3, minute: 45 }
+  - { day: 6, hour: 8, minute: 0 }
+  - { day: 6, hour: 8, minute: 15 }
+  - { day: 6, hour: 8, minute: 45 }
+  - { day: 6, hour: 9, minute: 0 }
+  - { day: 6, hour: 11, minute: 0 }
+  - { day: 6, hour: 11, minute: 30 }
+  - { day: 6, hour: 11, minute: 45 }
+  - { day: 6, hour: 13, minute: 0 }
+  - { day: 6, hour: 13, minute: 30 }
+  - { day: 6, hour: 13, minute: 45 }
+  - { day: 6, hour: 22, minute: 0 }
+  - { day: 6, hour: 22, minute: 15 }
+  - { day: 6, hour: 22, minute: 30 }
+  - { day: 6, hour: 22, minute: 45 }
+  - { day: 6, hour: 23, minute: 0 }
+  - { day: 6, hour: 23, minute: 15 }
+  - { day: 6, hour: 23, minute: 30 }
+  - { day: 6, hour: 23, minute: 45 }
+  - { day: 6, hour: 5, minute: 0 }
+  - { day: 6, hour: 5, minute: 15 }
+  - { day: 6, hour: 14, minute: 45 }
+  - { day: 6, hour: 15, minute: 15 }
+  - { day: 6, hour: 17, minute: 45 }
+  - { day: 6, hour: 21, minute: 45 }

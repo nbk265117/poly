@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 """
-LIVE TRADER - Stratégie Mean Reversion pour Polymarket
+LIVE TRADER V8.1 HYBRIDE - Stratégie RSI+Stoch pour Polymarket
 Trading automatique BTC/ETH/XRP Up/Down 15 minutes
+
+STRATEGIE HYBRIDE:
+- RSI(7) < 38 AND Stoch(5) < 30 = Signal UP
+- RSI(7) > 58 AND Stoch(5) > 80 = Signal DOWN
+- 223 candles SKIP (pas de trade)
+- 12 candles REVERSE (signal inversé)
+
+PnL attendu: $23,750/mois (vs $22,891 V8 pure)
 
 Usage:
     python live_trader.py              # Mode simulation
@@ -13,6 +21,7 @@ import sys
 import time
 import logging
 import argparse
+import yaml
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -25,7 +34,7 @@ import numpy as np
 try:
     import ccxt
 except ImportError:
-    print("❌ ccxt non installé. Exécutez: pip install ccxt")
+    print("ccxt non installe. Executez: pip install ccxt")
     sys.exit(1)
 
 from src.config import get_config
@@ -44,19 +53,52 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class MeanReversionLive:
+class HybridStrategyV8:
     """
-    Stratégie Mean Reversion pour trading live
+    Strategie V8.1 Hybride pour trading live
+    RSI(7) + Stochastic(5) avec SKIP et REVERSE sur candles specifiques
     """
 
-    def __init__(self, rsi_period=14, rsi_oversold=30, rsi_overbought=70, consec_threshold=3):
-        self.rsi_period = rsi_period
-        self.rsi_oversold = rsi_oversold
-        self.rsi_overbought = rsi_overbought
-        self.consec_threshold = consec_threshold
+    def __init__(self):
+        # Parametres strategie V8
+        self.rsi_period = 7
+        self.rsi_low = 38
+        self.rsi_high = 58
+        self.stoch_period = 5
+        self.stoch_low = 30
+        self.stoch_high = 80
+
+        # Charger les candles hybrides
+        self.skip_candles = set()
+        self.reverse_candles = set()
+        self._load_hybrid_candles()
+
+    def _load_hybrid_candles(self):
+        """Charge les candles SKIP et REVERSE depuis le fichier YAML"""
+        yaml_path = Path(__file__).parent / 'blocked_candles_hybrid.yaml'
+
+        try:
+            with open(yaml_path, 'r') as f:
+                data = yaml.safe_load(f)
+
+            # Charger les candles a SKIP
+            for c in data.get('skip_candles', []):
+                self.skip_candles.add((c['day'], c['hour'], c['minute']))
+
+            # Charger les candles a REVERSE
+            for c in data.get('reverse_candles', []):
+                self.reverse_candles.add((c['day'], c['hour'], c['minute']))
+
+            logger.info(f"Candles chargees: {len(self.skip_candles)} SKIP, {len(self.reverse_candles)} REVERSE")
+
+        except Exception as e:
+            logger.error(f"Erreur chargement candles hybrides: {e}")
+            # Fallback: pas de filtres
+            self.skip_candles = set()
+            self.reverse_candles = set()
 
     def calculate_rsi(self, closes: list) -> float:
-        """Calcule le RSI sur une série de prix"""
+        """Calcule le RSI(7) sur une serie de prix"""
         if len(closes) < self.rsi_period + 1:
             return 50.0
 
@@ -64,86 +106,107 @@ class MeanReversionLive:
         delta = df.diff()
         gain = delta.where(delta > 0, 0)
         loss = -delta.where(delta < 0, 0)
-        avg_gain = gain.ewm(span=self.rsi_period, adjust=False).mean()
-        avg_loss = loss.ewm(span=self.rsi_period, adjust=False).mean()
+        avg_gain = gain.rolling(window=self.rsi_period).mean()
+        avg_loss = loss.rolling(window=self.rsi_period).mean()
         rs = avg_gain / avg_loss
         rsi = 100 - (100 / (1 + rs))
-        return rsi.iloc[-1]
+        return float(rsi.iloc[-1]) if not pd.isna(rsi.iloc[-1]) else 50.0
 
-    def count_consecutive(self, candles: list) -> tuple:
-        """Compte les bougies consécutives UP et DOWN"""
-        consec_down = 0
-        consec_up = 0
+    def calculate_stochastic(self, candles: list) -> float:
+        """Calcule le Stochastic(5) K"""
+        if len(candles) < self.stoch_period:
+            return 50.0
 
-        # Parcourir les bougies de la plus récente à la plus ancienne
-        for i in range(len(candles) - 1, -1, -1):
-            candle = candles[i]
-            is_up = candle['close'] > candle['open']
-            is_down = candle['close'] < candle['open']
+        recent = candles[-self.stoch_period:]
+        highs = [c['high'] for c in recent]
+        lows = [c['low'] for c in recent]
+        close = candles[-1]['close']
 
-            if i == len(candles) - 1:
-                # Dernière bougie
-                if is_down:
-                    consec_down = 1
-                elif is_up:
-                    consec_up = 1
-            else:
-                # Bougies précédentes
-                if is_down and consec_down > 0:
-                    consec_down += 1
-                elif is_up and consec_up > 0:
-                    consec_up += 1
-                else:
-                    break
+        highest = max(highs)
+        lowest = min(lows)
 
-        return consec_up, consec_down
+        if highest == lowest:
+            return 50.0
 
-    def generate_signal(self, candles: list) -> str:
+        stoch_k = 100 * (close - lowest) / (highest - lowest)
+        return stoch_k
+
+    def get_candle_action(self, timestamp: datetime) -> str:
         """
-        Génère un signal basé sur les dernières bougies
+        Determine l'action pour cette candle: TRADE, SKIP, ou REVERSE
 
         Args:
-            candles: Liste de bougies OHLCV [{open, high, low, close, volume}, ...]
+            timestamp: Timestamp de la candle
 
         Returns:
-            'UP', 'DOWN', ou None
+            'TRADE', 'SKIP', ou 'REVERSE'
         """
-        if len(candles) < self.rsi_period + 5:
-            return None
+        day = timestamp.weekday()  # 0=Lundi, 6=Dimanche
+        hour = timestamp.hour
+        minute = timestamp.minute
 
-        # Calculer RSI
+        candle_key = (day, hour, minute)
+
+        if candle_key in self.reverse_candles:
+            return 'REVERSE'
+        elif candle_key in self.skip_candles:
+            return 'SKIP'
+        else:
+            return 'TRADE'
+
+    def generate_signal(self, candles: list, current_time: datetime = None) -> tuple:
+        """
+        Genere un signal base sur RSI + Stochastic + filtres hybrides
+
+        Args:
+            candles: Liste de bougies OHLCV [{open, high, low, close, volume, timestamp}, ...]
+            current_time: Timestamp actuel (pour determiner SKIP/REVERSE)
+
+        Returns:
+            (signal, action) - signal: 'UP', 'DOWN', None | action: 'TRADE', 'SKIP', 'REVERSE'
+        """
+        if len(candles) < max(self.rsi_period, self.stoch_period) + 5:
+            return None, 'TRADE'
+
+        # Determiner l'action pour cette candle
+        if current_time is None:
+            current_time = datetime.now(timezone.utc)
+
+        action = self.get_candle_action(current_time)
+
+        # Si SKIP, pas de signal
+        if action == 'SKIP':
+            return None, 'SKIP'
+
+        # Calculer les indicateurs
         closes = [c['close'] for c in candles]
         rsi = self.calculate_rsi(closes)
+        stoch = self.calculate_stochastic(candles)
 
-        # Compter bougies consécutives
-        consec_up, consec_down = self.count_consecutive(candles)
+        signal = None
 
-        # Calculer momentum
-        if len(closes) >= 4:
-            momentum = (closes[-1] - closes[-4]) / closes[-4] * 100
-        else:
-            momentum = 0
+        # Signal UP: RSI < 38 AND Stoch < 30
+        if rsi < self.rsi_low and stoch < self.stoch_low:
+            signal = 'UP'
+            logger.info(f"Signal UP | RSI={rsi:.1f} < {self.rsi_low} | Stoch={stoch:.1f} < {self.stoch_low}")
 
-        # === Règles de signal ===
+        # Signal DOWN: RSI > 58 AND Stoch > 80
+        elif rsi > self.rsi_high and stoch > self.stoch_high:
+            signal = 'DOWN'
+            logger.info(f"Signal DOWN | RSI={rsi:.1f} > {self.rsi_high} | Stoch={stoch:.1f} > {self.stoch_high}")
 
-        # Signal UP : 3+ DOWN consécutives OU RSI < 30, avec momentum négatif
-        cond_up = (consec_down >= self.consec_threshold) or (rsi < self.rsi_oversold)
-        if cond_up and momentum < 0:
-            logger.info(f"📈 Signal UP détecté | RSI={rsi:.1f} | Consec DOWN={consec_down} | Mom={momentum:.2f}%")
-            return 'UP'
+        # Si REVERSE, inverser le signal
+        if signal and action == 'REVERSE':
+            original = signal
+            signal = 'DOWN' if signal == 'UP' else 'UP'
+            logger.info(f"REVERSE: {original} -> {signal}")
 
-        # Signal DOWN : 3+ UP consécutives OU RSI > 70, avec momentum positif
-        cond_down = (consec_up >= self.consec_threshold) or (rsi > self.rsi_overbought)
-        if cond_down and momentum > 0:
-            logger.info(f"📉 Signal DOWN détecté | RSI={rsi:.1f} | Consec UP={consec_up} | Mom={momentum:.2f}%")
-            return 'DOWN'
-
-        return None
+        return signal, action
 
 
 class LiveTrader:
     """
-    Trader live pour Polymarket
+    Trader live pour Polymarket - V8.1 Hybride
     """
 
     def __init__(self, symbols: list, bet_size: float = 2.0, is_live: bool = False):
@@ -153,9 +216,13 @@ class LiveTrader:
 
         # Initialiser les composants
         self.config = get_config()
-        self.strategy = MeanReversionLive()
+        self.strategy = HybridStrategyV8()
         self.telegram = TelegramNotifier()
         self.polymarket = PolymarketClient()
+
+        # Stats supplementaires pour hybride
+        self.trades_reversed = 0
+        self.trades_skipped = 0
 
         # Exchange pour données
         self.exchange = ccxt.binance({'enableRateLimit': True})
@@ -294,52 +361,74 @@ class LiveTrader:
         self.last_trade_time[symbol] = datetime.now(timezone.utc)
 
     def run_once(self):
-        """Exécute un cycle d'analyse"""
+        """Execute un cycle d'analyse"""
+        current_time = datetime.now(timezone.utc)
         logger.info("-" * 60)
-        logger.info(f"🔍 ANALYSE | {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC")
+        logger.info(f"ANALYSE | {current_time.strftime('%Y-%m-%d %H:%M:%S')} UTC")
 
         for symbol in self.symbols:
-            logger.info(f"\n📊 Analyse {symbol}...")
+            logger.info(f"\nAnalyse {symbol}...")
 
-            # Récupérer les bougies
+            # Recuperer les bougies
             candles = self.get_candles(symbol)
             if not candles:
                 continue
 
-            # Générer le signal
-            signal = self.strategy.generate_signal(candles)
+            # Generer le signal avec action hybride
+            signal, action = self.strategy.generate_signal(candles, current_time)
+
+            if action == 'SKIP':
+                self.trades_skipped += 1
+                logger.info(f"   SKIP - Candle bloquee")
+                continue
 
             if signal:
                 current_price = candles[-1]['close']
+
+                # Log si REVERSE
+                if action == 'REVERSE':
+                    self.trades_reversed += 1
+                    logger.info(f"   REVERSE ACTIF - Signal inverse")
+
                 self.execute_trade(symbol, signal, current_price)
             else:
                 logger.info(f"   Aucun signal pour {symbol}")
 
     def run(self):
         """Boucle principale de trading"""
-        mode = "🔴 PRODUCTION" if self.is_live else "🔵 SIMULATION"
+        mode = "PRODUCTION" if self.is_live else "SIMULATION"
 
         logger.info("=" * 60)
-        logger.info(f"🤖 DÉMARRAGE LIVE TRADER - {mode}")
+        logger.info(f"DEMARRAGE LIVE TRADER V8.1 HYBRIDE - {mode}")
         logger.info("=" * 60)
         logger.info(f"Symboles: {', '.join(self.symbols)}")
-        logger.info(f"Shares par trade: {self.bet_size:.0f} (~${self.bet_size * 0.50:.2f} BET @ 50¢)")
-        logger.info(f"Stratégie: Mean Reversion (RSI + Bougies consécutives)")
+        logger.info(f"Shares par trade: {self.bet_size:.0f} (~${self.bet_size * 0.525:.2f} BET @ 52.5c)")
+        logger.info(f"Strategie: V8.1 Hybride (RSI+Stoch + SKIP/REVERSE)")
+        logger.info(f"  - RSI(7): <{self.strategy.rsi_low} UP, >{self.strategy.rsi_high} DOWN")
+        logger.info(f"  - Stoch(5): <{self.strategy.stoch_low} UP, >{self.strategy.stoch_high} DOWN")
+        logger.info(f"  - Candles SKIP: {len(self.strategy.skip_candles)}")
+        logger.info(f"  - Candles REVERSE: {len(self.strategy.reverse_candles)}")
         logger.info("=" * 60)
 
-        # Notification démarrage
-        bet_cost = self.bet_size * 0.50
+        # Notification demarrage
+        bet_cost = self.bet_size * 0.525
         to_win = self.bet_size * 1.00
         self.telegram.send_message(f"""
-🤖 <b>BOT DÉMARRÉ</b> - {mode}
+<b>BOT V8.1 HYBRIDE</b> - {mode}
 
-📊 <b>Configuration:</b>
-• Symboles: {', '.join([s.split('/')[0] for s in self.symbols])}
-• BET: ${bet_cost:.2f} ({self.bet_size:.0f} shares)
-• TO WIN: ${to_win:.2f}
-• Stratégie: Mean Reversion
+<b>Configuration:</b>
+- Symboles: {', '.join([s.split('/')[0] for s in self.symbols])}
+- BET: ${bet_cost:.2f} ({self.bet_size:.0f} shares @ 52.5c)
+- TO WIN: ${to_win:.2f}
 
-⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+<b>Strategie V8.1:</b>
+- RSI(7) {self.strategy.rsi_low}/{self.strategy.rsi_high}
+- Stoch(5) {self.strategy.stoch_low}/{self.strategy.stoch_high}
+- {len(self.strategy.skip_candles)} SKIP + {len(self.strategy.reverse_candles)} REVERSE
+
+<b>PnL attendu:</b> $23,750/mois
+
+{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 """)
 
         try:
