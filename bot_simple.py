@@ -45,9 +45,10 @@ if not logger.handlers:
 
     logger.propagate = False  # Éviter propagation aux loggers parents
 
-# CONFIG OPTIMISEE V8 - 235 FILTRES CANDLE 15min (WR < 53%)
-# PnL: +$22,891/mois | WR: 59.2% | Pire mois: +$14,761
-# Strategie unifiee: RSI(7) 38/58 + Stoch(5) 30/80
+# CONFIG V8.1 HYBRIDE - SKIP + REVERSE
+# PnL: +$23,750/mois | WR: 59.2% | Pire mois: +$15,361
+# Strategie: RSI(7) 38/58 + Stoch(5) 30/80
+# 209 candles SKIP + 12 candles REVERSE
 
 SYMBOL_CONFIG = {
     'BTC': {
@@ -57,7 +58,6 @@ SYMBOL_CONFIG = {
         'stoch_period': 5,
         'stoch_oversold': 30,
         'stoch_overbought': 80,
-        'consec_threshold': 1,
         'expected_tpd': 20,
         'expected_wr': 59
     },
@@ -68,7 +68,6 @@ SYMBOL_CONFIG = {
         'stoch_period': 5,
         'stoch_oversold': 30,
         'stoch_overbought': 80,
-        'consec_threshold': 1,
         'expected_tpd': 20,
         'expected_wr': 59
     },
@@ -79,10 +78,26 @@ SYMBOL_CONFIG = {
         'stoch_period': 5,
         'stoch_oversold': 30,
         'stoch_overbought': 80,
-        'consec_threshold': 1,
         'expected_tpd': 19,
         'expected_wr': 59
     }
+}
+
+# 12 CANDLES A REVERSER (WR < 42% -> WR inverse > 58%)
+# Format: (day, hour, minute) - day: 0=Lundi, 6=Dimanche
+REVERSE_CANDLES = {
+    (6, 8, 30),   # Dim 08:30 - WR 35.2% -> 64.8%
+    (6, 11, 15),  # Dim 11:15 - WR 35.4% -> 64.6%
+    (4, 18, 15),  # Ven 18:15 - WR 36.9% -> 63.1%
+    (4, 2, 0),    # Ven 02:00 - WR 37.0% -> 63.0%
+    (2, 19, 30),  # Mer 19:30 - WR 37.4% -> 62.6%
+    (6, 13, 15),  # Dim 13:15 - WR 38.6% -> 61.4%
+    (6, 2, 30),   # Dim 02:30 - WR 39.4% -> 60.6%
+    (4, 14, 30),  # Ven 14:30 - WR 39.7% -> 60.3%
+    (2, 6, 30),   # Mer 06:30 - WR 40.7% -> 59.3%
+    (3, 14, 30),  # Jeu 14:30 - WR 41.7% -> 58.3%
+    (1, 14, 15),  # Mar 14:15 - WR 41.9% -> 58.1%
+    (0, 2, 45),   # Lun 02:45 - WR 42.0% -> 58.0%
 }
 
 # 235 CANDLES BLOQUEES (WR < 53%) - Format: (day, hour, minute)
@@ -213,23 +228,29 @@ class SimpleBot:
         return consec_up, consec_down
 
     def get_signal(self, df: pd.DataFrame, symbol: str) -> str:
-        """Génère signal UP, DOWN ou None - CONFIG V8 avec filtrage 15min"""
+        """Genere signal UP, DOWN ou None - CONFIG V8.1 HYBRIDE avec SKIP + REVERSE"""
         if df is None or len(df) < 20:
             return None
 
-        # Récupérer la config pour ce symbole
+        # Recuperer la config pour ce symbole
         base = symbol.split('/')[0]
         cfg = SYMBOL_CONFIG.get(base, SYMBOL_CONFIG['BTC'])
 
-        # Filtre des candles 15min (235 candles bloquées)
+        # Determiner l'action pour cette candle
         now = datetime.now(timezone.utc)
         current_day = now.weekday()  # 0=Lundi, 6=Dimanche
         current_hour = now.hour
         current_minute = (now.minute // 15) * 15  # Arrondi au quart d'heure
 
         candle_key = (current_day, current_hour, current_minute)
-        if candle_key in BLOCKED_CANDLES:
-            logger.info(f"⏰ Candle bloquée: {['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][current_day]} {current_hour:02d}:{current_minute:02d} UTC")
+        day_name = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'][current_day]
+
+        # Verifier si REVERSE ou SKIP
+        is_reverse = candle_key in REVERSE_CANDLES
+        is_blocked = candle_key in BLOCKED_CANDLES
+
+        if is_blocked and not is_reverse:
+            logger.info(f"SKIP: {day_name} {current_hour:02d}:{current_minute:02d} UTC (candle bloquee)")
             return None
 
         # Calcul des indicateurs
@@ -237,17 +258,28 @@ class SimpleBot:
         rsi = self.calculate_rsi(closes, cfg['rsi_period'])
         stoch = self.calculate_stochastic(df, cfg['stoch_period'])
 
+        signal = None
+
         # Signal UP: RSI < 38 AND Stoch < 30
         if rsi < cfg['rsi_oversold'] and stoch < cfg['stoch_oversold']:
-            logger.info(f"📈 Signal UP | {base} | RSI={rsi:.1f} | Stoch={stoch:.1f}")
-            return 'UP'
+            signal = 'UP'
 
         # Signal DOWN: RSI > 58 AND Stoch > 80
-        if rsi > cfg['rsi_overbought'] and stoch > cfg['stoch_overbought']:
-            logger.info(f"📉 Signal DOWN | {base} | RSI={rsi:.1f} | Stoch={stoch:.1f}")
-            return 'DOWN'
+        elif rsi > cfg['rsi_overbought'] and stoch > cfg['stoch_overbought']:
+            signal = 'DOWN'
 
-        return None
+        if signal is None:
+            return None
+
+        # Si REVERSE, inverser le signal
+        if is_reverse:
+            original = signal
+            signal = 'DOWN' if signal == 'UP' else 'UP'
+            logger.info(f"REVERSE: {day_name} {current_hour:02d}:{current_minute:02d} | {original} -> {signal} | RSI={rsi:.1f} | Stoch={stoch:.1f}")
+        else:
+            logger.info(f"Signal {signal} | {base} | RSI={rsi:.1f} | Stoch={stoch:.1f}")
+
+        return signal
 
     def execute_trade(self, symbol: str, signal: str, current_price: float):
         """Exécute un trade"""
@@ -336,37 +368,37 @@ class SimpleBot:
 
     def run(self):
         """Boucle principale"""
-        mode = "🔴 LIVE" if self.is_live else "🔵 SIMULATION"
+        mode = "LIVE" if self.is_live else "SIMULATION"
 
         logger.info("=" * 60)
-        logger.info(f"🤖 BOT V8 - 235 FILTRES 15min - {mode}")
+        logger.info(f"BOT V8.1 HYBRIDE - SKIP + REVERSE - {mode}")
         logger.info("=" * 60)
         logger.info(f"Symboles: {', '.join(self.symbols)}")
-        logger.info(f"Shares: {self.shares} (~${self.shares * 0.525:.2f} @ 52.5¢)")
-        logger.info(f"Stratégie: RSI(7) 38/58 + Stoch(5) 30/80")
-        logger.info(f"Filtres: 235 candles bloquées (WR < 53%)")
+        logger.info(f"Shares: {self.shares} (~${self.shares * 0.525:.2f} @ 52.5c)")
+        logger.info(f"Strategie: RSI(7) 38/58 + Stoch(5) 30/80")
+        logger.info(f"Filtres: {len(BLOCKED_CANDLES)} SKIP + {len(REVERSE_CANDLES)} REVERSE")
         total_tpd = 0
         for sym in self.symbols:
             base = sym.split('/')[0]
             cfg = SYMBOL_CONFIG.get(base, {})
             logger.info(f"  {base}: ~{cfg.get('expected_tpd', 20)}/jour | WR ~{cfg.get('expected_wr', 59)}%")
             total_tpd += cfg.get('expected_tpd', 20)
-        logger.info(f"TOTAL ATTENDU: ~{total_tpd} trades/jour | 59% WR | +$22,891/mois")
+        logger.info(f"TOTAL ATTENDU: ~{total_tpd} trades/jour | 59% WR | +$23,750/mois")
         logger.info("=" * 60)
 
-        # Notification démarrage
+        # Notification demarrage
         self.telegram.send_message(f"""
-🤖 <b>BOT V8 - 235 FILTRES 15min</b> - {mode}
+<b>BOT V8.1 HYBRIDE</b> - {mode}
 
-📊 Symboles: {', '.join([s.split('/')[0] for s in self.symbols])}
-💰 Mise: {self.shares} shares (~${self.shares * 0.525:.2f})
+Symboles: {', '.join([s.split('/')[0] for s in self.symbols])}
+Mise: {self.shares} shares (~${self.shares * 0.525:.2f})
 
-⚙️ <b>Config V8 (~{total_tpd}/jour, 59% WR):</b>
-• RSI(7) 38/58 + Stoch(5) 30/80
-• 235 candles bloquées (WR < 53%)
-• PnL attendu: +$22,891/mois
+<b>Config V8.1 (~{total_tpd}/jour, 59% WR):</b>
+- RSI(7) 38/58 + Stoch(5) 30/80
+- {len(BLOCKED_CANDLES)} SKIP + {len(REVERSE_CANDLES)} REVERSE
+- PnL attendu: +$23,750/mois
 
-⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
+{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 """)
 
         try:
