@@ -179,7 +179,11 @@ def get_stats(days: int = 7):
     ''', (cutoff,))
 
     row = c.fetchone()
-    total, wins, losses, pending, total_pnl = row
+    total = row[0] or 0
+    wins = row[1] or 0
+    losses = row[2] or 0
+    pending = row[3] or 0
+    total_pnl = row[4] or 0
 
     # Stats par symbole
     c.execute('''
