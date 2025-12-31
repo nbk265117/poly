@@ -13,7 +13,7 @@ import logging
 
 from src.config import get_config
 from src.data_manager import DataManager
-from src.indicators import IndicatorPipeline
+from src.indicators import V10Pipeline
 
 logger = logging.getLogger(__name__)
 
@@ -87,14 +87,14 @@ class Trade:
 
 class TradingStrategy:
     """
-    Stratégie de trading principale
-    Combine les 3 indicateurs et génère les signaux
+    Stratégie de trading V10
+    RSI(7) + Stochastic(5) + FTFC filter
     """
-    
+
     def __init__(self, config=None):
         self.config = config or get_config()
         self.data_manager = DataManager(config)
-        self.indicators = IndicatorPipeline(config)
+        self.indicators = V10Pipeline(config)
         
         self.open_trades: List[Trade] = []
         self.closed_trades: List[Trade] = []
@@ -148,9 +148,9 @@ class TradingStrategy:
             if signal:
                 logger.info(
                     f"{symbol} | Signal: {signal} | "
-                    f"PA: {row['PA_signal']} | "
-                    f"FTFC: {row['FTFC_direction']} | "
-                    f"VOL: {row['VOL_confirmed']}"
+                    f"RSI: {row.get('RSI', 0):.1f} | "
+                    f"Stoch: {row.get('Stoch', 0):.1f} | "
+                    f"FTFC: {row.get('FTFC', 0):+.1f}"
                 )
             
             return signal

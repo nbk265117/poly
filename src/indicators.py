@@ -165,6 +165,172 @@ class MeanReversionPipeline:
 
 
 # ============================================================================
+# V10 STRATEGY PIPELINE
+# ============================================================================
+
+class StochasticIndicator:
+    """
+    Stochastic Oscillator %K
+    """
+
+    def __init__(self, period: int = 5):
+        self.period = period
+
+    def calculate(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = df.copy()
+        low_min = df['low'].rolling(window=self.period).min()
+        high_max = df['high'].rolling(window=self.period).max()
+        df['Stoch'] = 100 * (df['close'] - low_min) / (high_max - low_min)
+        return df
+
+
+class V10Pipeline:
+    """
+    V10 Strategy Pipeline - RSI + Stochastic + FTFC
+
+    RÈGLES V10:
+    - Signal UP:   RSI(7) < 42 AND Stoch(5) < 38 AND FTFC > -2.0
+    - Signal DOWN: RSI(7) > 62 AND Stoch(5) > 68 AND FTFC < +2.0
+
+    Paramètres backtestés sur 2 ans (2024-2025):
+    - Win Rate: 55%+
+    - Trades/jour: ~30
+    """
+
+    def __init__(self, config=None):
+        from src.config import get_config
+        self.config = config or get_config()
+
+        # V10 Parameters
+        self.rsi_period = 7
+        self.rsi_oversold = 42
+        self.rsi_overbought = 62
+        self.stoch_period = 5
+        self.stoch_oversold = 38
+        self.stoch_overbought = 68
+        self.ftfc_threshold = 2.0
+
+        # Indicateurs
+        self.rsi = RSIIndicator(self.rsi_period)
+        self.stoch = StochasticIndicator(self.stoch_period)
+        self.ftfc = FTFCIndicator(require_all_aligned=False)
+
+        logger.info(f"V10Pipeline initialized: RSI({self.rsi_period}) {self.rsi_oversold}/{self.rsi_overbought}, "
+                   f"Stoch({self.stoch_period}) {self.stoch_oversold}/{self.stoch_overbought}, "
+                   f"FTFC ±{self.ftfc_threshold}")
+
+    def calculate_ftfc_score(self, df: pd.DataFrame, idx: int) -> float:
+        """
+        Calculate FTFC score based on multi-timeframe trends
+
+        Returns:
+            float: FTFC score (-3 to +3)
+            Positive = bullish bias, Negative = bearish bias
+        """
+        if idx < 20:
+            return 0
+
+        # 4-candle trend (1H equivalent)
+        h1_start = df['close'].iloc[idx-4]
+        h1_end = df['close'].iloc[idx]
+        h1_trend = (h1_end - h1_start) / h1_start * 100
+
+        # 16-candle trend (4H equivalent)
+        h4_start = df['close'].iloc[idx-16] if idx >= 16 else df['close'].iloc[0]
+        h4_end = df['close'].iloc[idx]
+        h4_trend = (h4_end - h4_start) / h4_start * 100
+
+        # RSI for HTF bias
+        rsi_14 = df['close'].iloc[:idx+1].diff()
+        gain = rsi_14.where(rsi_14 > 0, 0).rolling(window=14).mean()
+        loss = (-rsi_14.where(rsi_14 < 0, 0)).rolling(window=14).mean()
+        rs = gain / loss
+        h1_rsi = (100 - (100 / (1 + rs))).iloc[-1] if len(rs) > 0 else 50
+
+        ftfc = 0
+        if h1_trend > 0.1: ftfc += 1
+        elif h1_trend < -0.1: ftfc -= 1
+        if h4_trend > 0.2: ftfc += 1
+        elif h4_trend < -0.2: ftfc -= 1
+        if h1_rsi > 55: ftfc += 0.5
+        elif h1_rsi < 45: ftfc -= 0.5
+
+        return ftfc
+
+    def calculate_all(
+        self,
+        df: pd.DataFrame,
+        multi_tf_data: Optional[Dict[str, pd.DataFrame]] = None
+    ) -> pd.DataFrame:
+        """
+        Calculate all V10 indicators
+        """
+        df = df.copy()
+
+        # RSI(7)
+        df = self.rsi.calculate(df)
+
+        # Stochastic(5)
+        df = self.stoch.calculate(df)
+
+        # FTFC score for each row
+        ftfc_scores = []
+        for idx in range(len(df)):
+            ftfc_scores.append(self.calculate_ftfc_score(df, idx))
+        df['FTFC'] = ftfc_scores
+
+        return df
+
+    def generate_signal(self, row: pd.Series) -> Optional[str]:
+        """
+        Generate V10 signal
+
+        RULES:
+        - UP:   RSI < 42 AND Stoch < 38 AND FTFC > -2.0
+        - DOWN: RSI > 62 AND Stoch > 68 AND FTFC < +2.0
+
+        Returns:
+            'BUY' (UP), 'SELL' (DOWN), or None
+        """
+        rsi = row.get('RSI', 50)
+        stoch = row.get('Stoch', 50)
+        ftfc = row.get('FTFC', 0)
+
+        if pd.isna(rsi) or pd.isna(stoch):
+            return None
+
+        # Signal UP
+        if rsi < self.rsi_oversold and stoch < self.stoch_oversold:
+            if ftfc > -self.ftfc_threshold:
+                return 'BUY'
+
+        # Signal DOWN
+        if rsi > self.rsi_overbought and stoch > self.stoch_overbought:
+            if ftfc < self.ftfc_threshold:
+                return 'SELL'
+
+        return None
+
+    def get_signal_with_indicators(self, row: pd.Series) -> Tuple[Optional[str], Dict]:
+        """
+        Generate signal and return indicators for logging
+        """
+        rsi = row.get('RSI', 50)
+        stoch = row.get('Stoch', 50)
+        ftfc = row.get('FTFC', 0)
+
+        indicators = {
+            'rsi': rsi,
+            'stoch': stoch,
+            'ftfc': ftfc
+        }
+
+        signal = self.generate_signal(row)
+
+        return signal, indicators
+
+
+# ============================================================================
 # ANCIENS INDICATEURS (conservés pour compatibilité)
 # ============================================================================
 
