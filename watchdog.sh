@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# WATCHDOG v7.0 - Surveillance et relance automatique des bots
+# WATCHDOG v8.1 - Surveillance et relance automatique des bots
 # ============================================================
 # Usage: ./watchdog.sh
 # Cron: */5 * * * * /home/ubuntu/poly/watchdog.sh >> /home/ubuntu/poly/logs/watchdog.log 2>&1
@@ -39,7 +39,7 @@ restart_bot() {
     cd $POLY_DIR
     source venv/bin/activate
 
-    nohup python bot_simple.py --live --yes --shares $shares --symbols $symbol > logs/$(echo $symbol | tr '[:upper:]' '[:lower:]').log 2>&1 &
+    nohup python bot_simple.py --live --yes --shares $shares --symbols ${symbol}/USDT > logs/$(echo $symbol | tr '[:upper:]' '[:lower:]').log 2>&1 &
 
     sleep 3
 
@@ -64,7 +64,7 @@ check_disk() {
 
 # Main
 log "=========================================="
-log "WATCHDOG v7.0 - Verification des bots"
+log "WATCHDOG v8.1 - Verification des bots"
 log "=========================================="
 
 check_disk
