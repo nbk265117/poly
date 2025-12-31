@@ -208,9 +208,9 @@ class PolymarketClient:
             current_ts = self._get_current_15m_timestamp()
             next_ts = current_ts + 900  # Prochaine fenêtre
 
-            # IMPORTANT: 8 sec avant la fin de la bougie, on doit trader sur le PROCHAIN marché
-            # Donc on cherche next_ts EN PREMIER
-            for ts in [next_ts, current_ts + 1800, current_ts, current_ts - 900]:
+            # IMPORTANT: Le bot trade à :00:05 (5 sec après le début de la nouvelle bougie)
+            # Donc on cherche current_ts EN PREMIER (le marché qui commence à :00)
+            for ts in [current_ts, next_ts, current_ts + 1800, current_ts - 900]:
                 slug = f"{symbol.lower()}-updown-15m-{ts}"
                 logger.debug(f"Searching for event: {slug}")
 

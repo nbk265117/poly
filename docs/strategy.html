@@ -472,18 +472,19 @@ Signal DOWN: FTFC < +2.0 (pas fortement haussier)</pre>
 - Meilleure robustesse pour le trading live</pre>
         </div>
 
-        <h2>6. Timing: -20 Secondes</h2>
+        <h2>6. Timing: Analyse a :45, Trade a :00</h2>
         <div class="card">
-            <p>Le bot analyse le marche <strong>20 secondes avant</strong> la fin de chaque bougie 15 minutes.</p>
-            <pre>Bougie 15m: 18:00:00 → 18:14:59
+            <p>Le bot analyse <strong>5 secondes apres</strong> le debut de chaque bougie 15 minutes et trade le marche <strong>actuel</strong>.</p>
+            <pre>Bougie Binance 19:45-20:00 se ferme
                     │
-            18:14:40 = Analyse (-20 sec)
+            20:00:05 = Bot analyse la bougie fermee
                     │
-            Signal detecte? → Placer ordre
+            Signal detecte? → Trade marche Polymarket 20:00-20:15
                     │
-            18:15:00 = Nouvelle bougie commence
-                    │
-            18:30:00 = Resolution du marche</pre>
+            20:15:00 = Resolution du marche</pre>
+            <div class="highlight-box" style="margin-top:20px;">
+                <strong>Fix Timing (31 Dec 2025):</strong> Le bot trade maintenant le marche qui <strong>commence</strong> au moment du trade (current_ts), pas le marche suivant (next_ts).
+            </div>
         </div>
 
         <h2>7. Resultats Backtest 2024-2025 (V10)</h2>
