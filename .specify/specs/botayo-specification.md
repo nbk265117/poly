@@ -1,10 +1,11 @@
 # Botayo Specification
-## Bot Trading Polymarket v8.0 (235 Filtres 15min)
+## Bot Trading Polymarket V8.1 HYBRIDE (223 SKIP + 12 REVERSE)
 
 **Created**: 2025-12-30
 **Updated**: 2025-12-31
 **Status**: Production
 **Branch**: main
+**Version**: 8.1 HYBRIDE
 
 ## System Overview
 
@@ -50,35 +51,56 @@ signal_up = (rsi < 38) AND (stoch_k < 30)
 signal_down = (rsi > 58) AND (stoch_k > 80)
 ```
 
-### 235 Candles Bloquees (WR < 53%)
+### Strategie V8.1 HYBRIDE (SKIP + REVERSE)
 ```yaml
-# Filtrage au niveau des candles 15min (plus precis que les heures)
-# Format: (jour, heure, minute) - minute = 0, 15, 30, ou 45
+# 223 candles SKIP (WR 42-53%): Pas de trade
+# 12 candles REVERSE (WR <42%): Signal inverse (WR inverse >58%)
 
-Lundi:    37 candles (00:00-03:45, 06:00-07:45, 14:00-15:45, 18:00-18:45, 20:00-20:45)
-Mardi:    34 candles (01:00-01:45, 04:00-05:45, 07:00-07:45, 14:00-14:45, 16:00-16:45, 18:00-19:45, 22:00-22:45)
-Mercredi: 28 candles (00:00-00:45, 03:00-03:45, 08:00-08:45, 17:00-17:45, 19:00-19:45, 23:00-23:45)
-Jeudi:    22 candles (04:00-05:45, 09:00-09:45, 16:00-16:45, 22:00-22:45)
-Vendredi: 35 candles (02:00-02:45, 05:00-07:45, 10:00-10:45, 14:00-15:45, 17:00-18:45)
-Samedi:   6 candles  (03:00-03:45, 15:00-15:45)
-Dimanche: 18 candles (08:00-08:45, 13:00-13:45, 22:00-23:45)
+REVERSE_CANDLES (12):
+  - Dim 08:30  (WR 35.2% -> 64.8%)
+  - Dim 11:15  (WR 35.4% -> 64.6%)
+  - Ven 18:15  (WR 36.9% -> 63.1%)
+  - Ven 02:00  (WR 37.0% -> 63.0%)
+  - Mer 19:30  (WR 37.4% -> 62.6%)
+  - Dim 13:15  (WR 38.6% -> 61.4%)
+  - Dim 02:30  (WR 39.4% -> 60.6%)
+  - Ven 14:30  (WR 39.7% -> 60.3%)
+  - Mer 06:30  (WR 40.7% -> 59.3%)
+  - Jeu 14:30  (WR 41.7% -> 58.3%)
+  - Mar 14:15  (WR 41.9% -> 58.1%)
+  - Lun 02:45  (WR 42.0% -> 58.0%)
 
-# Total: 235 candles bloquees = ~35% du temps
-# Gain vs V7 (44 heures): +$5,655/mois (+33%)
+SKIP_CANDLES (223): Restantes des 235 candles originales
+
+# Gain V8.1 vs V8: +$859/mois (+3.8%)
+# PnL V8.1: $23,750/mois | Pire mois: $15,361
 ```
 
 ### Code Implementation
 ```python
-BLOCKED_CANDLES = {
-    (0, 0, 0), (0, 0, 15), (0, 0, 30), (0, 0, 45),  # Lun 00h
-    # ... 235 tuples (day, hour, minute)
+BLOCKED_CANDLES = {...}  # 235 candles
+REVERSE_CANDLES = {
+    (6, 8, 30), (6, 11, 15), (4, 18, 15), (4, 2, 0),
+    (2, 19, 30), (6, 13, 15), (6, 2, 30), (4, 14, 30),
+    (2, 6, 30), (3, 14, 30), (1, 14, 15), (0, 2, 45)
 }
 
 def get_signal():
     now = datetime.now(timezone.utc)
     candle_key = (now.weekday(), now.hour, (now.minute // 15) * 15)
-    if candle_key in BLOCKED_CANDLES:
-        return None  # Skip this candle
+
+    is_reverse = candle_key in REVERSE_CANDLES
+    is_blocked = candle_key in BLOCKED_CANDLES
+
+    if is_blocked and not is_reverse:
+        return None  # SKIP
+
+    signal = calculate_signal()  # RSI + Stoch
+
+    if is_reverse and signal:
+        signal = 'DOWN' if signal == 'UP' else 'UP'  # REVERSE
+
+    return signal
 ```
 
 ## Polymarket Formula
@@ -97,18 +119,19 @@ EV = (0.592 * $90.48) + (0.408 * -$100) = $53.56 - $40.80 = +$12.76/trade
 
 ### Monthly PnL Projection
 ```
-59 trades/jour * 30 jours * $12.76 EV = ~$22,600/mois
+60 trades/jour * 30 jours * $13.19 EV = ~$23,750/mois
 ```
 
-## Backtest Results (2024-2025) - V8 avec 235 Filtres 15min
+## Backtest Results (2024-2025) - V8.1 HYBRIDE
 
-### Comparaison V7 vs V8
-| Metrique | V7 (44 heures) | V8 (235 candles) | Gain |
-|----------|----------------|------------------|------|
-| Win Rate | 57.0% | 59.2% | +2.2% |
-| PnL/mois | $17,236 | $22,891 | +$5,655 |
-| Pire mois | +$9,109 | +$14,761 | +$5,652 |
-| Trades/jour | 66 | 59 | -7 |
+### Comparaison V8 vs V8.1
+| Metrique | V8 (235 SKIP) | V8.1 (223 SKIP + 12 REV) | Gain |
+|----------|---------------|--------------------------|------|
+| Win Rate | 59.2% | 59.2% | +0.0% |
+| PnL/mois | $22,891 | $23,750 | +$859 |
+| Pire mois | +$14,761 | +$15,361 | +$600 |
+| Trades/jour | 59 | 60 | +1 |
+| Mois gagnants | - | 19/24 | +79% |
 
 ### 2024 (V8)
 | Mois | Trades | Win Rate | PnL |
