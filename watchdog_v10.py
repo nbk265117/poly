@@ -33,14 +33,11 @@ CHECK_INTERVAL = 32  # Verification toutes les 32 secondes (evite :00, :15, :30,
 MAX_RESTARTS = 5     # Max restarts avant alerte critique
 RESTART_COOLDOWN = 60  # Attendre 60s avant restart
 
-# Logging
+# Logging (stdout only - systemd handles file logging)
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s | WATCHDOG | %(levelname)s | %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler('logs/watchdog_v10.log')
-    ]
+    handlers=[logging.StreamHandler(sys.stdout)]
 )
 logger = logging.getLogger(__name__)
 
