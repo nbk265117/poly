@@ -24,9 +24,9 @@ from src.telegram_bot import TelegramNotifier
 
 # Configuration
 BOTS = [
-    {'name': 'BTC', 'script': 'bot_v10_btc.py', 'process': None},
-    {'name': 'ETH', 'script': 'bot_v10_eth.py', 'process': None},
-    {'name': 'XRP', 'script': 'bot_v10_xrp.py', 'process': None},
+    {'name': 'BTC', 'script': 'bot_v10_btc.py', 'shares': 7, 'process': None},
+    {'name': 'ETH', 'script': 'bot_v10_eth.py', 'shares': 10, 'process': None},
+    {'name': 'XRP', 'script': 'bot_v10_xrp.py', 'shares': 5, 'process': None},
 ]
 
 CHECK_INTERVAL = 30  # Verification toutes les 30 secondes
@@ -69,7 +69,8 @@ class WatchdogV10:
     def start_bot(self, bot: dict) -> bool:
         """Start a single bot"""
         try:
-            cmd = [sys.executable, bot['script'], '--shares', str(self.shares), '--yes']
+            shares = bot.get('shares', self.shares)
+            cmd = [sys.executable, bot['script'], '--shares', str(shares), '--yes']
             if self.is_live:
                 cmd.append('--live')
 
@@ -202,7 +203,8 @@ Restarts: {self.restart_counts[bot['name']]}/{MAX_RESTARTS}
 
         # Send startup notification
         mode_emoji = "🔴" if self.is_live else "🔵"
-        bot_list = "\n".join([f"  - {b['name']}" for b in BOTS])
+        bot_list = "\n".join([f"  - {b['name']}: {b.get('shares', self.shares)} shares (~${b.get('shares', self.shares) * 0.525:.2f})" for b in BOTS])
+        total_shares = sum(b.get('shares', self.shares) for b in BOTS)
 
         self.telegram.send_message(f"""
 {mode_emoji} <b>WATCHDOG V10 DEMARRE</b> - {mode}
@@ -211,12 +213,11 @@ Restarts: {self.restart_counts[bot['name']]}/{MAX_RESTARTS}
 🤖 <b>Bots actifs:</b>
 {bot_list}
 
-💰 <b>Mise:</b> {self.shares} shares (~${self.shares * 0.525:.2f}/trade)
+💰 <b>Total:</b> {total_shares} shares (~${total_shares * 0.525:.2f}/trade max)
 
 📈 <b>Performance attendue:</b>
   - 67 trades/jour (total)
   - 58.6% Win Rate
-  - $23,447/mois PnL
 
 ⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 """)
