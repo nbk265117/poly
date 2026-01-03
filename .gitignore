@@ -101,3 +101,4 @@ temp/
 
 # Spec Kit - Claude credentials
 .claude/
+.ssh_key_vps

@@ -33,8 +33,8 @@ from src.telegram_bot import TelegramNotifier
 # Configuration
 BOTS = [
     {'name': 'BTC', 'script': 'bot_v10_btc.py', 'shares': 5, 'log': 'logs/bot_v10_btc.log', 'process': None},
-    {'name': 'ETH', 'script': 'bot_v10_eth.py', 'shares': 20, 'log': 'logs/bot_v10_eth.log', 'process': None},
-    {'name': 'XRP', 'script': 'bot_v10_xrp.py', 'shares': 10, 'log': 'logs/bot_v10_xrp.log', 'process': None},
+    {'name': 'ETH', 'script': 'bot_v10_eth.py', 'shares': 10, 'log': 'logs/bot_v10_eth.log', 'process': None},
+    {'name': 'XRP', 'script': 'bot_v10_xrp.py', 'shares': 7, 'log': 'logs/bot_v10_xrp.log', 'process': None},
 ]
 
 CHECK_INTERVAL = 32       # Verification toutes les 32 secondes
