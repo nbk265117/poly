@@ -245,7 +245,7 @@ class BotV10:
                     direction="BUY",
                     outcome=signal,
                     amount=self.shares,
-                    price=MAX_PRICE
+                    price=ENTRY_PRICE
                 )
 
                 if order:
