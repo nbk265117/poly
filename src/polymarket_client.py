@@ -208,9 +208,9 @@ class PolymarketClient:
             current_ts = self._get_current_15m_timestamp()
             next_ts = current_ts + 900  # Prochaine fenêtre
 
-            # IMPORTANT: Le bot trade à :00:05 (5 sec après le début de la nouvelle bougie)
-            # Donc on cherche current_ts EN PREMIER (le marché qui commence à :00)
-            for ts in [current_ts, next_ts, current_ts + 1800, current_ts - 900]:
+            # IMPORTANT: Le bot trade à XX:29:40 (20 sec AVANT la fin de la bougie)
+            # Donc on cherche next_ts EN PREMIER (la prochaine bougie à trader)
+            for ts in [next_ts, current_ts + 1800, current_ts, current_ts - 900]:
                 slug = f"{symbol.lower()}-updown-15m-{ts}"
                 logger.debug(f"Searching for event: {slug}")
 
@@ -322,11 +322,11 @@ class PolymarketClient:
                 'no_price': 0.50
             }
 
-        # Vérifier le cache (valide 5 minutes)
+        # Vérifier le cache (valide 30 sec - court car on trade 20s avant fermeture)
         cache_key = f"{symbol}_market"
         if cache_key in self.market_cache:
             cached = self.market_cache[cache_key]
-            if time.time() - cached['timestamp'] < 300:
+            if time.time() - cached['timestamp'] < 30:
                 return cached['data']
 
         # Rechercher le marché actif

@@ -373,6 +373,9 @@ class BotV10:
                 if signal:
                     current_price = df.iloc[-1]['close']
                     self.execute_trade(signal, current_price, rsi, stoch, ftfc)
+                    # Attendre 30s pour éviter de re-trader la même bougie
+                    logger.info("Attente 30s pour éviter doublon...")
+                    time.sleep(30)
                 else:
                     logger.info(f"Pas de signal | RSI={rsi:.1f} | Stoch={stoch:.1f} | FTFC={ftfc:.1f}")
 
