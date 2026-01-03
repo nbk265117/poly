@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-BOT V10 - XRP
-Strategy optimale: 67 trades/jour, $23k/mois, 0 mois < $10k
+BOT V10 - XRP (Optimisé)
+Strategy avec seuils RSI ajustés pour XRP volatil
 
 Parametres:
-- RSI(7): 42/62
+- RSI(7): 30/70 (plus strict que BTC/ETH)
 - Stochastic(5): 38/68
 - FTFC Threshold: 2.0
 
@@ -34,10 +34,10 @@ import trade_tracker
 SYMBOL = 'XRP/USDT'
 BASE = 'XRP'
 
-# Strategy Parameters - V10
+# Strategy Parameters - V10 (XRP Optimisé)
 RSI_PERIOD = 7
-RSI_OVERSOLD = 42
-RSI_OVERBOUGHT = 62
+RSI_OVERSOLD = 30      # Plus strict pour XRP (était 42)
+RSI_OVERBOUGHT = 70    # Plus strict pour XRP (était 62)
 STOCH_PERIOD = 5
 STOCH_OVERSOLD = 38
 STOCH_OVERBOUGHT = 68
@@ -189,8 +189,8 @@ class BotV10:
         if df is None or len(df) < 10:
             return None, 0, 0, 0
 
-        # Use the last closed candle
-        current = df.iloc[-2]
+        # Use the current candle (closes in ~20 sec)
+        current = df.iloc[-1]
 
         # Calculate indicators
         rsi = self.calculate_rsi(df['close'], RSI_PERIOD)
@@ -214,7 +214,7 @@ class BotV10:
         return signal, rsi, stoch, ftfc_score
 
     def wait_for_candle(self) -> int:
-        """Wait until next 15min candle"""
+        """Wait until 20 seconds BEFORE next 15min candle closes"""
         now = datetime.now(timezone.utc)
         minutes = now.minute
         seconds = now.second
@@ -226,7 +226,8 @@ class BotV10:
         else:
             wait_minutes = next_candle - minutes - 1
 
-        wait_seconds = (wait_minutes * 60) + (60 - seconds)
+        # Wait until 20 sec BEFORE candle close
+        wait_seconds = (wait_minutes * 60) + (60 - seconds) - 20
         return max(0, wait_seconds)
 
     def execute_trade(self, signal: str, current_price: float, rsi: float, stoch: float, ftfc: float):
@@ -345,8 +346,8 @@ class BotV10:
 
 💰 <b>Mise:</b> {self.shares} shares (~${self.shares * ENTRY_PRICE:.2f})
 
-📈 <b>Attendu:</b> ~22 trades/jour | 58.4% WR
-💵 <b>PnL estime:</b> ~$7,700/mois
+📈 <b>Attendu:</b> ~8 trades/jour | 75%+ WR
+💵 <b>Seuils RSI optimisés:</b> 30/70
 
 ⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
 """)
@@ -357,8 +358,8 @@ class BotV10:
                 self.update_htf_data()
 
                 wait = self.wait_for_candle()
-                logger.info(f"Prochaine analyse dans {wait}s...")
-                time.sleep(wait + 5)
+                logger.info(f"Analyse dans {wait}s (20s avant fermeture)...")
+                time.sleep(wait)
 
                 logger.info("-" * 40)
                 logger.info(f"ANALYSE | {datetime.now(timezone.utc).strftime('%H:%M:%S')} UTC")

@@ -189,8 +189,8 @@ class BotV10:
         if df is None or len(df) < 10:
             return None, 0, 0, 0
 
-        # Use the last closed candle
-        current = df.iloc[-2]
+        # Use the current candle (closes in ~20 sec)
+        current = df.iloc[-1]
 
         # Calculate indicators
         rsi = self.calculate_rsi(df['close'], RSI_PERIOD)
@@ -214,7 +214,7 @@ class BotV10:
         return signal, rsi, stoch, ftfc_score
 
     def wait_for_candle(self) -> int:
-        """Wait until next 15min candle"""
+        """Wait until 20 seconds BEFORE next 15min candle closes"""
         now = datetime.now(timezone.utc)
         minutes = now.minute
         seconds = now.second
@@ -226,7 +226,8 @@ class BotV10:
         else:
             wait_minutes = next_candle - minutes - 1
 
-        wait_seconds = (wait_minutes * 60) + (60 - seconds)
+        # Wait until 20 sec BEFORE candle close
+        wait_seconds = (wait_minutes * 60) + (60 - seconds) - 20
         return max(0, wait_seconds)
 
     def execute_trade(self, signal: str, current_price: float, rsi: float, stoch: float, ftfc: float):
@@ -357,8 +358,8 @@ class BotV10:
                 self.update_htf_data()
 
                 wait = self.wait_for_candle()
-                logger.info(f"Prochaine analyse dans {wait}s...")
-                time.sleep(wait + 5)
+                logger.info(f"Analyse dans {wait}s (20s avant fermeture)...")
+                time.sleep(wait)
 
                 logger.info("-" * 40)
                 logger.info(f"ANALYSE | {datetime.now(timezone.utc).strftime('%H:%M:%S')} UTC")
